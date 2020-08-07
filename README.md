@@ -1,2 +1,2 @@
-# peticiones-unam-backend
-Sitio de peticiones para la comunidad UNAM.
+# petitions-backend
+A petitions website built with the Nest framework.
