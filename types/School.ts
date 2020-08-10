@@ -1,4 +1,4 @@
-export enum School
+export enum SchoolType
 {
     // Prepas
     P1,

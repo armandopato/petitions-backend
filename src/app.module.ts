@@ -6,6 +6,8 @@ import { ResolutionsModule } from './resolutions/resolutions.module';
 import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user/user.entity';
+import { School } from './user/additional-entities/school.entity';
+import { Settings } from './user/additional-entities/settings.entity';
 
 @Module({
   imports: [
@@ -16,7 +18,7 @@ import { User } from './user/user.entity';
       username: "armando",
       password: "armando",
       database: "peticiones-unam",
-      entities: [User],
+      entities: [User, School, Settings],
       synchronize: true
   }),
     AuthModule,
