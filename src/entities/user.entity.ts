@@ -1,9 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToOne, OneToMany, TableInheritance, ChildEntity } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToOne, OneToMany, TableInheritance, ChildEntity, ManyToMany, JoinTable } from "typeorm";
 import { School } from "./school.entity";
 import { Settings } from "./settings.entity";
 import { Role } from "src/types/Role";
-import { Petition } from "src/petitions/entities/petition.entity";
-import { Resolution } from "src/resolutions/entities/resolution.entity";
+import { Petition } from "src/entities/petition.entity";
+import { Resolution } from "src/entities/resolution.entity";
+import { UserNotification } from "./notification.entity";
 
 @Entity()
 @TableInheritance({ column: { type: 'enum', enum: Role, name: 'role' } })
@@ -14,9 +15,6 @@ export class User
 
     @CreateDateColumn()
     createdDate: Date;
-
-    @UpdateDateColumn()
-    updatedDate: Date;
 
     @Column()
     email: string;
@@ -51,6 +49,17 @@ export class User
     @OneToOne(() => Settings, settings => settings.user, { cascade: true })
     settings: Settings;
 
+    @ManyToMany(() => UserNotification, notification => notification.users)
+    @JoinTable()
+    notifications: UserNotification[];
+
+    @ManyToMany(() => Petition)
+    @JoinTable()
+    savedPetitions: Petition[];
+
+    @ManyToMany(() => Resolution)
+    @JoinTable()
+    savedResolutions: Resolution[];
 }
 
 @ChildEntity(Role.Student)
