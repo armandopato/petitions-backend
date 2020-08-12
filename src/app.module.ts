@@ -3,11 +3,15 @@ import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { PetitionsModule } from './petitions/petitions.module';
 import { ResolutionsModule } from './resolutions/resolutions.module';
-import { UserModule } from './user/user.module';
+import { UserModule } from './users/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './user/user.entity';
-import { School } from './user/additional-entities/school.entity';
-import { Settings } from './user/additional-entities/settings.entity';
+import { User } from './users/user.entity';
+import { School } from './users/additional-entities/school.entity';
+import { Settings } from './users/additional-entities/settings.entity';
+import { Petition } from './petitions/petition.entity';
+import { Resolution } from './resolutions/resolution.entity';
+import { ResolutionComment } from './resolutions/resolution-comment.entity';
+import { PetitionComment } from './petitions/petition-comment.entity';
 
 @Module({
   imports: [
@@ -18,7 +22,7 @@ import { Settings } from './user/additional-entities/settings.entity';
       username: "armando",
       password: "armando",
       database: "peticiones-unam",
-      entities: [User, School, Settings],
+      entities: [User, School, Settings, Petition, Resolution, ResolutionComment, PetitionComment],
       synchronize: true
   }),
     AuthModule,

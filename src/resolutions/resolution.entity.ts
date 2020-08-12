@@ -1,4 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToOne, JoinColumn, ManyToOne, ManyToMany, JoinTable, OneToMany } from "typeorm";
+import { Petition } from "src/petitions/petition.entity";
+import { User } from "src/users/user.entity";
+import { ResolutionComment } from "./resolution-comment.entity";
+
 
 @Entity()
 export class Resolution
@@ -7,15 +11,28 @@ export class Resolution
     id: number;
 
     @CreateDateColumn()
-    createdDate: Date;
+    startDate: Date;
 
     @Column()
-    title: string;
+    deadline: Date;
 
     @Column()
-    description: string;
+    resolutionDate?: Date;
 
     @Column()
-    schoolYear: string;
+    resolutionText?: string;
 
+    @OneToOne(() => Petition, petition => petition.resolution)
+    @JoinColumn()
+    petition: Petition;
+
+    @ManyToOne(() => User, user => user.resolutions)
+    by: User;
+
+    @ManyToMany(() => User)
+    @JoinTable()
+    votedBy: User[];
+
+    @OneToMany(() => ResolutionComment, resolutionComment => resolutionComment.resolution)
+    comments: ResolutionComment[];
 }
