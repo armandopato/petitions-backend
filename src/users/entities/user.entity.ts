@@ -1,11 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToOne, OneToMany } from "typeorm";
-import { School } from "./additional-entities/school.entity";
-import { Settings } from "./additional-entities/settings.entity";
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToOne, OneToMany, TableInheritance, ChildEntity } from "typeorm";
+import { School } from "./school.entity";
+import { Settings } from "./settings.entity";
 import { Role } from "src/types/Role";
-import { Petition } from "src/petitions/petition.entity";
-import { Resolution } from "src/resolutions/resolution.entity";
+import { Petition } from "src/petitions/entities/petition.entity";
+import { Resolution } from "src/resolutions/entities/resolution.entity";
 
 @Entity()
+@TableInheritance({ column: { type: 'enum', enum: Role, name: 'role' } })
 export class User
 {
     @PrimaryGeneratedColumn()
@@ -32,8 +33,17 @@ export class User
     @Column()
     resetToken?: string;
 
-    @Column()
+    @Column({
+        type: "enum",
+        enum: Role
+    })
     role: Role;
+
+    @Column( { default: false } )
+    hasModeratorPrivileges: boolean;
+
+    @Column( { default: false } )
+    hasAdminPrivileges: boolean;
     
     @OneToOne(() => School, school => school.user, { cascade: true })
     school: School;
@@ -41,10 +51,19 @@ export class User
     @OneToOne(() => Settings, settings => settings.user, { cascade: true })
     settings: Settings;
 
+}
+
+@ChildEntity(Role.Student)
+export class StudentUser extends User
+{
     // Petition is the owner of the relationship
     @OneToMany(() => Petition, petition => petition.by)
     petitions: Petition[];
+}
 
+@ChildEntity(Role.SupportTeam)
+export class SupportTeamUser extends User
+{
     // Resolution is the owner of the relationship
     @OneToMany(() => Resolution, resolution => resolution.by)
     resolutions: Resolution[];

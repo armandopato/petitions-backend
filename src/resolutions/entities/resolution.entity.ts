@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToOne, JoinColumn, ManyToOne, ManyToMany, JoinTable, OneToMany } from "typeorm";
-import { Petition } from "src/petitions/petition.entity";
-import { User } from "src/users/user.entity";
+import { Petition } from "src/petitions/entities/petition.entity";
 import { ResolutionComment } from "./resolution-comment.entity";
+import { SupportTeamUser, StudentUser } from "src/users/entities/user.entity";
 
 
 @Entity()
@@ -26,12 +26,12 @@ export class Resolution
     @JoinColumn()
     petition: Petition;
 
-    @ManyToOne(() => User, user => user.resolutions)
-    by: User;
+    @ManyToOne(() => SupportTeamUser, user => user.resolutions)
+    by: SupportTeamUser;
 
-    @ManyToMany(() => User)
+    @ManyToMany(() => StudentUser)
     @JoinTable()
-    votedBy: User[];
+    votedBy: StudentUser[];
 
     @OneToMany(() => ResolutionComment, resolutionComment => resolutionComment.resolution)
     comments: ResolutionComment[];

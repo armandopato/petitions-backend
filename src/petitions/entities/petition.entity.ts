@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToOne, ManyToOne, ManyToMany, JoinTable, OneToMany } from "typeorm";
-import { Resolution } from "src/resolutions/resolution.entity";
-import { User } from "src/users/user.entity";
+import { Resolution } from "src/resolutions/entities/resolution.entity";
+import { StudentUser } from "src/users/entities/user.entity";
 import { PetitionComment } from "./petition-comment.entity";
 
 @Entity()
@@ -22,12 +22,12 @@ export class Petition
     resolution?: Resolution;
 
     // Owner of relationship
-    @ManyToOne(() => User, user => user.petitions)
-    by: User;
+    @ManyToOne(() => StudentUser, user => user.petitions)
+    by: StudentUser;
 
-    @ManyToMany(() => User)
+    @ManyToMany(() => StudentUser)
     @JoinTable()
-    votedBy: User[];
+    votedBy: StudentUser[];
 
     @OneToMany(() => PetitionComment, petitionComment => petitionComment.petition)
     comments: PetitionComment[];

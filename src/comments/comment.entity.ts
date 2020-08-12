@@ -1,5 +1,5 @@
 import { PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, ManyToMany, JoinTable } from "typeorm";
-import { User } from "src/users/user.entity";
+import { StudentUser } from "src/users/entities/user.entity";
 
 export abstract class GenericComment
 {
@@ -12,10 +12,10 @@ export abstract class GenericComment
     @Column()
     text: string;
 
-    @ManyToOne(() => User)
-    by: User;
+    @ManyToOne(() => StudentUser)
+    by: StudentUser;
 
-    @ManyToMany(() => User)
+    @ManyToMany(() => StudentUser)
     @JoinTable()
-    likedBy: User[];
+    likedBy: StudentUser[];
 }

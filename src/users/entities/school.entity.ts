@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, UpdateDateColumn, Column, OneToOne, JoinColumn } from "typeorm";
 import { SchoolType } from "src/types/School";
-import { User } from "../user.entity";
+import { User } from "./user.entity";
 
 
 @Entity()
