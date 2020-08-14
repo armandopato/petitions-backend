@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToOne, OneToMany, TableInheritance, ChildEntity, ManyToMany, JoinTable } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToOne, OneToMany, TableInheritance, ChildEntity, ManyToMany, JoinTable, JoinColumn } from "typeorm";
 import { School } from "./school.entity";
 import { Settings } from "./settings.entity";
 import { Role } from "src/types/Role";
@@ -16,19 +16,19 @@ export class User
     @CreateDateColumn()
     createdDate: Date;
 
-    @Column()
+    @Column({ type: "varchar", length: 320, unique: true })
     email: string;
 
-    @Column()
+    @Column({ type: "varchar", length: 200 })
     hash: string;
 
-    @Column()
+    @Column({ type: "varchar", length: 200 })
     salt: string;
 
-    @Column()
+    @Column({ type: "varchar", length: 200 })
     confirmationToken?: string;
 
-    @Column()
+    @Column({ type: "varchar", length: 200 })
     resetToken?: string;
 
     @Column({
@@ -43,10 +43,12 @@ export class User
     @Column( { default: false } )
     hasAdminPrivileges: boolean;
     
-    @OneToOne(() => School, school => school.user, { cascade: true })
+    @OneToOne(() => School, { cascade: true, eager: true })
+    @JoinColumn()
     school: School;
 
-    @OneToOne(() => Settings, settings => settings.user, { cascade: true })
+    @OneToOne(() => Settings, { cascade: true })
+    @JoinColumn()
     settings: Settings;
 
     @ManyToMany(() => UserNotification, notification => notification.users)
@@ -67,7 +69,7 @@ export class StudentUser extends User
 {
     // Petition is the owner of the relationship
     @OneToMany(() => Petition, petition => petition.by)
-    petitions: Petition[];
+    myPetitions: Petition[];
 }
 
 @ChildEntity(Role.SupportTeam)
@@ -75,5 +77,5 @@ export class SupportTeamUser extends User
 {
     // Resolution is the owner of the relationship
     @OneToMany(() => Resolution, resolution => resolution.by)
-    resolutions: Resolution[];
+    myResolutions: Resolution[];
 }

@@ -12,17 +12,17 @@ export class Petition
     @CreateDateColumn()
     createdDate: Date;
 
-    @Column()
+    @Column({ type: "varchar", length: 300 })
     title: string;
 
-    @Column()
+    @Column({ type: "varchar", length: 500 })
     description: string;
 
     @OneToOne(() => Resolution, resolution => resolution.petition, { cascade: true })
     resolution?: Resolution;
 
     // Owner of relationship
-    @ManyToOne(() => StudentUser, user => user.petitions)
+    @ManyToOne(() => StudentUser, user => user.myPetitions)
     by: StudentUser;
 
     @ManyToMany(() => StudentUser)

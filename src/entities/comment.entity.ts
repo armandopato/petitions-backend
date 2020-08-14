@@ -11,7 +11,7 @@ abstract class GenericComment
     @CreateDateColumn()
     createdDate: Date;
 
-    @Column()
+    @Column({ type: "varchar", length: 300 })
     text: string;
 
     @ManyToOne(() => StudentUser)

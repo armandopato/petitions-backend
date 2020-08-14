@@ -1,6 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from "typeorm";
-import { User } from "./user.entity";
-
+import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
 @Entity()
 export class Settings
@@ -8,16 +6,12 @@ export class Settings
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column({ default: true })
     notifyNewResolutions: boolean;
 
-    @Column()
+    @Column({ default: true })
     notifyTerminatedResolutions: boolean;
 
-    @Column()
+    @Column({ default: true })
     notifyOverdueResolutions: boolean;
-
-    @OneToOne(() => User, user => user.settings)
-    @JoinColumn()
-    user: User;
 }

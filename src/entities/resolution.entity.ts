@@ -19,19 +19,19 @@ export class Resolution
     @Column()
     resolutionDate?: Date;
 
-    @Column()
+    @Column({ type: "varchar", length: 500 })
     resolutionText?: string;
 
     @OneToOne(() => Petition, petition => petition.resolution)
     @JoinColumn()
     petition: Petition;
 
-    @ManyToOne(() => SupportTeamUser, user => user.resolutions)
+    @ManyToOne(() => SupportTeamUser, user => user.myResolutions)
     by: SupportTeamUser;
 
     @ManyToMany(() => StudentUser)
     @JoinTable()
-    votedBy: StudentUser[];
+    rejectionVotesBy: StudentUser[];
 
     @OneToMany(() => ResolutionComment, resolutionComment => resolutionComment.resolution)
     comments: ResolutionComment[];

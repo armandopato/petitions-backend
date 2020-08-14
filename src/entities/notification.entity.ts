@@ -1,7 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, Column, ManyToMany } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, OneToOne, JoinColumn } from "typeorm";
 import { User } from "./user.entity";
 import { Resolution } from "src/entities/resolution.entity";
 import { SchoolType } from "src/types/School";
+import { NotificationType } from "src/types/NotificationType";
 
 @Entity()
 export class UserNotification
@@ -21,6 +22,13 @@ export class UserNotification
     @Column({ default: false })
     seen: boolean;
 
-    @ManyToOne(() => Resolution)
+    @Column({
+        type: "enum",
+        enum: NotificationType
+    })
+    type: NotificationType;
+
+    @OneToOne(() => Resolution)
+    @JoinColumn()
     resolution: Resolution;
 }

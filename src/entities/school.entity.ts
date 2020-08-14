@@ -1,7 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, UpdateDateColumn, Column, OneToOne, JoinColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, UpdateDateColumn, Column } from "typeorm";
 import { SchoolType } from "src/types/School";
-import { User } from "./user.entity";
-
 
 @Entity()
 export class School
@@ -17,8 +15,4 @@ export class School
         enum: SchoolType
     })
     campus: SchoolType;
-
-    @OneToOne(() => User, user => user.school)
-    @JoinColumn()
-    user: User;
 }
