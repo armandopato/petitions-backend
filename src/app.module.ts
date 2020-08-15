@@ -23,7 +23,8 @@ import { ResolutionComment, PetitionComment } from './entities/comment.entity';
       password: "armando",
       database: "peticiones-unam",
       entities: [User, StudentUser, SupportTeamUser, School, Settings, Petition, Resolution, ResolutionComment, PetitionComment, UserNotification],
-      synchronize: true
+      synchronize: true,
+      logging: true
   }),
     AuthModule,
     PetitionsModule,

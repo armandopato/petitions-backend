@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToOne, Man
 import { Resolution } from "src/entities/resolution.entity";
 import { StudentUser } from "src/entities/user.entity";
 import { PetitionComment } from "./comment.entity";
+import { SchoolType } from "src/types/School";
 
 @Entity()
 export class Petition
@@ -11,6 +12,12 @@ export class Petition
 
     @CreateDateColumn()
     createdDate: Date;
+
+    @Column({
+        type: "enum",
+        enum: SchoolType
+    })
+    campus: SchoolType;
 
     @Column({ type: "varchar", length: 300 })
     title: string;
