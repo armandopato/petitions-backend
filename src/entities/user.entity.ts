@@ -5,6 +5,7 @@ import { Role } from "src/types/Role";
 import { Petition } from "src/entities/petition.entity";
 import { Resolution } from "src/entities/resolution.entity";
 import { UserNotification } from "./notification.entity";
+import { Length } from "src/types/Length";
 
 @Entity()
 @TableInheritance({ column: { type: 'enum', enum: Role, name: 'role' } })
@@ -16,7 +17,7 @@ export class User
     @CreateDateColumn()
     createdDate: Date;
 
-    @Column({ type: "varchar", length: 320, unique: true })
+    @Column({ type: "varchar", length: Length.EMAIL, unique: true })
     email: string;
 
     @Column({ type: "varchar", length: 200 })
@@ -27,6 +28,9 @@ export class User
 
     @Column({ type: "varchar", length: 200 })
     confirmationToken?: string;
+
+    @Column({ type: "varchar", length: 200 })
+    refreshToken?: string;
 
     @Column({ type: "varchar", length: 200 })
     resetToken?: string;

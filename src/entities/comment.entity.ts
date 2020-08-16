@@ -2,6 +2,7 @@ import { PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, ManyToMany
 import { StudentUser } from "src/entities/user.entity";
 import { Petition } from "./petition.entity";
 import { Resolution } from "./resolution.entity";
+import { Length } from "src/types/Length";
 
 abstract class GenericComment
 {
@@ -11,7 +12,7 @@ abstract class GenericComment
     @CreateDateColumn()
     createdDate: Date;
 
-    @Column({ type: "varchar", length: 300 })
+    @Column({ type: "varchar", length: Length.COMMENT })
     text: string;
 
     @ManyToOne(() => StudentUser)

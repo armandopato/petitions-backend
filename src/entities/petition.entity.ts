@@ -3,6 +3,7 @@ import { Resolution } from "src/entities/resolution.entity";
 import { StudentUser } from "src/entities/user.entity";
 import { PetitionComment } from "./comment.entity";
 import { SchoolType } from "src/types/School";
+import { Length } from "src/types/Length";
 
 @Entity()
 export class Petition
@@ -19,10 +20,10 @@ export class Petition
     })
     campus: SchoolType;
 
-    @Column({ type: "varchar", length: 300 })
+    @Column({ type: "varchar", length: Length.PETITION_TITLE })
     title: string;
 
-    @Column({ type: "varchar", length: 500 })
+    @Column({ type: "varchar", length: Length.PETITION_DESC })
     description: string;
 
     @OneToOne(() => Resolution, resolution => resolution.petition, { cascade: true })

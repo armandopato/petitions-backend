@@ -3,6 +3,7 @@ import { Petition } from "src/entities/petition.entity";
 import { SupportTeamUser, StudentUser } from "src/entities/user.entity";
 import { ResolutionComment } from "./comment.entity";
 import { SchoolType } from "src/types/School";
+import { Length } from "src/types/Length";
 
 
 @Entity()
@@ -26,7 +27,7 @@ export class Resolution
     })
     campus: SchoolType;
 
-    @Column({ type: "varchar", length: 500 })
+    @Column({ type: "varchar", length: Length.RESOLUTION_TEXT })
     resolutionText?: string;
 
     @OneToOne(() => Petition, petition => petition.resolution)
