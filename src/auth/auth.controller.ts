@@ -1,14 +1,7 @@
-import { Controller, Post, Put, Body } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import { Controller, Post, Put } from '@nestjs/common';
 
 @Controller('auth')
 export class AuthController {
-
-    @Post()
-    signUp(@Body() createUserDto: CreateUserDto): string
-    {
-        return "hello raza";
-    }
 
     @Post("token")
     getAccessToken(): string

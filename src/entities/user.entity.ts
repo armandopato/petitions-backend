@@ -26,13 +26,13 @@ export class User
     @Column({ type: "varchar", length: 200 })
     salt: string;
 
-    @Column({ type: "varchar", length: 200 })
+    @Column({ type: "varchar", length: 200, nullable: true })
     confirmationToken?: string;
 
-    @Column({ type: "varchar", length: 200 })
+    @Column({ type: "varchar", length: 200, nullable: true })
     refreshToken?: string;
 
-    @Column({ type: "varchar", length: 200 })
+    @Column({ type: "varchar", length: 200, nullable: true })
     resetToken?: string;
 
     @Column({

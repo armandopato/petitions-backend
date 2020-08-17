@@ -8,6 +8,11 @@ export class IsEmailDomainValidConstraint implements ValidatorConstraintInterfac
         const domain = email.split("@")[1];
         return  domain === "unam.mx"  ||  domain === "comunidad.unam.mx";
     }
+
+	defaultMessage(): string
+	{
+		return "Invalid email";
+	}
 }
 
 export function IsEmailDomainValid(validationOptions?: ValidationOptions) {
