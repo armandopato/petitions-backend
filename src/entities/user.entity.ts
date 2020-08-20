@@ -26,7 +26,7 @@ export class User
     @Column({ type: "varchar", length: 200 })
     salt: string;
 
-    @Column({ type: "varchar", length: 200, nullable: true })
+    @Column({ type: "varchar", length: 50, nullable: true })
     confirmationToken?: string;
 
     @Column({ type: "varchar", length: 200, nullable: true })
