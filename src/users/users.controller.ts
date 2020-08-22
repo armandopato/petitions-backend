@@ -1,9 +1,9 @@
 import { Controller, Post, Body } from '@nestjs/common';
-import { CreateUserDto } from 'src/user/dto/create-user.dto';
-import { UserService } from './user.service';
+import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { UserService } from './users.service';
 import { CreateUserRes } from './dto/create-user-res.dto';
 
-@Controller('user')
+@Controller('users')
 export class UserController {
 
     constructor(private userService: UserService) {}

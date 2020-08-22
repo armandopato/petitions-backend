@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
-import { StudentUserRepository, SupportTeamUserRepository } from './user.repository';
+import { StudentUserRepository, SupportTeamUserRepository } from './users.repository';
 import { CreateUserRes } from './dto/create-user-res.dto';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
@@ -35,7 +35,7 @@ export class UserService {
         }
 
         const token = await this.tokenService.generateURLSafeToken();
-        this.mailService.sendVerificationEmail(email, token);
+        await this.mailService.sendVerificationEmail(email, token);
         // Save token in db
         
         return await this.studentUserRepository.createUser(createUserDto);
