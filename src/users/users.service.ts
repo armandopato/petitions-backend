@@ -6,7 +6,7 @@ import { CreateUserRes } from './dto/create-user-res.dto';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { MailService } from 'src/auth/mail.service';
-import { TokenService } from 'src/auth/token.service';
+import { nanoid } from 'nanoid/async';
 
 @Injectable()
 export class UserService {
@@ -21,8 +21,7 @@ export class UserService {
         @InjectRepository(User)
         private userRepository: Repository<User>,
 
-        private mailService: MailService,
-        private tokenService: TokenService
+        private mailService: MailService
     ) {}
 
     async createUser(createUserDto: CreateUserDto): Promise<CreateUserRes>
@@ -34,10 +33,9 @@ export class UserService {
             throw new BadRequestException("User already exists");
         }
 
-        const token = await this.tokenService.generateURLSafeToken();
-        await this.mailService.sendVerificationEmail(email, token);
-        // Save token in db
+        const token = await nanoid(60);
+        await this.mailService.sendConfirmationEmail(email, token);
         
-        return await this.studentUserRepository.createUser(createUserDto);
+        return await this.studentUserRepository.createUser(createUserDto, token);
     }
 }

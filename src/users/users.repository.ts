@@ -1,17 +1,17 @@
 import { EntityRepository, Repository } from "typeorm";
-import { StudentUser, SupportTeamUser, User } from "src/entities/user.entity";
+import { StudentUser, SupportTeamUser } from "src/entities/user.entity";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { School } from "src/entities/school.entity";
 import { Settings } from "src/entities/settings.entity";
 import { CreateUserRes } from "./dto/create-user-res.dto";
+import { hash } from 'bcrypt';
 
 
 @EntityRepository(StudentUser)
 export class StudentUserRepository extends Repository<StudentUser>
 {
-    async createUser(createUserDto: CreateUserDto): Promise<CreateUserRes>
+    async createUser(createUserDto: CreateUserDto, token: string): Promise<CreateUserRes>
     {
-        // check uniqueness and send confirmation email (pending)
         const { email, password, school } = createUserDto;
 
         const newSchool = new School();
@@ -19,16 +19,16 @@ export class StudentUserRepository extends Repository<StudentUser>
 
         const newSettings = new Settings();
 
-        let newUser = new User();
+        let newUser = new StudentUser();
         newUser.email = email;
         newUser.school = newSchool;
         newUser.settings = newSettings;
+        newUser.password = await hash(password, 10);
+        newUser.confirmationToken = token;
 
-        // add auth scheme
-        newUser.hash = "c";
-        newUser.salt = "d";
         newUser = await this.save(newUser);
-        console.log(newUser);
+        console.log(`New user ${newUser.email}`);
+
         return {
             id: newUser.id,
             email: newUser.email,

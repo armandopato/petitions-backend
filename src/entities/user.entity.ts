@@ -20,19 +20,16 @@ export class User
     @Column({ type: "varchar", length: Length.EMAIL, unique: true })
     email: string;
 
-    @Column({ type: "varchar", length: 200 })
-    hash: string;
+    @Column({ type: "varchar", length: 60 })
+    password: string;
 
-    @Column({ type: "varchar", length: 200 })
-    salt: string;
-
-    @Column({ type: "varchar", length: 50, nullable: true })
+    @Column({ type: "varchar", length: 60, nullable: true })
     confirmationToken?: string;
 
-    @Column({ type: "varchar", length: 200, nullable: true })
+    @Column({ type: "varchar", length: 60, nullable: true })
     refreshToken?: string;
 
-    @Column({ type: "varchar", length: 200, nullable: true })
+    @Column({ type: "varchar", length: 60, nullable: true })
     resetToken?: string;
 
     @Column({

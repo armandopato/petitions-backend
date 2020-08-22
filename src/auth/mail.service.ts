@@ -1,37 +1,40 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SES, config } from 'aws-sdk';
-config.update({ region:'us-east-2' });
-
+import { MailDataRequired, setApiKey, send as sendMail } from '@sendgrid/mail';
 
 @Injectable()
 export class MailService {
 
-    private ses: SES;
-    private genericParams: SES.SendTemplatedEmailRequest;
+    private sender: string;
+    private templateID: string;
 
     constructor(private configService: ConfigService)
     {
-        const sender = this.configService.get<string>("SENDER");
-        const templateName = this.configService.get<string>("TEMPLATE_NAME");
-        const apiVersion = this.configService.get<string>("SES_VERSION");
+        this.sender = this.configService.get<string>("SENDER");
+        this.templateID = this.configService.get<string>("TEMPLATE_ID");
 
-        this.ses = new SES({ apiVersion });
-        this.genericParams = {
-            Destination: { }, /* FIlled at runtime */ 
-            Source: sender,
-            Template: templateName,
-            TemplateData: '', /* FIlled at runtime */ 
-        };
+        const apiKey = this.configService.get<string>("API_KEY");
+        setApiKey(apiKey);
     }
     
-    async sendVerificationEmail(email: string, token: string): Promise<void>
+    async sendConfirmationEmail(email: string, token: string): Promise<void>
     {
-        const params = { ...this.genericParams };
-        params.Destination = { ToAddresses: [params.Source || email] }; // Change
-        params.TemplateData = `{ "token":"${token}" }`;
-
-        await this.ses.sendTemplatedEmail(params).promise();
+        const msg: MailDataRequired = {
+            to: email,
+            from: this.sender,
+            templateId: this.templateID,
+            dynamicTemplateData: {
+                token: token
+            }
+        };
         
+        try
+        {
+            await sendMail(msg);
+        }
+        catch(err)
+        {
+            throw new InternalServerErrorException("Couldn't send confirmation email");
+        }
     }
 }
