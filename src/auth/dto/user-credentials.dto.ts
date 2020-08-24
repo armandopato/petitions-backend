@@ -2,7 +2,6 @@ import { IsEmailDomainValid } from "src/users/validation/IsEmailDomainValid";
 import { IsEmail, IsString, Length } from "class-validator";
 import { IsPasswordValid } from "src/users/validation/IsPasswordValid";
 
-
 export class UserCredentials
 {
     @IsEmailDomainValid()

@@ -1,14 +1,18 @@
-import { Controller, Post, Put, Body } from '@nestjs/common';
-import { UserCredentials } from './dto/user-credentials.dto';
+import { Controller, Post, Put, UseGuards, Request } from '@nestjs/common';
+import { LocalAuthGuard } from './local-auth.guard';
+import { User } from 'src/entities/user.entity';
+import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
 
+    constructor(private authService: AuthService) {}
+
+    @UseGuards(LocalAuthGuard)
     @Post("token")
-    login(@Body() userCredentials: UserCredentials): string
+    login(@Request() req: { user: User }): { access_token: string }
     {
-        console.log(userCredentials);
-        return "";
+        return this.authService.generateJWT(req.user);
     }
 
     @Put("token")
