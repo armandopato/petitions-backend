@@ -1,7 +1,9 @@
-import { Controller, Post, Put, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Put, UseGuards, Request, Body, UnauthorizedException } from '@nestjs/common';
 import { LocalAuthGuard } from './local-auth.guard';
-import { User } from 'src/entities/user.entity';
 import { AuthService } from './auth.service';
+import { AccessObj } from 'src/types/AccessObj';
+import { AuthRequest } from 'src/types/AuthRequest';
+
 
 @Controller('auth')
 export class AuthController {
@@ -9,13 +11,18 @@ export class AuthController {
     constructor(private authService: AuthService) {}
 
     @UseGuards(LocalAuthGuard)
-    @Post("token")
-    login(@Request() req: { user: User }): { access_token: string }
+    @Post()
+    login(@Request() req: AuthRequest): AccessObj
     {
-        return this.authService.generateJWT(req.user);
+        const {user} = req;
+        if (user.confirmationToken)
+        {
+            throw new UnauthorizedException();
+        }
+        return this.authService.generateJWT(user);
     }
 
-    @Put("token")
+    @Put()
     refreshToken(): string
     {
         return "";
@@ -33,9 +40,15 @@ export class AuthController {
         return "";
     }
 
+    @UseGuards(LocalAuthGuard)
     @Post("email")
-    confirmEmail(): string
+    async confirmEmail(@Request() req: AuthRequest, @Body("token") confirmationToken: string ): Promise<AccessObj>
     {
-        return "";
+        const {user} = req;
+        if (!user.confirmationToken)
+        {
+            throw new UnauthorizedException();
+        }
+        return await this.authService.confirmEmail(req.user, confirmationToken);
     }
 }
