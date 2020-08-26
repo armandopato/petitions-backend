@@ -6,7 +6,7 @@ import { compare, hash } from 'bcrypt';
 import { UserCredentials } from './dto/user-credentials.dto';
 import { validateOrReject } from 'class-validator';
 import { JwtService } from '@nestjs/jwt';
-import { AccessObj } from 'src/types/AccessObj';
+import { AuthTokens } from 'src/types/AccessObj';
 import { Payload } from 'src/types/Payload';
 import { ChangePasswordDto } from './dto/change-password.dto';
 
@@ -43,23 +43,30 @@ export class AuthService {
         return user;
     }
 
-    generateJWT(user: User): AccessObj
+    async generateAuthTokens(user: User): Promise<AuthTokens>
     {
         const payload: Payload = { sub: user.id, school: user.school.campus };
-        console.log(`Access token generated for ${user.email}`);
+        console.log(`Access and refresh tokens generated for ${user.email}`);
+        const access_token = await this.jwtService.signAsync(payload);
+        const refresh_token = await this.jwtService.signAsync(payload, { expiresIn: "14d" });
+
+        await this.userRepository.update(user.id, { refreshToken: refresh_token });
         return {
-            access_token: this.jwtService.sign(payload),
+            access_token,
+            refresh_token
         };
     }
 
-    async confirmEmail(user: User, confirmationToken: string): Promise<AccessObj>
+    async confirmEmail(user: User, confirmationToken: string): Promise<void>
     {
         if (user.confirmationToken === confirmationToken)
         {
             await this.userRepository.update(user.id, { confirmationToken: null });
-            return this.generateJWT(user);
         }
-        throw new UnauthorizedException();
+        else
+        {
+            throw new UnauthorizedException();
+        }
     }
 
     async changePassword(user: User, changePasswordDto: ChangePasswordDto): Promise<{ userId:number }>
