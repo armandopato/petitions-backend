@@ -7,15 +7,17 @@ import { User } from 'src/entities/user.entity';
 import { LocalStrategy } from './local.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtConfigService } from './config/jwt.config.service';
+import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, MailService, LocalStrategy, JwtConfigService],
+  providers: [AuthService, MailService, LocalStrategy, JwtStrategy, JwtConfigService],
   imports: [TypeOrmModule.forFeature([User]),
             JwtModule.registerAsync({
-                useClass: JwtConfigService
+                imports: [AuthModule],
+                useExisting: JwtConfigService
             })
             ],
-  exports: [MailService]
+  exports: [MailService, JwtConfigService]
 })
 export class AuthModule {}

@@ -3,7 +3,8 @@ import { LocalAuthGuard } from './local-auth.guard';
 import { AuthService } from './auth.service';
 import { AccessObj } from 'src/types/AccessObj';
 import { AuthRequest } from 'src/types/AuthRequest';
-
+import { JwtAuthGuard } from './jwt-auth.guard';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -34,10 +35,11 @@ export class AuthController {
         return "";
     }
 
+    @UseGuards(JwtAuthGuard)
     @Put("password")
-    changePassword(): string
+    async changePassword(@Request() req: AuthRequest, @Body() changePasswordDto: ChangePasswordDto): Promise<{ userId:number }>
     {
-        return "";
+        return await this.authService.changePassword(req.user, changePasswordDto);
     }
 
     @UseGuards(LocalAuthGuard)
