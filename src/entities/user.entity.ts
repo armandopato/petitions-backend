@@ -26,9 +26,6 @@ export class User
     @Column({ type: "varchar", length: 60, nullable: true })
     confirmationToken?: string;
 
-    @Column({ nullable: true })
-    refreshToken?: string;
-
     @Column({ type: "varchar", length: 60, nullable: true })
     resetToken?: string;
 

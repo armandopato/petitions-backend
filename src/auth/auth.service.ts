@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { AuthTokens } from 'src/types/AccessObj';
 import { Payload } from 'src/types/Payload';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { Token } from 'src/types/Token';
 
 @Injectable()
 export class AuthService {
@@ -45,12 +46,12 @@ export class AuthService {
 
     async generateAuthTokens(user: User): Promise<AuthTokens>
     {
-        const payload: Payload = { sub: user.id, school: user.school.campus };
-        console.log(`Access and refresh tokens generated for ${user.email}`);
-        const access_token = await this.jwtService.signAsync(payload);
-        const refresh_token = await this.jwtService.signAsync(payload, { expiresIn: "14d" });
+        const accessPayload: Payload = { sub: user.id, school: user.school.campus, type: Token.ACCESS };
+        const refreshPayload: Payload = { ...accessPayload, type: Token.REFRESH};
+        
+        const access_token = await this.jwtService.signAsync(accessPayload);
+        const refresh_token = await this.jwtService.signAsync(refreshPayload, { expiresIn: "14d" });
 
-        await this.userRepository.update(user.id, { refreshToken: refresh_token });
         return {
             access_token,
             refresh_token
@@ -62,9 +63,11 @@ export class AuthService {
         if (user.confirmationToken === confirmationToken)
         {
             await this.userRepository.update(user.id, { confirmationToken: null });
+            console.log(`${user.email} (EMAIL CONFIRMED)`);
         }
         else
         {
+            console.log(`${user.email} (INVALID CONFIRMATION TOKEN)`);
             throw new UnauthorizedException();
         }
     }
@@ -79,6 +82,7 @@ export class AuthService {
 
         newPassword = await hash(newPassword, 10);
         await this.userRepository.update(user.id, { password: newPassword });
+        console.log(`${user.email} (PASSWORD CHANGE)`);
         return { userId: user.id };
     }
 }

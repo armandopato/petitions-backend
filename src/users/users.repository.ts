@@ -27,7 +27,7 @@ export class StudentUserRepository extends Repository<StudentUser>
         newUser.confirmationToken = token;
 
         newUser = await this.save(newUser);
-        console.log(`New user ${newUser.email}`);
+        console.log(`${newUser.email} (NEW USER)`);
 
         return {
             id: newUser.id,
