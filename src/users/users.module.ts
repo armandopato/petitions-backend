@@ -5,10 +5,16 @@ import { UserService } from './users.service';
 import { StudentUserRepository } from './users.repository';
 import { SupportTeamUser, User } from 'src/entities/user.entity';
 import { AuthModule } from 'src/auth/auth.module';
+import { JwtModule } from '@nestjs/jwt';
+import { JwtConfigService } from 'src/auth/config/jwt.config.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([StudentUserRepository, SupportTeamUser, User]),
-            AuthModule],
+            AuthModule,
+            JwtModule.registerAsync({
+              imports: [AuthModule],
+              useExisting: JwtConfigService
+            })],
   controllers: [UserController],
   providers: [UserService]
 })

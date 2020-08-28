@@ -1,4 +1,4 @@
-import { Controller, Post, Put, UseGuards, Request, Response, Body, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Put, UseGuards, Request, Response, Body, UnauthorizedException, Patch } from '@nestjs/common';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { AuthService } from './auth.service';
 import { AuthRequest } from 'src/types/AuthRequest';
@@ -7,6 +7,7 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { Response as ExpressResponse, CookieOptions } from 'express';
 import { User } from 'src/entities/user.entity';
 import { RefreshGuard } from './guards/refresh.guard';
+import { EmailDto } from './dto/user-credentials.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -18,7 +19,7 @@ export class AuthController {
     async login(@Request() req: AuthRequest, @Response() res: ExpressResponse): Promise<void>
     {
         const {user} = req;
-        if (user.confirmationToken)
+        if (!user.active)
         {
             console.log(`${user.email} has not confirmed their email yet. (INVALID LOGIN)`);
             throw new UnauthorizedException();
@@ -42,8 +43,14 @@ export class AuthController {
         return "";
     }
 
-    @UseGuards(JwtAuthGuard)
     @Put("password")
+    async generatePasswordResetToken(@Body() emailDto: EmailDto): Promise<{ expiresAt: Date }>
+    {
+        return await this.authService.sendPasswordResetToken(emailDto.email);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Patch("password")
     async changePassword(@Request() req: AuthRequest, @Body() changePasswordDto: ChangePasswordDto): Promise<{ userId:number }>
     {
         return await this.authService.changePassword(req.user, changePasswordDto);
@@ -54,7 +61,7 @@ export class AuthController {
     async confirmEmailAndSignIn(@Request() req: AuthRequest, @Response() res: ExpressResponse, @Body("token") confirmationToken: string ): Promise<void>
     {
         const {user} = req;
-        if (!user.confirmationToken || !confirmationToken)
+        if (user.active)
         {
             console.log(`${user.email} (EMAIL ALREADY CONFIRMED)`)
             throw new UnauthorizedException();

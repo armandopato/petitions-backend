@@ -23,11 +23,8 @@ export class User
     @Column({ type: "varchar", length: 60 })
     password: string;
 
-    @Column({ type: "varchar", length: 60, nullable: true })
-    confirmationToken?: string;
-
-    @Column({ type: "varchar", length: 60, nullable: true })
-    resetToken?: string;
+    @Column({ default: false })
+    active: boolean;
 
     @Column({
         type: "enum",

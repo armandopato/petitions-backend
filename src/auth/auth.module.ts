@@ -18,6 +18,6 @@ import { JwtStrategy } from './strategies/jwt.strategy';
                 useExisting: JwtConfigService
             })
             ],
-  exports: [MailService, JwtConfigService]
+  exports: [MailService, JwtConfigService, JwtModule]
 })
 export class AuthModule {}

@@ -6,7 +6,10 @@ import { CreateUserRes } from './dto/create-user-res.dto';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { MailService } from 'src/auth/mail.service';
-import { nanoid } from 'nanoid/async';
+import { JwtService } from '@nestjs/jwt';
+import { Payload } from 'src/types/Payload';
+import { Token } from 'src/types/Token';
+
 
 @Injectable()
 export class UserService {
@@ -21,21 +24,33 @@ export class UserService {
         @InjectRepository(User)
         private userRepository: Repository<User>,
 
-        private mailService: MailService
+        private mailService: MailService,
+        private jwtService: JwtService
     ) {}
 
     async createUser(createUserDto: CreateUserDto): Promise<CreateUserRes>
     {
-        const { email } = createUserDto;
-        const existingUser = await this.userRepository.findOne({ email: email });
-        if (existingUser)
-        {
-            throw new BadRequestException("User already exists");
-        }
+        let createUserRes: CreateUserRes;
 
-        const token = await nanoid(60);
-        await this.mailService.sendConfirmationEmail(email, token);
+        try
+        {
+            createUserRes = await this.studentUserRepository.createUser(createUserDto);
+        }
+        catch(err)
+        {
+            // Includes user duplication
+            throw new BadRequestException("Error while creating user");
+        }
         
-        return await this.studentUserRepository.createUser(createUserDto, token);
+        const payload: Payload = {
+            sub: createUserRes.id,
+            school: createUserDto.school,
+            type: Token.CONFIRMATION
+        };
+
+        const token = await this.jwtService.signAsync(payload, { expiresIn: "100y" });
+        await this.mailService.sendConfirmationEmail(createUserRes.email, token);
+        
+        return createUserRes;
     }
 }

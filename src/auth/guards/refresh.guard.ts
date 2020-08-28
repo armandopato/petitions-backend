@@ -25,6 +25,8 @@ export class RefreshGuard implements CanActivate
             if (tokenPayload.type !== Token.REFRESH) throw new Error();
 
             const user = await this.userRepository.findOne(tokenPayload.sub);
+            if (!user) throw new Error();
+            
             req.user = user;
             return true;
         }

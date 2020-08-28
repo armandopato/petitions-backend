@@ -5,6 +5,7 @@ export class IsPasswordValidConstraint implements ValidatorConstraintInterface
 {
     validate(password: string): boolean
     {
+        if (!password) return false;
         const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[-_!@#\$%\^&\*])/;
         return strongRegex.test(password);
     }

@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -10,6 +10,7 @@ import { AuthTokens } from 'src/types/AccessObj';
 import { Payload } from 'src/types/Payload';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { Token } from 'src/types/Token';
+import { MailService } from './mail.service';
 
 @Injectable()
 export class AuthService {
@@ -17,7 +18,8 @@ export class AuthService {
     constructor(
         @InjectRepository(User)
         private userRepository: Repository<User>,
-        private jwtService: JwtService
+        private jwtService: JwtService,
+        private mailService: MailService
     ) { }
 
     async validateUser(email: string, password: string): Promise<User>
@@ -49,7 +51,7 @@ export class AuthService {
         const accessPayload: Payload = { sub: user.id, school: user.school.campus, type: Token.ACCESS };
         const refreshPayload: Payload = { ...accessPayload, type: Token.REFRESH};
         
-        const access_token = await this.jwtService.signAsync(accessPayload);
+        const access_token = await this.jwtService.signAsync(accessPayload, { expiresIn: "15m" });
         const refresh_token = await this.jwtService.signAsync(refreshPayload, { expiresIn: "14d" });
 
         return {
@@ -60,12 +62,14 @@ export class AuthService {
 
     async confirmEmail(user: User, confirmationToken: string): Promise<void>
     {
-        if (user.confirmationToken === confirmationToken)
+        try
         {
-            await this.userRepository.update(user.id, { confirmationToken: null });
+            const { sub, type }: Payload = await this.jwtService.verifyAsync(confirmationToken);
+            if (type !== Token.CONFIRMATION) throw new Error();
+            await this.userRepository.update(sub, { active: true });
             console.log(`${user.email} (EMAIL CONFIRMED)`);
         }
-        else
+        catch(err)
         {
             console.log(`${user.email} (INVALID CONFIRMATION TOKEN)`);
             throw new UnauthorizedException();
@@ -82,7 +86,25 @@ export class AuthService {
 
         newPassword = await hash(newPassword, 10);
         await this.userRepository.update(user.id, { password: newPassword });
-        console.log(`${user.email} (PASSWORD CHANGE)`);
+        console.log(`${user.email} (PASSWORD CHANGED)`);
         return { userId: user.id };
+    }
+
+    async sendPasswordResetToken(email: string): Promise<{ expiresAt: Date }>
+    {
+        const user = await this.userRepository.findOne({ email: email });
+        if (!user) throw new BadRequestException();
+
+        const payload: Payload = {
+            sub: user.id,
+            school: user.school.campus,
+            type: Token.RESET
+        };
+
+        const expiresAtObj = { expiresAt: new Date(Date.now() + (5 * 60 * 1000)) };
+        const token = await this.jwtService.signAsync(payload, { expiresIn: "5m" });
+        await this.mailService.sendResetEmail(email, token);
+
+        return expiresAtObj;
     }
 }

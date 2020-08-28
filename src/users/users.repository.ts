@@ -10,7 +10,7 @@ import { hash } from 'bcrypt';
 @EntityRepository(StudentUser)
 export class StudentUserRepository extends Repository<StudentUser>
 {
-    async createUser(createUserDto: CreateUserDto, token: string): Promise<CreateUserRes>
+    async createUser(createUserDto: CreateUserDto): Promise<CreateUserRes>
     {
         const { email, password, school } = createUserDto;
 
@@ -24,7 +24,6 @@ export class StudentUserRepository extends Repository<StudentUser>
         newUser.school = newSchool;
         newUser.settings = newSettings;
         newUser.password = await hash(password, 10);
-        newUser.confirmationToken = token;
 
         newUser = await this.save(newUser);
         console.log(`${newUser.email} (NEW USER)`);
@@ -32,7 +31,7 @@ export class StudentUserRepository extends Repository<StudentUser>
         return {
             id: newUser.id,
             email: newUser.email,
-            school: newUser.school.campus    
+            school: newUser.school.campus
         };
     }
 }

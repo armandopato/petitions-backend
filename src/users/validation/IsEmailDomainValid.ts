@@ -5,6 +5,7 @@ export class IsEmailDomainValidConstraint implements ValidatorConstraintInterfac
 {
     validate(email: string): boolean
     {
+        if (!email) return false;
         const domain = email.split("@")[1];
         return  domain === "unam.mx"  ||  domain === "comunidad.unam.mx";
     }

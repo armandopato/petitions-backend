@@ -1,5 +1,7 @@
 export enum Token
 {
     ACCESS,
-    REFRESH
+    REFRESH,
+    CONFIRMATION,
+    RESET
 }

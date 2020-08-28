@@ -6,6 +6,7 @@ import { Payload } from 'src/types/Payload';
 import { User } from 'src/entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Token } from 'src/types/Token';
 /*
 @Injectable()
 class JwtStrategyOptions
@@ -40,6 +41,8 @@ export class JwtStrategy extends PassportStrategy(Strategy)
 
   async validate(payload: Payload): Promise<User>
   {
+    if (payload.type !== Token.ACCESS) return null;
+    
     return await this.userRepository.findOne(payload.sub);
   }
 }
