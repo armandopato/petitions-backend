@@ -8,6 +8,7 @@ import { Response as ExpressResponse, CookieOptions } from 'express';
 import { User } from 'src/entities/user.entity';
 import { RefreshGuard } from './guards/refresh.guard';
 import { EmailDto } from './dto/user-credentials.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -38,9 +39,9 @@ export class AuthController {
     }
 
     @Post("password")
-    resetPassword(): string
+    async resetPassword(@Body() resetPasswordDto: ResetPasswordDto): Promise<{ userId: number }>
     {
-        return "";
+        return await this.authService.resetPassword(resetPasswordDto);
     }
 
     @Put("password")

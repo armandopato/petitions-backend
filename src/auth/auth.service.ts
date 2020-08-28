@@ -11,6 +11,7 @@ import { Payload } from 'src/types/Payload';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { Token } from 'src/types/Token';
 import { MailService } from './mail.service';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -106,5 +107,27 @@ export class AuthService {
         await this.mailService.sendResetEmail(email, token);
 
         return expiresAtObj;
+    }
+
+    async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<{ userId: number}>
+    {
+        const token = resetPasswordDto.token;
+        let newPassword = resetPasswordDto.newPassword;
+
+        try
+        {
+            const payload: Payload = await this.jwtService.verifyAsync(token);
+            if (payload.type !== Token.RESET) throw new Error();
+
+            newPassword = await hash(newPassword, 10);
+            await this.userRepository.update(payload.sub, { password: newPassword });
+
+            console.log(`${payload.sub} (PASSWORD RESET)`);
+            return { userId: payload.sub };
+        }
+        catch
+        {
+            throw new UnauthorizedException();
+        }
     }
 }
