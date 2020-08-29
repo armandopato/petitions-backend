@@ -1,7 +1,8 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get, Delete, Patch, UseGuards } from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { UserService } from './users.service';
 import { CreateUserRes } from './dto/create-user-res.dto';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('users')
 export class UserController {
@@ -14,5 +15,52 @@ export class UserController {
         return await this.userService.createUser(createUserDto);
     }
 
-    // add and delete support team user
+    @UseGuards(JwtAuthGuard)
+    @Patch()
+    async modifyUserPrivileges(): Promise<void>
+    {
+        return;
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get("saved")
+    async getSavedElements(): Promise<void>
+    {
+        return;
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get("notifications")
+    async getNotifications(): Promise<void>
+    {
+        return;
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Delete("notifications")
+    async deleteNotifications(): Promise<void>
+    {
+        return;
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Delete("notifications/:id")
+    async deleteNotificationById(): Promise<void>
+    {
+        return;
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get("settings")
+    async getUserSettings(): Promise<void>
+    {
+        return;
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Patch("settings")
+    async modifySettings(): Promise<void>
+    {
+        return;
+    }
 }
