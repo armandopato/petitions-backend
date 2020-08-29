@@ -1,8 +1,13 @@
-import { Controller, Post, Body, Get, Delete, Patch, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Get, Delete, Patch, UseGuards, Put } from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { UserService } from './users.service';
 import { CreateUserRes } from './dto/create-user-res.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { IsAdminGuard } from './guards/isAdmin.guard';
+import { ModifyUserDto, ModifyUserRoleDto } from './dto/modify-user.dto';
+import { AuthRequest } from 'src/types/AuthRequest';
+import { Request } from '@nestjs/common';
+import { MeGuard } from './guards/me.guard';
 
 @Controller('users')
 export class UserController {
@@ -15,11 +20,18 @@ export class UserController {
         return await this.userService.createUser(createUserDto);
     }
 
-    @UseGuards(JwtAuthGuard)
-    @Patch()
-    async modifyUserPrivileges(): Promise<void>
+    @UseGuards(JwtAuthGuard, MeGuard)
+    @Put()
+    async modifyUser(@Body() modifyUserDto: ModifyUserDto): Promise<void>
     {
-        return;
+        return await this.userService.updateUserPrivileges(modifyUserDto);
+    }
+
+    @UseGuards(JwtAuthGuard, IsAdminGuard)
+    @Patch()
+    async modifyUserRole(@Body() modifyUserRoleDto: ModifyUserRoleDto, @Request() req: AuthRequest): Promise<void>
+    {
+        return await this.userService.updateUserRole(modifyUserRoleDto, req.user);
     }
 
     @UseGuards(JwtAuthGuard)
@@ -61,6 +73,7 @@ export class UserController {
     @Patch("settings")
     async modifySettings(): Promise<void>
     {
+        // user cant change school if is part of support team
         return;
     }
 }

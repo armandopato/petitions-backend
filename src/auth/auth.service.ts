@@ -49,7 +49,14 @@ export class AuthService {
 
     async generateAuthTokens(user: User): Promise<AuthTokens>
     {
-        const accessPayload: Payload = { sub: user.id, school: user.school.campus, type: Token.ACCESS };
+        const accessPayload: Payload = {
+            sub: user.id,
+            school: user.school.campus,
+            role: user.role,
+            isAdmin: user.hasAdminPrivileges,
+            isMod: user.hasModeratorPrivileges,
+            type: Token.ACCESS
+        };
         const refreshPayload: Payload = { ...accessPayload, type: Token.REFRESH};
         
         const access_token = await this.jwtService.signAsync(accessPayload, { expiresIn: "15m" });
@@ -99,6 +106,9 @@ export class AuthService {
         const payload: Payload = {
             sub: user.id,
             school: user.school.campus,
+            role: user.role,
+            isAdmin: user.hasAdminPrivileges,
+            isMod: user.hasModeratorPrivileges,
             type: Token.RESET
         };
 

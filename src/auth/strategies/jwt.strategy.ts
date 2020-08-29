@@ -7,22 +7,6 @@ import { User } from 'src/entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Token } from 'src/types/Token';
-/*
-@Injectable()
-class JwtStrategyOptions
-{
-    strategyOptions: any;
-
-    constructor(private configService: ConfigService)
-    {
-        this.strategyOptions = {
-            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-            ignoreExpiration: false,
-            secretOrKey: this.configService.get<string>("JWT_SECRET")
-        };
-    }
-}
-*/
 
 
 @Injectable()
