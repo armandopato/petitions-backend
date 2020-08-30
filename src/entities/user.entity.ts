@@ -65,6 +65,9 @@ export class StudentUser extends User
     // Petition is the owner of the relationship
     @OneToMany(() => Petition, petition => petition.by)
     myPetitions: Petition[];
+
+    @ManyToMany(() => Petition, petition => petition.votedBy)
+    votedPetitions: Petition[];
 }
 
 @ChildEntity(Role.SupportTeam)

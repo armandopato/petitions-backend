@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
-import { StudentUserRepository, SupportTeamUserRepository } from './users.repository';
+import { StudentUserRepository, SupportTeamUserRepository, UserRepository } from './users.repository';
 import { CreateUserRes } from './dto/create-user-res.dto';
 import { MailService } from 'src/auth/mail.service';
 import { JwtService } from '@nestjs/jwt';
@@ -11,8 +11,10 @@ import { ModifyUserDto, ModifyUserRoleDto } from './dto/modify-user.dto';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { User } from 'src/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
-import { Repository } from 'typeorm';
 import { Role } from 'src/types/Role';
+import { PetitionInfo } from 'src/types/ElementInfo';
+import { PetitionRepository } from 'src/petitions/petitions.repository';
+import { PetitionsCollection } from 'src/types/ElementsCollection';
 
 
 @Injectable()
@@ -27,8 +29,11 @@ export class UserService {
         @InjectRepository(SupportTeamUserRepository)
         private supportTeamUserRepository: SupportTeamUserRepository,
 
-        @InjectRepository(User)
-        private userRepository: Repository<User>,
+        @InjectRepository(UserRepository)
+        private userRepository: UserRepository,
+
+        @InjectRepository(PetitionRepository)
+        private petitionRepository: PetitionRepository,
 
         private mailService: MailService,
         private jwtService: JwtService,
@@ -100,4 +105,67 @@ export class UserService {
 
         await this.userRepository.update({ email: email }, { role: role });
     }
+
+
+    async getSavedPetitions(user: User, page: number): Promise<PetitionsCollection>
+    {
+        const { petitions, totalPages } = await this.userRepository.getSavedPetitionsPage(user.id, page);
+        const savedPetitionsInfo: PetitionInfo[] = [];
+        
+        for (const petition of petitions)
+        {
+            const numVotes = await this.petitionRepository.countNumberOfVotes(petition.id);
+            const numComments = await this.petitionRepository.countNumberOfComments(petition.id);
+            const didVote = await this.petitionRepository.didUserVote(petition.id, user.id);
+            const status = await this.petitionRepository.getPetitionStatus(petition.id);
+
+            savedPetitionsInfo.push({
+                id: petition.id,
+                title: petition.title,
+                date: petition.createdDate,
+                numVotes: numVotes,
+                numComments: numComments,
+                status: status,
+                didVote: didVote,
+                didSave: true
+            });
+        } 
+
+        return {
+            totalPages: totalPages,
+            currentPage: page,
+            petitions: savedPetitionsInfo
+        };
+    }
+
+    /*async getSavedResolutions(user: User, page: number): Promise<ResolutionsCollection>
+    {
+        const { resolutions, totalPages } = await this.userRepository.getSavedResolutionsPage(user.id, page);
+        const savedResolutionsInfo: ResolutionInfo[] = [];
+
+        for (const resolution of resolutions)
+        {
+            const numVotes = await this.resolutionRepository.countNumberOfVotes();
+            const numComments = await this.resolutionRepository.countNumberOfComments();
+            const didVote = await this.resolutionRepository.didUserVote();
+            const status = await this.resolutionRepository.getPetitionStatus();
+
+            savedPetitionsInfo.push({
+                id: petition.id,
+                title: petition.title,
+                date: petition.createdDate,
+                numVotes: numVotes,
+                numComments: numComments,
+                status: status,
+                didVote: didVote,
+                didSave: true
+            });
+        } 
+
+        return {
+            totalPages: totalPages,
+            currentPage: page,
+            petitions: savedPetitionsInfo
+        };
+    } */
 }

@@ -1,11 +1,67 @@
 import { EntityRepository, Repository } from "typeorm";
-import { StudentUser, SupportTeamUser } from "src/entities/user.entity";
+import { StudentUser, SupportTeamUser, User } from "src/entities/user.entity";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { School } from "src/entities/school.entity";
 import { Settings } from "src/entities/settings.entity";
 import { CreateUserRes } from "./dto/create-user-res.dto";
 import { hash } from 'bcrypt';
+import { BadRequestException } from "@nestjs/common";
+import { Petition } from "src/entities/petition.entity";
+import { Resolution } from "src/entities/resolution.entity";
+import { PetitionRepository } from "src/petitions/petitions.repository";
+import { InjectRepository } from "@nestjs/typeorm";
+import { ResolutionRepository } from "src/resolutions/resolutions.repository";
 
+
+@EntityRepository(User)
+export class UserRepository extends Repository<User>
+{
+
+	constructor(@InjectRepository(PetitionRepository)
+				private petitionRepository: PetitionRepository,
+				
+				@InjectRepository(ResolutionRepository)
+				private resolutionRepository: ResolutionRepository)
+	{
+		super();
+	}
+
+    async getSavedPetitionsPage(userId: number, page: number): Promise<{petitions: Petition[], totalPages: number}>
+    {
+		const query = this.petitionRepository.createQueryBuilder("petition")
+											.innerJoinAndSelect("petition.savedBy", "user")
+											.where("user.id = :id", { id: userId });
+											
+		let totalPages = await query.getCount();
+		totalPages = Math.ceil(totalPages / 12);
+
+		if (page > totalPages) throw new BadRequestException();
+
+        const savedPetitions = await query.skip( (page-1) * 12)
+										.take(12)
+										.getMany();
+		
+        return { totalPages, petitions: savedPetitions };
+    }
+
+    async getSavedResolutionsPage(userId: number, page: number): Promise<{resolutions: Resolution[], totalPages: number}>
+    {
+		const query = this.resolutionRepository.createQueryBuilder("resolution")
+											.innerJoinAndSelect("resolution.savedBy", "user")
+											.where("user.id = :id", { id: userId });
+											
+		let totalPages = await query.getCount();
+		totalPages = Math.ceil(totalPages / 12);
+
+		if (page > totalPages) throw new BadRequestException();
+
+        const savedResolutions = await query.skip( (page-1) * 12)
+										.take(12)
+										.getMany();
+		
+        return { totalPages, resolutions: savedResolutions };
+    }
+}
 
 @EntityRepository(StudentUser)
 export class StudentUserRepository extends Repository<StudentUser>

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Delete, Patch, UseGuards, Put } from '@nestjs/common';
+import { Controller, Post, Body, Get, Delete, Patch, UseGuards, Put, Query, BadRequestException } from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { UserService } from './users.service';
 import { CreateUserRes } from './dto/create-user-res.dto';
@@ -8,6 +8,7 @@ import { ModifyUserDto, ModifyUserRoleDto } from './dto/modify-user.dto';
 import { AuthRequest } from 'src/types/AuthRequest';
 import { Request } from '@nestjs/common';
 import { MeGuard } from './guards/me.guard';
+import { PetitionsCollection } from 'src/types/ElementsCollection';
 
 @Controller('users')
 export class UserController {
@@ -35,11 +36,19 @@ export class UserController {
     }
 
     @UseGuards(JwtAuthGuard)
-    @Get("saved")
-    async getSavedElements(): Promise<void>
+    @Get("saved/petitions")
+    async getSavedPetitions(@Request() req: AuthRequest, @Query("page") page: number): Promise<PetitionsCollection>
     {
-        return;
+        if (Number.isNaN(page) || page < 1) throw new BadRequestException();
+        return await this.userService.getSavedPetitions(req.user, page);
     }
+
+    /*@UseGuards(JwtAuthGuard)
+    @Get("saved/resolutions")
+    async getSavedResolutions(@Request() req: AuthRequest, @Body() pageNumberDto: PageNumberDto): Promise<ResolutionsCollection>
+    {
+        return await this.userService.getSavedResolutions(req.user, pageNumberDto.page);
+    }*/
 
     @UseGuards(JwtAuthGuard)
     @Get("notifications")
