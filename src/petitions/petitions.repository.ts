@@ -1,34 +1,23 @@
-import { EntityRepository, Repository } from "typeorm";
+import { EntityRepository, Repository, getConnection } from "typeorm";
 import { Petition } from "src/entities/petition.entity";
-import { InjectRepository } from "@nestjs/typeorm";
-import { StudentUserRepository } from "src/users/users.repository";
-import { PetitionComment } from "src/entities/comment.entity";
 import { PetitionStatus } from "src/types/ElementStatus";
+import { User } from "src/entities/user.entity";
 
 
 @EntityRepository(Petition)
 export class PetitionRepository extends Repository<Petition>
 {
-    constructor(@InjectRepository(StudentUserRepository)
-                private studentUserRepository: StudentUserRepository,
-                
-                @InjectRepository(PetitionComment)
-                private petitionCommentRepository: Repository<PetitionComment>)
-    {
-        super();
-    }
-
     async countNumberOfVotes(id: number): Promise<number>
     {
-        return await this.studentUserRepository.createQueryBuilder("user")
-                                            .innerJoinAndSelect("user.votedPetitions", "petition")
-                                            .where("petition.id = :id", { id: id })
-                                            .getCount();
+        return await getConnection().createQueryBuilder(User, "user")
+                                    .innerJoinAndSelect("user.votedPetitions", "petition")
+                                    .where("petition.id = :id", { id: id })
+                                    .getCount();
     }
 
     async countNumberOfComments(id: number): Promise<number>
     {
-        return await this.petitionCommentRepository.createQueryBuilder("comment")
+        return await getConnection().createQueryBuilder(Comment, "comment")
                         .innerJoinAndSelect("comment.petition", "petition")
                         .where("petition.id = :id", { id: id })
 						.getCount();
@@ -36,7 +25,7 @@ export class PetitionRepository extends Repository<Petition>
 
     async didUserVote(id: number, userId: number): Promise<boolean>
     {
-        const vote = await this.studentUserRepository.createQueryBuilder("user")
+        const vote = await getConnection().createQueryBuilder(User, "user")
                                             .innerJoinAndSelect("user.votedPetitions", "petition")
                                             .where("user.id = :userId", { userId: userId })
                                             .andWhere("petition.id = :id", { id: id })

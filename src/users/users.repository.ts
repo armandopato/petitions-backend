@@ -1,4 +1,4 @@
-import { EntityRepository, Repository } from "typeorm";
+import { EntityRepository, Repository, getConnection } from "typeorm";
 import { StudentUser, SupportTeamUser, User } from "src/entities/user.entity";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { School } from "src/entities/school.entity";
@@ -8,29 +8,16 @@ import { hash } from 'bcrypt';
 import { BadRequestException } from "@nestjs/common";
 import { Petition } from "src/entities/petition.entity";
 import { Resolution } from "src/entities/resolution.entity";
-import { PetitionRepository } from "src/petitions/petitions.repository";
-import { InjectRepository } from "@nestjs/typeorm";
-import { ResolutionRepository } from "src/resolutions/resolutions.repository";
 
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User>
 {
-
-	constructor(@InjectRepository(PetitionRepository)
-				private petitionRepository: PetitionRepository,
-				
-				@InjectRepository(ResolutionRepository)
-				private resolutionRepository: ResolutionRepository)
-	{
-		super();
-	}
-
     async getSavedPetitionsPage(userId: number, page: number): Promise<{petitions: Petition[], totalPages: number}>
     {
-		const query = this.petitionRepository.createQueryBuilder("petition")
-											.innerJoinAndSelect("petition.savedBy", "user")
-											.where("user.id = :id", { id: userId });
+        const query = getConnection().createQueryBuilder(Petition, "petition")
+									.innerJoinAndSelect("petition.savedBy", "user")
+									.where("user.id = :id", { id: userId });
 											
 		let totalPages = await query.getCount();
 		totalPages = Math.ceil(totalPages / 12);
@@ -46,7 +33,7 @@ export class UserRepository extends Repository<User>
 
     async getSavedResolutionsPage(userId: number, page: number): Promise<{resolutions: Resolution[], totalPages: number}>
     {
-		const query = this.resolutionRepository.createQueryBuilder("resolution")
+		const query = getConnection().createQueryBuilder(Resolution, "resolution")
 											.innerJoinAndSelect("resolution.savedBy", "user")
 											.where("user.id = :id", { id: userId });
 											
