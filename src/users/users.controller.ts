@@ -9,6 +9,7 @@ import { AuthRequest } from 'src/types/AuthRequest';
 import { Request } from '@nestjs/common';
 import { MeGuard } from './guards/me.guard';
 import { PetitionsCollection, ResolutionsCollection } from 'src/types/ElementsCollection';
+import { UserNotificationInfo } from 'src/types/UserNotificationInfo';
 
 @Controller('users')
 export class UserController {
@@ -53,9 +54,9 @@ export class UserController {
 
     @UseGuards(JwtAuthGuard)
     @Get("notifications")
-    async getNotifications(): Promise<void>
+    async getNotifications(@Request() req: AuthRequest): Promise<{ notifications: UserNotificationInfo[] }>
     {
-        return;
+        return { notifications: await this.userService.getUserNotifications(req.user) };
     }
 
     @UseGuards(JwtAuthGuard)
@@ -83,7 +84,7 @@ export class UserController {
     @Patch("settings")
     async modifySettings(): Promise<void>
     {
-        // user cant change school if is part of support team
+        // user cant change school if is part of support team, neither admin nor moderator
         return;
     }
 }

@@ -17,6 +17,7 @@ import { PetitionRepository } from 'src/petitions/petitions.repository';
 import { PetitionsCollection, ResolutionsCollection } from 'src/types/ElementsCollection';
 import { ResolutionRepository } from 'src/resolutions/resolutions.repository';
 import { ResolutionStatus } from 'src/types/ElementStatus';
+import { UserNotificationInfo } from 'src/types/UserNotificationInfo';
 
 
 @Injectable()
@@ -184,5 +185,26 @@ export class UserService {
             currentPage: page,
             resolutions: savedResolutionsInfo
         };
+    }
+
+    async getUserNotifications(user: User): Promise<UserNotificationInfo[]>
+    {
+        user = await this.userRepository.findOne(user.id, { relations: [ "notifications" ] });
+        const notifications: UserNotificationInfo[] = [];
+        
+        for (const notification of user.notifications)
+        {
+            const resolution = await this.resolutionRepository.findOne(notification.resolution.id, { relations: ["petition"] });
+
+            notifications.push({
+                id: notification.id,
+                seen: notification.seen,
+                type: notification.type,
+                resolutionId: resolution.id,
+                resoutionTitle: resolution.petition.title
+            });
+        }
+
+        return notifications;
     }
 }
