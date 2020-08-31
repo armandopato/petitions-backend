@@ -18,7 +18,10 @@ export class ResolutionInfo
     title: string;
     status: ResolutionStatus;
     startDate?: Date;
-    limitDate?: Date;
+    deadline?: Date;
     resolutionDate?: Date;
+    numRejectionVotes?: number;
+    numComments?: number;
     didSave?: boolean;
+    didVote?: boolean;
 }

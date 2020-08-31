@@ -37,13 +37,13 @@ export class Resolution
     @ManyToOne(() => SupportTeamUser, user => user.myResolutions)
     by: SupportTeamUser;
 
-    @ManyToMany(() => StudentUser)
+    @ManyToMany(() => StudentUser, studentUser => studentUser.votedResolutions)
     @JoinTable()
     rejectionVotesBy: StudentUser[];
 
     @OneToMany(() => ResolutionComment, resolutionComment => resolutionComment.resolution)
     comments: ResolutionComment[];
 
-    @ManyToMany(() => User)
+    @ManyToMany(() => User, user => user.savedResolutions)
     savedBy: User[];
 }

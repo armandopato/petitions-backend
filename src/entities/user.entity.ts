@@ -50,11 +50,11 @@ export class User
     @JoinTable()
     notifications: UserNotification[];
 
-    @ManyToMany(() => Petition)
+    @ManyToMany(() => Petition, petition => petition.savedBy)
     @JoinTable()
     savedPetitions: Petition[];
 
-    @ManyToMany(() => Resolution)
+    @ManyToMany(() => Resolution, resolution => resolution.savedBy)
     @JoinTable()
     savedResolutions: Resolution[];
 }
@@ -68,6 +68,9 @@ export class StudentUser extends User
 
     @ManyToMany(() => Petition, petition => petition.votedBy)
     votedPetitions: Petition[];
+
+    @ManyToMany(() => Resolution, resolution => resolution.rejectionVotesBy)
+    votedResolutions: Resolution[];
 }
 
 @ChildEntity(Role.SupportTeam)

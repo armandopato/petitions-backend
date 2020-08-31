@@ -1,7 +1,8 @@
 import { EntityRepository, Repository, getConnection } from "typeorm";
 import { Petition } from "src/entities/petition.entity";
 import { PetitionStatus } from "src/types/ElementStatus";
-import { User } from "src/entities/user.entity";
+import { StudentUser } from "src/entities/user.entity";
+import { PetitionComment } from "src/entities/comment.entity";
 
 
 @EntityRepository(Petition)
@@ -9,7 +10,7 @@ export class PetitionRepository extends Repository<Petition>
 {
     async countNumberOfVotes(id: number): Promise<number>
     {
-        return await getConnection().createQueryBuilder(User, "user")
+        return await getConnection().createQueryBuilder(StudentUser, "user")
                                     .innerJoinAndSelect("user.votedPetitions", "petition")
                                     .where("petition.id = :id", { id: id })
                                     .getCount();
@@ -17,7 +18,7 @@ export class PetitionRepository extends Repository<Petition>
 
     async countNumberOfComments(id: number): Promise<number>
     {
-        return await getConnection().createQueryBuilder(Comment, "comment")
+        return await getConnection().createQueryBuilder(PetitionComment, "comment")
                         .innerJoinAndSelect("comment.petition", "petition")
                         .where("petition.id = :id", { id: id })
 						.getCount();
@@ -25,7 +26,7 @@ export class PetitionRepository extends Repository<Petition>
 
     async didUserVote(id: number, userId: number): Promise<boolean>
     {
-        const vote = await getConnection().createQueryBuilder(User, "user")
+        const vote = await getConnection().createQueryBuilder(StudentUser, "user")
                                             .innerJoinAndSelect("user.votedPetitions", "petition")
                                             .where("user.id = :userId", { userId: userId })
                                             .andWhere("petition.id = :id", { id: id })

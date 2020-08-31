@@ -44,7 +44,7 @@ export class UserRepository extends Repository<User>
 
         const savedResolutions = await query.skip( (page-1) * 12)
 										.take(12)
-										.getMany();
+                                        .getMany();
 		
         return { totalPages, resolutions: savedResolutions };
     }

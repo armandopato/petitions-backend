@@ -12,9 +12,11 @@ import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity
 import { User } from 'src/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { Role } from 'src/types/Role';
-import { PetitionInfo } from 'src/types/ElementInfo';
+import { PetitionInfo, ResolutionInfo } from 'src/types/ElementInfo';
 import { PetitionRepository } from 'src/petitions/petitions.repository';
-import { PetitionsCollection } from 'src/types/ElementsCollection';
+import { PetitionsCollection, ResolutionsCollection } from 'src/types/ElementsCollection';
+import { ResolutionRepository } from 'src/resolutions/resolutions.repository';
+import { ResolutionStatus } from 'src/types/ElementStatus';
 
 
 @Injectable()
@@ -34,6 +36,9 @@ export class UserService {
 
         @InjectRepository(PetitionRepository)
         private petitionRepository: PetitionRepository,
+
+        @InjectRepository(ResolutionRepository)
+        private resolutionRepository: ResolutionRepository,
 
         private mailService: MailService,
         private jwtService: JwtService,
@@ -138,34 +143,46 @@ export class UserService {
         };
     }
 
-    /*async getSavedResolutions(user: User, page: number): Promise<ResolutionsCollection>
+    async getSavedResolutions(user: User, page: number): Promise<ResolutionsCollection>
     {
         const { resolutions, totalPages } = await this.userRepository.getSavedResolutionsPage(user.id, page);
         const savedResolutionsInfo: ResolutionInfo[] = [];
+        for (let i = 0; i < resolutions.length; i++)
+        {
+            resolutions[i] = await this.resolutionRepository.findOne(resolutions[i].id, { relations: ["petition"] });
+        }
 
         for (const resolution of resolutions)
         {
-            const numVotes = await this.resolutionRepository.countNumberOfVotes();
-            const numComments = await this.resolutionRepository.countNumberOfComments();
-            const didVote = await this.resolutionRepository.didUserVote();
-            const status = await this.resolutionRepository.getPetitionStatus();
+            const status = this.resolutionRepository.getResolutionStatus(resolution);
 
-            savedPetitionsInfo.push({
-                id: petition.id,
-                title: petition.title,
-                date: petition.createdDate,
-                numVotes: numVotes,
-                numComments: numComments,
+            const resolutionInfo: ResolutionInfo = {
+                id: resolution.id,
+                title: resolution.petition.title,
                 status: status,
-                didVote: didVote,
                 didSave: true
-            });
+            };
+
+            if (status === ResolutionStatus.TERMINATED)
+            {
+                resolutionInfo.resolutionDate = resolution.resolutionDate;
+                resolutionInfo.numRejectionVotes = await this.resolutionRepository.countNumberOfRejectionVotes(resolution.id);
+                resolutionInfo.numComments = await this.resolutionRepository.countNumberOfComments(resolution.id);
+                resolutionInfo.didVote = await this.resolutionRepository.didUserVote(resolution.id, user.id);
+            }
+            else
+            {
+                resolutionInfo.startDate = resolution.startDate;
+                resolutionInfo.deadline = resolution.deadline;
+            }
+
+            savedResolutionsInfo.push(resolutionInfo);
         } 
 
         return {
             totalPages: totalPages,
             currentPage: page,
-            petitions: savedPetitionsInfo
+            resolutions: savedResolutionsInfo
         };
-    } */
+    }
 }

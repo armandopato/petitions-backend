@@ -8,7 +8,7 @@ import { ModifyUserDto, ModifyUserRoleDto } from './dto/modify-user.dto';
 import { AuthRequest } from 'src/types/AuthRequest';
 import { Request } from '@nestjs/common';
 import { MeGuard } from './guards/me.guard';
-import { PetitionsCollection } from 'src/types/ElementsCollection';
+import { PetitionsCollection, ResolutionsCollection } from 'src/types/ElementsCollection';
 
 @Controller('users')
 export class UserController {
@@ -43,12 +43,13 @@ export class UserController {
         return await this.userService.getSavedPetitions(req.user, page);
     }
 
-    /*@UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard)
     @Get("saved/resolutions")
-    async getSavedResolutions(@Request() req: AuthRequest, @Body() pageNumberDto: PageNumberDto): Promise<ResolutionsCollection>
+    async getSavedResolutions(@Request() req: AuthRequest, @Query("page") page: number): Promise<ResolutionsCollection>
     {
-        return await this.userService.getSavedResolutions(req.user, pageNumberDto.page);
-    }*/
+        if (Number.isNaN(page) || page < 1) throw new BadRequestException();
+        return await this.userService.getSavedResolutions(req.user, page);
+    }
 
     @UseGuards(JwtAuthGuard)
     @Get("notifications")
