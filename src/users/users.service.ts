@@ -207,4 +207,17 @@ export class UserService {
 
         return notifications;
     }
+
+
+    async deleteUserNotifications(user: User): Promise<void>
+    {
+        try
+        {
+            await this.userRepository.update(user.id, { notifications: null });
+        }
+        catch (err)
+        {
+            throw new BadRequestException();
+        }
+    }
 }

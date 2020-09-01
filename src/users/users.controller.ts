@@ -61,9 +61,9 @@ export class UserController {
 
     @UseGuards(JwtAuthGuard)
     @Delete("notifications")
-    async deleteNotifications(): Promise<void>
+    async deleteNotifications(@Request() req: AuthRequest): Promise<void>
     {
-        return;
+        await this.userService.deleteUserNotifications(req.user);
     }
 
     @UseGuards(JwtAuthGuard)
