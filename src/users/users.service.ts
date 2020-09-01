@@ -211,13 +211,11 @@ export class UserService {
 
     async deleteUserNotifications(user: User): Promise<void>
     {
-        try
-        {
-            await this.userRepository.update(user.id, { notifications: null });
-        }
-        catch (err)
-        {
-            throw new BadRequestException();
-        }
+        await this.userRepository.deleteUserNotifications(user.id);
+    }
+
+    async deleteUserNotificationById(user: User, notificationId: number): Promise<void>
+    {
+        await this.userRepository.deleteUserNotificationById(user.id, notificationId);
     }
 }

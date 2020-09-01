@@ -5,9 +5,10 @@ import { School } from "src/entities/school.entity";
 import { Settings } from "src/entities/settings.entity";
 import { CreateUserRes } from "./dto/create-user-res.dto";
 import { hash } from 'bcrypt';
-import { BadRequestException } from "@nestjs/common";
+import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { Petition } from "src/entities/petition.entity";
 import { Resolution } from "src/entities/resolution.entity";
+import { UserNotification } from "src/entities/notification.entity";
 
 
 @EntityRepository(User)
@@ -47,6 +48,38 @@ export class UserRepository extends Repository<User>
                                         .getMany();
 		
         return { totalPages, resolutions: savedResolutions };
+    }
+
+// one instance of getconnection and ensure parameters in query builder arent repeated, delete unnecessary response data, unnecessary relations in joins, refactor queries
+    async deleteUserNotifications(userId: number): Promise<void>
+    {
+        const query = getConnection().createQueryBuilder(UserNotification, "notification")
+                                    .innerJoinAndSelect("notification.users", "user")
+                                    .where("user.id = :userId", { userId: userId });
+
+        const notifications = await query.getCount();
+        if (notifications === 0) throw new NotFoundException();
+
+        await query.delete()
+                    .from("user_notifications_user_notification")
+                    .where("userId = :userId", { userId: userId })
+                    .execute()
+    }
+
+
+    async deleteUserNotificationById(userId: number, notificationId: number): Promise<void>
+    {
+        const query = getConnection().createQueryBuilder(UserNotification, "notification")
+                                    .innerJoinAndSelect("notification.users", "user")
+                                    .where("user.id = :userId", { userId: userId })
+                                    .andWhere("notification.id = :id", { id: notificationId });
+                        
+        const notification = await query.getCount();
+        if (!notification) throw new NotFoundException();
+
+        await query.relation(UserNotification, "users")
+                    .of(notificationId)
+                    .remove(userId);
     }
 }
 

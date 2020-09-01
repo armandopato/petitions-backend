@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Delete, Patch, UseGuards, Put, Query, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Body, Get, Delete, Patch, UseGuards, Put, Query, BadRequestException, Param } from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { UserService } from './users.service';
 import { CreateUserRes } from './dto/create-user-res.dto';
@@ -68,9 +68,10 @@ export class UserController {
 
     @UseGuards(JwtAuthGuard)
     @Delete("notifications/:id")
-    async deleteNotificationById(): Promise<void>
+    async deleteNotificationById(@Request() req: AuthRequest, @Param("id") notificationId: number): Promise<void>
     {
-        return;
+        if (Number.isNaN(notificationId) || notificationId < 1) throw new BadRequestException();
+        await this.userService.deleteUserNotificationById(req.user, notificationId);
     }
 
     @UseGuards(JwtAuthGuard)
