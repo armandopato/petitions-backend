@@ -42,13 +42,16 @@ export class UserRepository extends Repository<User>
                                     .innerJoinAndSelect("notification.users", "user")
                                     .where("user.id = :userId", { userId: userId });
 
-        const notifications = await query.getCount();
-        if (notifications === 0) throw new NotFoundException();
+        const [notifications, numNotifications] = await query.getManyAndCount();
+        if (numNotifications === 0) throw new NotFoundException();
 
         await query.delete()
                     .from("user_notifications_user_notification")
                     .where("userId = :userId", { userId: userId })
                     .execute()
+        
+        const notificationIds = notifications.map(not => not.id);
+        this.cleanNotifications(notificationIds);
     }
 
 
@@ -65,6 +68,8 @@ export class UserRepository extends Repository<User>
         await query.relation(UserNotification, "users")
                     .of(notificationId)
                     .remove(userId);
+        
+        this.cleanNotification(notificationId);
     }
 
 
@@ -85,7 +90,31 @@ export class UserRepository extends Repository<User>
                         .andWhere("notification.seen = :seen", { seen: false })
                         .getCount();
     }
-    // add notification deletion when no notification is associated
+
+    private async cleanNotifications(notificationIds: number[]): Promise<void>
+    {
+        for (const id of notificationIds)
+        {
+            await this.cleanNotification(id);
+        }
+    }
+
+    private async cleanNotification(notificationId: number): Promise<void>
+    {
+        const queryBuilder = this.connection.createQueryBuilder(UserNotification, "notification");
+
+        const numOfAssociatedUsers = await queryBuilder.innerJoinAndSelect("notification.users", "user")
+                                    .where("notification.id = :id", { id: notificationId })
+                                    .getCount();
+        
+        if (numOfAssociatedUsers === 0)
+        {
+            await queryBuilder.delete()
+                                .from(UserNotification, "notification")
+                                .where("notification.id = :notificationId", { notificationId: notificationId })
+                                .execute();
+        }
+    }
 }
 
 @EntityRepository(StudentUser)

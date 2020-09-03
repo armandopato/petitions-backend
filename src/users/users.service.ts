@@ -182,7 +182,6 @@ export class UserService {
 
     async getUserNotifications(user: User, page: number): Promise<NotificationsCollection>
     {
-        await this.resolutionRepository.getIdAndTitleByNotificationId(1);
         const { totalPages, pageElements: notifications } = await this.userRepository.getUserNotificationsPage(user.id, page);
         const notificationsInfo: UserNotificationInfo[] = [];
         

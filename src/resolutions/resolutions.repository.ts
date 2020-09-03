@@ -60,7 +60,7 @@ export class ResolutionRepository extends Repository<Resolution>
 
     async getIdAndTitleByNotificationId(notificationId: number): Promise<{id: number, title: string}>
     {
-        const { id } = await this.connection.createQueryBuilder(UserNotification, "notification")
+        const { resolutionId: id } = await this.connection.createQueryBuilder(UserNotification, "notification")
                                                 .innerJoinAndSelect("notification.resolution", "resolution")
                                                 .select("resolution.id", "resolutionId")
                                                 .where("notification.id = :id", { id: notificationId })
