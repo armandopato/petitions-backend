@@ -26,7 +26,7 @@ export class Petition
     @Column({ type: "varchar", length: Length.PETITION_DESC })
     description: string;
 
-    @OneToOne(() => Resolution, resolution => resolution.petition, { cascade: true, eager: true })
+    @OneToOne(() => Resolution, resolution => resolution.petition)
     resolution?: Resolution;
 
     // Owner of relationship

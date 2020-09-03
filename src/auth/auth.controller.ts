@@ -39,9 +39,9 @@ export class AuthController {
     }
 
     @Post("password")
-    async resetPassword(@Body() resetPasswordDto: ResetPasswordDto): Promise<{ userId: number }>
+    async resetPassword(@Body() resetPasswordDto: ResetPasswordDto): Promise<void>
     {
-        return await this.authService.resetPassword(resetPasswordDto);
+        await this.authService.resetPassword(resetPasswordDto);
     }
 
     @Put("password")
@@ -52,9 +52,9 @@ export class AuthController {
 
     @UseGuards(JwtAuthGuard)
     @Patch("password")
-    async changePassword(@Request() req: AuthRequest, @Body() changePasswordDto: ChangePasswordDto): Promise<{ userId:number }>
+    async changePassword(@Request() req: AuthRequest, @Body() changePasswordDto: ChangePasswordDto): Promise<void>
     {
-        return await this.authService.changePassword(req.user, changePasswordDto);
+        await this.authService.changePassword(req.user, changePasswordDto);
     }
 
     @UseGuards(LocalAuthGuard)

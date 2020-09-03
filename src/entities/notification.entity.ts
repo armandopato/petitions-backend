@@ -28,7 +28,7 @@ export class UserNotification
     })
     type: NotificationType;
 
-    @OneToOne(() => Resolution, { eager: true })
+    @OneToOne(() => Resolution)
     @JoinColumn()
     resolution: Resolution;
 }

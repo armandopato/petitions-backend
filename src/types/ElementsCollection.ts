@@ -1,4 +1,5 @@
 import { PetitionInfo, ResolutionInfo } from "./ElementInfo";
+import { UserNotificationInfo } from "./UserNotificationInfo";
 
 class ElementsCollection
 {
@@ -14,4 +15,9 @@ export class PetitionsCollection extends ElementsCollection
 export class ResolutionsCollection extends ElementsCollection
 {
     resolutions: ResolutionInfo[];
+}
+
+export class NotificationsCollection extends ElementsCollection
+{
+    notifications: UserNotificationInfo[];
 }

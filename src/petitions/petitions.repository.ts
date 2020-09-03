@@ -3,14 +3,17 @@ import { Petition } from "src/entities/petition.entity";
 import { PetitionStatus } from "src/types/ElementStatus";
 import { StudentUser } from "src/entities/user.entity";
 import { PetitionComment } from "src/entities/comment.entity";
+import { Resolution } from "src/entities/resolution.entity";
 
 
 @EntityRepository(Petition)
 export class PetitionRepository extends Repository<Petition>
 {
+    connection = getConnection();
+
     async countNumberOfVotes(id: number): Promise<number>
     {
-        return await getConnection().createQueryBuilder(StudentUser, "user")
+        return await this.connection.createQueryBuilder(StudentUser, "user")
                                     .innerJoinAndSelect("user.votedPetitions", "petition")
                                     .where("petition.id = :id", { id: id })
                                     .getCount();
@@ -18,7 +21,7 @@ export class PetitionRepository extends Repository<Petition>
 
     async countNumberOfComments(id: number): Promise<number>
     {
-        return await getConnection().createQueryBuilder(PetitionComment, "comment")
+        return await this.connection.createQueryBuilder(PetitionComment, "comment")
                         .innerJoinAndSelect("comment.petition", "petition")
                         .where("petition.id = :id", { id: id })
 						.getCount();
@@ -26,23 +29,26 @@ export class PetitionRepository extends Repository<Petition>
 
     async didUserVote(id: number, userId: number): Promise<boolean>
     {
-        const vote = await getConnection().createQueryBuilder(StudentUser, "user")
+        const vote = await this.connection.createQueryBuilder(StudentUser, "user")
                                             .innerJoinAndSelect("user.votedPetitions", "petition")
                                             .where("user.id = :userId", { userId: userId })
                                             .andWhere("petition.id = :id", { id: id })
-                                            .getOne();
-        return vote ? true : false;
+                                            .getCount();
+        return vote === 1;
     }
 
     async getPetitionStatus(id: number): Promise<PetitionStatus>
     {
-        const petition = await this.findOne(id, { relations: ["resolution"] });
+        const resolution = await this.connection.createQueryBuilder(Resolution, "resolution")
+                                                .innerJoinAndSelect("resolution.petition", "petition")
+                                                .where("petition = :id", { id: id })
+                                                .getOne();
         
-        if (!petition.resolution) return PetitionStatus.NO_RESOLUTION;
+        if (!resolution) return PetitionStatus.NO_RESOLUTION;
 
-        else if (petition.resolution.resolutionText) return PetitionStatus.TERMINATED;
+        else if (resolution.resolutionText) return PetitionStatus.TERMINATED;
 
-        else if (petition.resolution.deadline < new Date(Date.now())) return PetitionStatus.OVERDUE;
+        else if (resolution.deadline < new Date(Date.now())) return PetitionStatus.OVERDUE;
 
         else return PetitionStatus.IN_PROGRESS;
     }

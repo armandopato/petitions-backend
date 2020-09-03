@@ -2,7 +2,6 @@ import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { StudentUserRepository, SupportTeamUserRepository, UserRepository } from './users.repository';
-import { CreateUserRes } from './dto/create-user-res.dto';
 import { MailService } from 'src/auth/mail.service';
 import { JwtService } from '@nestjs/jwt';
 import { Payload } from 'src/types/Payload';
@@ -14,7 +13,7 @@ import { ConfigService } from '@nestjs/config';
 import { Role } from 'src/types/Role';
 import { PetitionInfo, ResolutionInfo } from 'src/types/ElementInfo';
 import { PetitionRepository } from 'src/petitions/petitions.repository';
-import { PetitionsCollection, ResolutionsCollection } from 'src/types/ElementsCollection';
+import { PetitionsCollection, ResolutionsCollection, NotificationsCollection } from 'src/types/ElementsCollection';
 import { ResolutionRepository } from 'src/resolutions/resolutions.repository';
 import { ResolutionStatus } from 'src/types/ElementStatus';
 import { UserNotificationInfo } from 'src/types/UserNotificationInfo';
@@ -48,13 +47,13 @@ export class UserService {
         this.protectedMail = this.configService.get<string>("MY_MAIL");
     }
 
-    async createUser(createUserDto: CreateUserDto): Promise<CreateUserRes>
+    async createUser(createUserDto: CreateUserDto): Promise<void>
     {
-        let createUserRes: CreateUserRes;
+        let userId: number;
 
         try
         {
-            createUserRes = await this.studentUserRepository.createUser(createUserDto);
+            userId = await this.studentUserRepository.createUser(createUserDto);
         }
         catch(err)
         {
@@ -64,7 +63,7 @@ export class UserService {
         }
         
         const payload: Payload = {
-            sub: createUserRes.id,
+            sub: userId,
             school: createUserDto.school,
             role: Role.Student,
             isAdmin: false,
@@ -73,9 +72,7 @@ export class UserService {
         };
 
         const token = await this.jwtService.signAsync(payload, { expiresIn: "100y" });
-        await this.mailService.sendConfirmationEmail(createUserRes.email, token);
-        
-        return createUserRes;
+        await this.mailService.sendConfirmationEmail(createUserDto.email, token);
     }
 
 
@@ -94,9 +91,9 @@ export class UserService {
         if (updateResult.affected === 0) throw new BadRequestException("User does not exist");
     }
 
-    async updateUserRole(modifyUserPrivilegesDto: ModifyUserRoleDto, user: User): Promise<void>
+    async updateUserRole(modifyUserRoleDto: ModifyUserRoleDto, user: User): Promise<void>
     {
-        const { email, role } = modifyUserPrivilegesDto;
+        const { email, role } = modifyUserRoleDto;
         if (user.email !== this.protectedMail && email === this.protectedMail)
         {
             throw new UnauthorizedException("No!");
@@ -109,13 +106,13 @@ export class UserService {
             throw new UnauthorizedException("Target user is from other campus");
         }
 
-        await this.userRepository.update({ email: email }, { role: role });
+        await this.userRepository.update(targetUser.id, { role: role });
     }
 
 
     async getSavedPetitions(user: User, page: number): Promise<PetitionsCollection>
     {
-        const { petitions, totalPages } = await this.userRepository.getSavedPetitionsPage(user.id, page);
+        const { pageElements: petitions, totalPages } = await this.userRepository.getSavedPetitionsPage(user.id, page);
         const savedPetitionsInfo: PetitionInfo[] = [];
         
         for (const petition of petitions)
@@ -146,12 +143,8 @@ export class UserService {
 
     async getSavedResolutions(user: User, page: number): Promise<ResolutionsCollection>
     {
-        const { resolutions, totalPages } = await this.userRepository.getSavedResolutionsPage(user.id, page);
+        const { pageElements: resolutions, totalPages } = await this.userRepository.getSavedResolutionsPage(user.id, page);
         const savedResolutionsInfo: ResolutionInfo[] = [];
-        for (let i = 0; i < resolutions.length; i++)
-        {
-            resolutions[i] = await this.resolutionRepository.findOne(resolutions[i].id, { relations: ["petition"] });
-        }
 
         for (const resolution of resolutions)
         {
@@ -159,7 +152,7 @@ export class UserService {
 
             const resolutionInfo: ResolutionInfo = {
                 id: resolution.id,
-                title: resolution.petition.title,
+                title: await this.resolutionRepository.getTitle(resolution.id),
                 status: status,
                 didSave: true
             };
@@ -187,25 +180,30 @@ export class UserService {
         };
     }
 
-    async getUserNotifications(user: User): Promise<UserNotificationInfo[]>
+    async getUserNotifications(user: User, page: number): Promise<NotificationsCollection>
     {
-        user = await this.userRepository.findOne(user.id, { relations: [ "notifications" ] });
-        const notifications: UserNotificationInfo[] = [];
+        await this.resolutionRepository.getIdAndTitleByNotificationId(1);
+        const { totalPages, pageElements: notifications } = await this.userRepository.getUserNotificationsPage(user.id, page);
+        const notificationsInfo: UserNotificationInfo[] = [];
         
-        for (const notification of user.notifications)
+        for (const notification of notifications)
         {
-            const resolution = await this.resolutionRepository.findOne(notification.resolution.id, { relations: ["petition"] });
+            const { id, title } = await this.resolutionRepository.getIdAndTitleByNotificationId(notification.id);
 
-            notifications.push({
+            notificationsInfo.push({
                 id: notification.id,
                 seen: notification.seen,
                 type: notification.type,
-                resolutionId: resolution.id,
-                resoutionTitle: resolution.petition.title
+                resolutionId: id,
+                resoutionTitle: title
             });
         }
 
-        return notifications;
+        return {
+            totalPages: totalPages,
+            currentPage: page,
+            notifications: notificationsInfo
+        };
     }
 
 

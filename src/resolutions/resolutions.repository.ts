@@ -3,11 +3,15 @@ import { Resolution } from "src/entities/resolution.entity";
 import { ResolutionStatus } from "src/types/ElementStatus";
 import { StudentUser } from "src/entities/user.entity";
 import { ResolutionComment } from "src/entities/comment.entity";
+import { Petition } from "src/entities/petition.entity";
+import { UserNotification } from "src/entities/notification.entity";
 
 
 @EntityRepository(Resolution)
 export class ResolutionRepository extends Repository<Resolution>
 {
+    connection = getConnection();
+
     getResolutionStatus(resolution: Resolution): ResolutionStatus
     {
         const { startDate, deadline, resolutionDate } = resolution;
@@ -19,7 +23,7 @@ export class ResolutionRepository extends Repository<Resolution>
 
     async countNumberOfRejectionVotes(id: number): Promise<number>
     {
-        return await getConnection().createQueryBuilder(StudentUser, "user")
+        return await this.connection.createQueryBuilder(StudentUser, "user")
                                     .innerJoinAndSelect("user.votedResolutions", "resolution")
                                     .where("resolution.id = :id", { id: id })
                                     .getCount();
@@ -27,7 +31,7 @@ export class ResolutionRepository extends Repository<Resolution>
 
     async countNumberOfComments(id: number): Promise<number>
     {
-        return await getConnection().createQueryBuilder(ResolutionComment, "comment")
+        return await this.connection.createQueryBuilder(ResolutionComment, "comment")
                         .innerJoinAndSelect("comment.resolution", "resolution")
                         .where("resolution.id = :id", { id: id })
 						.getCount();
@@ -35,11 +39,34 @@ export class ResolutionRepository extends Repository<Resolution>
 
     async didUserVote(id: number, userId: number): Promise<boolean>
     {
-        const vote = await getConnection().createQueryBuilder(StudentUser, "user")
+        const vote = await this.connection.createQueryBuilder(StudentUser, "user")
                                             .innerJoinAndSelect("user.votedResolutions", "resolution")
                                             .where("user.id = :userId", { userId: userId })
                                             .andWhere("resolution.id = :id", { id: id })
-                                            .getOne();
-        return vote ? true : false;
+                                            .getCount();
+        return vote === 1;
+    }
+
+    async getTitle(id: number): Promise<string>
+    {
+        const { title } = await this.connection.createQueryBuilder(Petition, "petition")
+                                                .innerJoinAndSelect("petition.resolution", "resolution")
+                                                .select("petition.title", "title")
+                                                .where("resolution.id = :id", { id: id })
+                                                .getRawOne();
+        return title;
+    }
+
+
+    async getIdAndTitleByNotificationId(notificationId: number): Promise<{id: number, title: string}>
+    {
+        const { id } = await this.connection.createQueryBuilder(UserNotification, "notification")
+                                                .innerJoinAndSelect("notification.resolution", "resolution")
+                                                .select("resolution.id", "resolutionId")
+                                                .where("notification.id = :id", { id: notificationId })
+                                                .getRawOne();
+        
+        const title = await this.getTitle(id);
+        return { id, title };
     }
 }

@@ -84,7 +84,7 @@ export class AuthService {
         }
     }
 
-    async changePassword(user: User, changePasswordDto: ChangePasswordDto): Promise<{ userId:number }>
+    async changePassword(user: User, changePasswordDto: ChangePasswordDto): Promise<void>
     {
         const password = changePasswordDto.password;
         let newPassword = changePasswordDto.newPassword;
@@ -95,7 +95,6 @@ export class AuthService {
         newPassword = await hash(newPassword, 10);
         await this.userRepository.update(user.id, { password: newPassword });
         console.log(`${user.email} (PASSWORD CHANGED)`);
-        return { userId: user.id };
     }
 
     async sendPasswordResetToken(email: string): Promise<{ expiresAt: Date }>
@@ -119,7 +118,7 @@ export class AuthService {
         return expiresAtObj;
     }
 
-    async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<{ userId: number}>
+    async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<void>
     {
         const token = resetPasswordDto.token;
         let newPassword = resetPasswordDto.newPassword;
@@ -133,7 +132,6 @@ export class AuthService {
             await this.userRepository.update(payload.sub, { password: newPassword });
 
             console.log(`${payload.sub} (PASSWORD RESET)`);
-            return { userId: payload.sub };
         }
         catch
         {

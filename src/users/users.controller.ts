@@ -1,15 +1,13 @@
 import { Controller, Post, Body, Get, Delete, Patch, UseGuards, Put, Query, BadRequestException, Param } from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { UserService } from './users.service';
-import { CreateUserRes } from './dto/create-user-res.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { IsAdminGuard } from './guards/isAdmin.guard';
 import { ModifyUserDto, ModifyUserRoleDto } from './dto/modify-user.dto';
 import { AuthRequest } from 'src/types/AuthRequest';
 import { Request } from '@nestjs/common';
 import { MeGuard } from './guards/me.guard';
-import { PetitionsCollection, ResolutionsCollection } from 'src/types/ElementsCollection';
-import { UserNotificationInfo } from 'src/types/UserNotificationInfo';
+import { PetitionsCollection, ResolutionsCollection, NotificationsCollection } from 'src/types/ElementsCollection';
 
 @Controller('users')
 export class UserController {
@@ -17,9 +15,9 @@ export class UserController {
     constructor(private userService: UserService) {}
 
     @Post()
-    async signUp(@Body() createUserDto: CreateUserDto): Promise<CreateUserRes>
+    async signUp(@Body() createUserDto: CreateUserDto): Promise<void>
     {
-        return await this.userService.createUser(createUserDto);
+        await this.userService.createUser(createUserDto);
     }
 
     @UseGuards(JwtAuthGuard, MeGuard)
@@ -54,9 +52,10 @@ export class UserController {
 
     @UseGuards(JwtAuthGuard)
     @Get("notifications")
-    async getNotifications(@Request() req: AuthRequest): Promise<{ notifications: UserNotificationInfo[] }>
+    async getNotifications(@Request() req: AuthRequest, @Query("page") page: number): Promise<NotificationsCollection>
     {
-        return { notifications: await this.userService.getUserNotifications(req.user) };
+        if (Number.isNaN(page) || page < 1) throw new BadRequestException();
+        return await this.userService.getUserNotifications(req.user, page);
     }
 
     @UseGuards(JwtAuthGuard)

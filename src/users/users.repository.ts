@@ -3,57 +3,42 @@ import { StudentUser, SupportTeamUser, User } from "src/entities/user.entity";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { School } from "src/entities/school.entity";
 import { Settings } from "src/entities/settings.entity";
-import { CreateUserRes } from "./dto/create-user-res.dto";
 import { hash } from 'bcrypt';
-import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { NotFoundException } from "@nestjs/common";
 import { Petition } from "src/entities/petition.entity";
 import { Resolution } from "src/entities/resolution.entity";
 import { UserNotification } from "src/entities/notification.entity";
+import { getPage } from "src/util/getPage";
+import { Page } from "src/types/Page";
 
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User>
 {
-    async getSavedPetitionsPage(userId: number, page: number): Promise<{petitions: Petition[], totalPages: number}>
+    connection = getConnection();
+
+    async getSavedPetitionsPage(userId: number, page: number): Promise<Page<Petition>>
     {
-        const query = getConnection().createQueryBuilder(Petition, "petition")
+        const query = this.connection.createQueryBuilder(Petition, "petition")
 									.innerJoinAndSelect("petition.savedBy", "user")
 									.where("user.id = :id", { id: userId });
-											
-		let totalPages = await query.getCount();
-		totalPages = Math.ceil(totalPages / 12);
-
-		if (page > totalPages) throw new BadRequestException();
-
-        const savedPetitions = await query.skip( (page-1) * 12)
-										.take(12)
-										.getMany();
-		
-        return { totalPages, petitions: savedPetitions };
+											  
+        return await getPage(query, page);
     }
 
-    async getSavedResolutionsPage(userId: number, page: number): Promise<{resolutions: Resolution[], totalPages: number}>
+    async getSavedResolutionsPage(userId: number, page: number): Promise<Page<Resolution>>
     {
-		const query = getConnection().createQueryBuilder(Resolution, "resolution")
+		const query = this.connection.createQueryBuilder(Resolution, "resolution")
 											.innerJoinAndSelect("resolution.savedBy", "user")
 											.where("user.id = :id", { id: userId });
 											
-		let totalPages = await query.getCount();
-		totalPages = Math.ceil(totalPages / 12);
-
-		if (page > totalPages) throw new BadRequestException();
-
-        const savedResolutions = await query.skip( (page-1) * 12)
-										.take(12)
-                                        .getMany();
-		
-        return { totalPages, resolutions: savedResolutions };
+        return await getPage(query, page);
     }
 
-// one instance of getconnection and ensure parameters in query builder arent repeated, delete unnecessary response data, unnecessary relations in joins, refactor queries
+    
     async deleteUserNotifications(userId: number): Promise<void>
     {
-        const query = getConnection().createQueryBuilder(UserNotification, "notification")
+        const query = this.connection.createQueryBuilder(UserNotification, "notification")
                                     .innerJoinAndSelect("notification.users", "user")
                                     .where("user.id = :userId", { userId: userId });
 
@@ -69,7 +54,7 @@ export class UserRepository extends Repository<User>
 
     async deleteUserNotificationById(userId: number, notificationId: number): Promise<void>
     {
-        const query = getConnection().createQueryBuilder(UserNotification, "notification")
+        const query = this.connection.createQueryBuilder(UserNotification, "notification")
                                     .innerJoinAndSelect("notification.users", "user")
                                     .where("user.id = :userId", { userId: userId })
                                     .andWhere("notification.id = :id", { id: notificationId });
@@ -81,12 +66,23 @@ export class UserRepository extends Repository<User>
                     .of(notificationId)
                     .remove(userId);
     }
+
+
+    async getUserNotificationsPage(userId: number, page: number): Promise<Page<UserNotification>>
+    {
+        const query = this.connection.createQueryBuilder(UserNotification, "notification")
+                                                .innerJoinAndSelect("notification.users", "user")
+                                                .where("user.id = :id", { id: userId });
+        
+        return await getPage(query, page);
+    }
+    // add notification deletion when no notification is associated
 }
 
 @EntityRepository(StudentUser)
 export class StudentUserRepository extends Repository<StudentUser>
 {
-    async createUser(createUserDto: CreateUserDto): Promise<CreateUserRes>
+    async createUser(createUserDto: CreateUserDto): Promise<number>
     {
         const { email, password, school } = createUserDto;
 
@@ -104,11 +100,7 @@ export class StudentUserRepository extends Repository<StudentUser>
         newUser = await this.save(newUser);
         console.log(`${newUser.email} (NEW USER)`);
 
-        return {
-            id: newUser.id,
-            email: newUser.email,
-            school: newUser.school.campus
-        };
+        return newUser.id;
     }
 }
 
