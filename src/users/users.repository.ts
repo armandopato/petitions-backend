@@ -76,6 +76,15 @@ export class UserRepository extends Repository<User>
         
         return await getPage(query, page);
     }
+
+    async getNumberOfUnreadNotifications(userId: number): Promise<number>
+    {
+        return await this.connection.createQueryBuilder(UserNotification, "notification")
+                        .innerJoinAndSelect("notification.users", "user")
+                        .where("user.id = :id", { id: userId })
+                        .andWhere("notification.seen = :seen", { seen: false })
+                        .getCount();
+    }
     // add notification deletion when no notification is associated
 }
 

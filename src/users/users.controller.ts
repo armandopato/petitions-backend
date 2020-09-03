@@ -10,8 +10,8 @@ import { MeGuard } from './guards/me.guard';
 import { PetitionsCollection, ResolutionsCollection, NotificationsCollection } from 'src/types/ElementsCollection';
 
 @Controller('users')
-export class UserController {
-
+export class UserController
+{
     constructor(private userService: UserService) {}
 
     @Post()
@@ -56,6 +56,14 @@ export class UserController {
     {
         if (Number.isNaN(page) || page < 1) throw new BadRequestException();
         return await this.userService.getUserNotifications(req.user, page);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get("notifications/unread")
+    async getNumberOfUnreadNotifications(@Request() req: AuthRequest): Promise<{ unread: number }>
+    {
+        const unread = await this.userService.getNumberOfUnreadNotifications(req.user);
+        return { unread };
     }
 
     @UseGuards(JwtAuthGuard)

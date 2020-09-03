@@ -206,6 +206,10 @@ export class UserService {
         };
     }
 
+    async getNumberOfUnreadNotifications(user: User): Promise<number>
+    {
+        return await this.userRepository.getNumberOfUnreadNotifications(user.id);
+    }
 
     async deleteUserNotifications(user: User): Promise<void>
     {
