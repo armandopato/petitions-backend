@@ -42,7 +42,7 @@ export class User
     @JoinColumn()
     school: School;
 
-    @OneToOne(() => Settings, { cascade: true })
+    @OneToOne(() => Settings, { cascade: true, eager: true })
     @JoinColumn()
     settings: Settings;
 

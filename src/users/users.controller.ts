@@ -8,6 +8,7 @@ import { AuthRequest } from 'src/types/AuthRequest';
 import { Request } from '@nestjs/common';
 import { MeGuard } from './guards/me.guard';
 import { PetitionsCollection, ResolutionsCollection, NotificationsCollection } from 'src/types/ElementsCollection';
+import { ChangeUserSettingsDto, UserSettingsAndSchoolDto, ChangeSchoolDto } from './dto/user-settings.dto';
 
 @Controller('users')
 export class UserController
@@ -83,16 +84,22 @@ export class UserController
 
     @UseGuards(JwtAuthGuard)
     @Get("settings")
-    async getUserSettings(): Promise<void>
+    getUserSettingsAndSchool(@Request() req: AuthRequest): UserSettingsAndSchoolDto
     {
-        return;
+        return this.userService.getUserSettingsAndSchool(req.user);
     }
 
     @UseGuards(JwtAuthGuard)
     @Patch("settings")
-    async modifySettings(): Promise<void>
+    async modifyUserSettings(@Request() req: AuthRequest, @Body() changeUserSettingsDto: ChangeUserSettingsDto): Promise<void>
     {
-        // user cant change school if is part of support team, neither admin nor moderator
-        return;
+        await this.userService.modifyUserSettings(req.user, changeUserSettingsDto);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Patch("school")
+    async modifySchool(@Request() req: AuthRequest, @Body() changeSchoolDto: ChangeSchoolDto): Promise<void>
+    {
+        await this.userService.modifySchool(req.user, changeSchoolDto.newCampus);
     }
 }

@@ -17,7 +17,12 @@ import { PetitionsCollection, ResolutionsCollection, NotificationsCollection } f
 import { ResolutionRepository } from 'src/resolutions/resolutions.repository';
 import { ResolutionStatus } from 'src/types/ElementStatus';
 import { UserNotificationInfo } from 'src/types/UserNotificationInfo';
+import { UserSettingsAndSchoolDto, ChangeUserSettingsDto } from './dto/user-settings.dto';
+import { Settings } from 'src/entities/settings.entity';
+import { SchoolType } from 'src/types/School';
+import { Repository } from 'typeorm';
 
+const SCHOOL_CHANGE_DAYS = 30;
 
 @Injectable()
 export class UserService {
@@ -39,6 +44,9 @@ export class UserService {
 
         @InjectRepository(ResolutionRepository)
         private resolutionRepository: ResolutionRepository,
+
+        @InjectRepository(Settings)
+        private settingsRepository: Repository<Settings>,
 
         private mailService: MailService,
         private jwtService: JwtService,
@@ -218,5 +226,46 @@ export class UserService {
     async deleteUserNotificationById(user: User, notificationId: number): Promise<void>
     {
         await this.userRepository.deleteUserNotificationById(user.id, notificationId);
+    }
+
+    getUserSettingsAndSchool(user: User): UserSettingsAndSchoolDto
+    {
+        return {
+            new: user.settings.notifyNewResolutions,
+            terminated: user.settings.notifyTerminatedResolutions,
+            overdue: user.settings.notifyOverdueResolutions,
+            school: {
+                campus: user.school.campus,
+                lastChange: user.school.updatedDate
+            }
+        };
+    }
+
+    async modifyUserSettings(user: User, changeUserSettingsDto: ChangeUserSettingsDto): Promise<void>
+    {
+        const { newRes, terminated, overdue } = changeUserSettingsDto;
+        user.settings.notifyNewResolutions = newRes;
+        user.settings.notifyTerminatedResolutions = terminated;
+        user.settings.notifyOverdueResolutions = overdue;
+
+        await this.userRepository.save(user);
+    }
+
+    async modifySchool(user: User, newCampus: SchoolType): Promise<void>
+    {
+        if (user.hasAdminPrivileges || user.hasModeratorPrivileges || user.role === Role.SupportTeam)
+        {
+            throw new UnauthorizedException("Your role or privilege doesn't allow switching schools");
+        }
+
+        const updatedDate = user.school.updatedDate;
+        const limitDate = new Date(updatedDate.getTime() + 1000*60*60*24*SCHOOL_CHANGE_DAYS);
+        const nowDate = new Date(Date.now());
+
+        if (nowDate < limitDate) throw new UnauthorizedException("You're not allowed yet to switch your school");
+        if (newCampus === user.school.campus) throw new BadRequestException();
+
+        user.school.campus= newCampus;
+        await this.userRepository.save(user);
     }
 }

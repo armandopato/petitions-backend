@@ -8,9 +8,10 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtConfigService } from 'src/auth/config/jwt.config.service';
 import { PetitionRepository } from 'src/petitions/petitions.repository';
 import { ResolutionRepository } from 'src/resolutions/resolutions.repository';
+import { Settings } from 'src/entities/settings.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([StudentUserRepository, SupportTeamUserRepository, UserRepository, PetitionRepository, ResolutionRepository]),
+  imports: [TypeOrmModule.forFeature([StudentUserRepository, SupportTeamUserRepository, UserRepository, PetitionRepository, ResolutionRepository, Settings]),
             AuthModule,
             JwtModule.registerAsync({
               imports: [AuthModule],
