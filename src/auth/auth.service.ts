@@ -6,7 +6,7 @@ import { compare, hash } from 'bcrypt';
 import { UserCredentials } from './dto/user-credentials.dto';
 import { validateOrReject } from 'class-validator';
 import { JwtService } from '@nestjs/jwt';
-import { AuthTokens } from 'src/types/AccessObj';
+import { AuthTokens } from 'src/types/AuthTokens';
 import { Payload } from 'src/types/Payload';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { Token } from 'src/types/Token';

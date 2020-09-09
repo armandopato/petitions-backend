@@ -1,14 +1,17 @@
-import { Controller, Post, Body, Get, Delete, Patch, UseGuards, Put, Query, BadRequestException, Param } from '@nestjs/common';
+import { Controller, Post, Body, Get, Delete, Patch, UseGuards, Put, Query, Param } from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { UserService } from './users.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { IsAdminGuard } from './guards/isAdmin.guard';
+import { IsAdminGuard } from '../auth/guards/isAdmin.guard';
 import { ModifyUserDto, ModifyUserRoleDto } from './dto/modify-user.dto';
 import { AuthRequest } from 'src/types/AuthRequest';
 import { Request } from '@nestjs/common';
-import { MeGuard } from './guards/me.guard';
-import { PetitionsCollection, ResolutionsCollection, NotificationsCollection } from 'src/types/ElementsCollection';
+import { MeGuard } from '../auth/guards/me.guard';
 import { ChangeUserSettingsDto, UserSettingsAndSchoolDto, ChangeSchoolDto } from './dto/user-settings.dto';
+import { PositiveIntPipe } from 'src/util/positive-int.pipe';
+import { PetitionInfo, ResolutionInfo } from 'src/types/ElementInfo';
+import { UserNotificationInfo } from 'src/types/UserNotificationInfo';
+import { Page } from 'src/types/Page';
 
 @Controller('users')
 export class UserController
@@ -37,25 +40,22 @@ export class UserController
 
     @UseGuards(JwtAuthGuard)
     @Get("saved/petitions")
-    async getSavedPetitions(@Request() req: AuthRequest, @Query("page") page: number): Promise<PetitionsCollection>
+    async getSavedPetitions(@Request() req: AuthRequest, @Query("page", PositiveIntPipe) page: number): Promise<Page<PetitionInfo>>
     {
-        if (Number.isNaN(page) || page < 1) throw new BadRequestException();
         return await this.userService.getSavedPetitions(req.user, page);
     }
 
     @UseGuards(JwtAuthGuard)
     @Get("saved/resolutions")
-    async getSavedResolutions(@Request() req: AuthRequest, @Query("page") page: number): Promise<ResolutionsCollection>
+    async getSavedResolutions(@Request() req: AuthRequest, @Query("page", PositiveIntPipe) page: number): Promise<Page<ResolutionInfo>>
     {
-        if (Number.isNaN(page) || page < 1) throw new BadRequestException();
         return await this.userService.getSavedResolutions(req.user, page);
     }
 
     @UseGuards(JwtAuthGuard)
     @Get("notifications")
-    async getNotifications(@Request() req: AuthRequest, @Query("page") page: number): Promise<NotificationsCollection>
+    async getNotifications(@Request() req: AuthRequest, @Query("page", PositiveIntPipe) page: number): Promise<Page<UserNotificationInfo>>
     {
-        if (Number.isNaN(page) || page < 1) throw new BadRequestException();
         return await this.userService.getUserNotifications(req.user, page);
     }
 
@@ -76,9 +76,8 @@ export class UserController
 
     @UseGuards(JwtAuthGuard)
     @Delete("notifications/:id")
-    async deleteNotificationById(@Request() req: AuthRequest, @Param("id") notificationId: number): Promise<void>
+    async deleteNotificationById(@Request() req: AuthRequest, @Param("id", PositiveIntPipe) notificationId: number): Promise<void>
     {
-        if (Number.isNaN(notificationId) || notificationId < 1) throw new BadRequestException();
         await this.userService.deleteUserNotificationById(req.user, notificationId);
     }
 

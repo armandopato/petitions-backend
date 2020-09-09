@@ -13,7 +13,6 @@ import { ConfigService } from '@nestjs/config';
 import { Role } from 'src/types/Role';
 import { PetitionInfo, ResolutionInfo } from 'src/types/ElementInfo';
 import { PetitionRepository } from 'src/petitions/petitions.repository';
-import { PetitionsCollection, ResolutionsCollection, NotificationsCollection } from 'src/types/ElementsCollection';
 import { ResolutionRepository } from 'src/resolutions/resolutions.repository';
 import { ResolutionStatus } from 'src/types/ElementStatus';
 import { UserNotificationInfo } from 'src/types/UserNotificationInfo';
@@ -21,6 +20,7 @@ import { UserSettingsAndSchoolDto, ChangeUserSettingsDto } from './dto/user-sett
 import { Settings } from 'src/entities/settings.entity';
 import { SchoolType } from 'src/types/School';
 import { Repository } from 'typeorm';
+import { Page } from 'src/types/Page';
 
 const SCHOOL_CHANGE_DAYS = 30;
 
@@ -118,7 +118,7 @@ export class UserService {
     }
 
 
-    async getSavedPetitions(user: User, page: number): Promise<PetitionsCollection>
+    async getSavedPetitions(user: User, page: number): Promise<Page<PetitionInfo>>
     {
         const { pageElements: petitions, totalPages } = await this.userRepository.getSavedPetitionsPage(user.id, page);
         const savedPetitionsInfo: PetitionInfo[] = [];
@@ -140,16 +140,15 @@ export class UserService {
                 didVote: didVote,
                 didSave: true
             });
-        } 
+        }
 
         return {
             totalPages: totalPages,
-            currentPage: page,
-            petitions: savedPetitionsInfo
+            pageElements: savedPetitionsInfo
         };
     }
 
-    async getSavedResolutions(user: User, page: number): Promise<ResolutionsCollection>
+    async getSavedResolutions(user: User, page: number): Promise<Page<ResolutionInfo>>
     {
         const { pageElements: resolutions, totalPages } = await this.userRepository.getSavedResolutionsPage(user.id, page);
         const savedResolutionsInfo: ResolutionInfo[] = [];
@@ -183,12 +182,11 @@ export class UserService {
 
         return {
             totalPages: totalPages,
-            currentPage: page,
-            resolutions: savedResolutionsInfo
+            pageElements: savedResolutionsInfo
         };
     }
 
-    async getUserNotifications(user: User, page: number): Promise<NotificationsCollection>
+    async getUserNotifications(user: User, page: number): Promise<Page<UserNotificationInfo>>
     {
         const { totalPages, pageElements: notifications } = await this.userRepository.getUserNotificationsPage(user.id, page);
         const notificationsInfo: UserNotificationInfo[] = [];
@@ -208,8 +206,7 @@ export class UserService {
 
         return {
             totalPages: totalPages,
-            currentPage: page,
-            notifications: notificationsInfo
+            pageElements: notificationsInfo
         };
     }
 
@@ -265,7 +262,7 @@ export class UserService {
         if (nowDate < limitDate) throw new UnauthorizedException("You're not allowed yet to switch your school");
         if (newCampus === user.school.campus) throw new BadRequestException();
 
-        user.school.campus= newCampus;
+        user.school.campus = newCampus;
         await this.userRepository.save(user);
     }
 }
