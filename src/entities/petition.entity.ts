@@ -4,6 +4,7 @@ import { StudentUser, User } from "src/entities/user.entity";
 import { PetitionComment } from "./comment.entity";
 import { SchoolType } from "src/types/School";
 import { Length } from "src/types/Length";
+import { PetitionStatus } from "src/types/ElementStatus";
 
 @Entity()
 export class Petition
@@ -25,6 +26,13 @@ export class Petition
 
     @Column({ type: "varchar", length: Length.PETITION_DESC })
     description: string;
+
+    @Column({
+        type: "enum",
+        enum: PetitionStatus,
+        default: PetitionStatus.NO_RESOLUTION
+    })
+    status: PetitionStatus;
 
     @OneToOne(() => Resolution, resolution => resolution.petition)
     resolution?: Resolution;

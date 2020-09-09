@@ -21,7 +21,8 @@ export class UserRepository extends Repository<User>
     {
         const query = this.connection.createQueryBuilder(Petition, "petition")
 									.innerJoinAndSelect("petition.savedBy", "user")
-									.where("user.id = :id", { id: userId });
+                                    .where("user.id = :id", { id: userId })
+                                    .orderBy("petition.id", "DESC");
 											  
         return await getPage(query, page);
     }
@@ -30,7 +31,8 @@ export class UserRepository extends Repository<User>
     {
 		const query = this.connection.createQueryBuilder(Resolution, "resolution")
 											.innerJoinAndSelect("resolution.savedBy", "user")
-											.where("user.id = :id", { id: userId });
+                                            .where("user.id = :id", { id: userId })
+                                            .orderBy("resolution.id", "DESC");
 											
         return await getPage(query, page);
     }

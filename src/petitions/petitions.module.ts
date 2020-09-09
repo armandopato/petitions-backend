@@ -9,6 +9,7 @@ import { PetitionsService } from './petitions.service';
         TypeOrmModule.forFeature([PetitionRepository])
     ],
     controllers: [PetitionsController],
-    providers: [PetitionsService]
+    providers: [PetitionsService],
+    exports: [PetitionsService]
 })
 export class PetitionsModule {}

@@ -12,7 +12,7 @@ export class ResolutionRepository extends Repository<Resolution>
 {
     connection = getConnection();
 
-    getResolutionStatus(resolution: Resolution): ResolutionStatus
+    determineResolutionStatus(resolution: Resolution): ResolutionStatus
     {
         const { startDate, deadline, resolutionDate } = resolution;
         if (resolutionDate) return ResolutionStatus.TERMINATED;

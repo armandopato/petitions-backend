@@ -21,6 +21,7 @@ import { Settings } from 'src/entities/settings.entity';
 import { SchoolType } from 'src/types/School';
 import { Repository } from 'typeorm';
 import { Page } from 'src/types/Page';
+import { PetitionsService } from 'src/petitions/petitions.service';
 
 const SCHOOL_CHANGE_DAYS = 30;
 
@@ -48,6 +49,7 @@ export class UserService {
         @InjectRepository(Settings)
         private settingsRepository: Repository<Settings>,
 
+        private petitionsService: PetitionsService,
         private mailService: MailService,
         private jwtService: JwtService,
         private configService: ConfigService
@@ -121,27 +123,8 @@ export class UserService {
     async getSavedPetitions(user: User, page: number): Promise<Page<PetitionInfo>>
     {
         const { pageElements: petitions, totalPages } = await this.userRepository.getSavedPetitionsPage(user.id, page);
-        const savedPetitionsInfo: PetitionInfo[] = [];
+        const savedPetitionsInfo = await this.petitionsService.mapPetitionsToAuthPetitionsInfo(petitions, user);
         
-        for (const petition of petitions)
-        {
-            const numVotes = await this.petitionRepository.countNumberOfVotes(petition.id);
-            const numComments = await this.petitionRepository.countNumberOfComments(petition.id);
-            const didVote = await this.petitionRepository.didUserVote(petition.id, user.id);
-            const status = await this.petitionRepository.getPetitionStatus(petition.id);
-
-            savedPetitionsInfo.push({
-                id: petition.id,
-                title: petition.title,
-                date: petition.createdDate,
-                numVotes: numVotes,
-                numComments: numComments,
-                status: status,
-                didVote: didVote,
-                didSave: true
-            });
-        }
-
         return {
             totalPages: totalPages,
             pageElements: savedPetitionsInfo
@@ -155,7 +138,7 @@ export class UserService {
 
         for (const resolution of resolutions)
         {
-            const status = this.resolutionRepository.getResolutionStatus(resolution);
+            const status = this.resolutionRepository.determineResolutionStatus(resolution);
 
             const resolutionInfo: ResolutionInfo = {
                 id: resolution.id,

@@ -9,10 +9,12 @@ import { JwtConfigService } from 'src/auth/config/jwt.config.service';
 import { PetitionRepository } from 'src/petitions/petitions.repository';
 import { ResolutionRepository } from 'src/resolutions/resolutions.repository';
 import { Settings } from 'src/entities/settings.entity';
+import { PetitionsModule } from 'src/petitions/petitions.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([StudentUserRepository, SupportTeamUserRepository, UserRepository, PetitionRepository, ResolutionRepository, Settings]),
             AuthModule,
+            PetitionsModule,
             JwtModule.registerAsync({
               imports: [AuthModule],
               useExisting: JwtConfigService
