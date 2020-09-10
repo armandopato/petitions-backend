@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { User } from 'src/entities/user.entity';
+import { StudentUser, User } from 'src/entities/user.entity';
 import { PetitionQueryParams } from './dto/petition-query-params.dto';
 import { Page } from 'src/types/Page';
 import { PetitionInfo } from 'src/types/ElementInfo';
 import { PetitionRepository } from './petitions.repository';
 import { Petition } from 'src/entities/petition.entity';
+import { CreatePetitionDto } from './dto/create-petition.dto';
+import { PetitionStatus } from 'src/types/ElementStatus';
 
 @Injectable()
 export class PetitionsService
@@ -64,5 +66,22 @@ export class PetitionsService
         }
 
         return petitionInfoArr;
+    }
+
+
+    async postPetition(user: StudentUser, createPetitionDto: CreatePetitionDto): Promise<number>
+    {
+        const { title, description } = createPetitionDto;
+
+        const newPetition = new Petition();
+        newPetition.campus = user.school.campus;
+        newPetition.title = title;
+        newPetition.description = description;
+        newPetition.status = PetitionStatus.NO_RESOLUTION;
+        newPetition.by = user;
+
+        const { id } = await this.petitionRepository.save(newPetition);
+        
+        return id;
     }
 }
