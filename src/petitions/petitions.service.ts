@@ -9,9 +9,11 @@ import { CreatePetitionDto } from './dto/create-petition.dto';
 import { PetitionStatus } from 'src/types/ElementStatus';
 import { SchedulingService } from 'src/scheduling/scheduling.service';
 import { ResolutionsService } from 'src/resolutions/resolutions.service';
+import { Resolution } from 'src/entities/resolution.entity';
 
 const DAY = 1000*60*60*24;
 const RESOLUTION_WINDOW = DAY*30;
+const MIN_VOTES = 100;
 
 @Injectable()
 export class PetitionsService
@@ -57,17 +59,16 @@ export class PetitionsService
         newPetition.deadline = deadline;
 
         const { id } = await this.petitionRepository.save(newPetition);
-
-        this.schedulingService.schedulePetitionDeadline(id, deadline);
         
         return id;
     }
 
 
-    async createAssociatedResolution(petitionId: number): Promise<void>
+    async createAssociatedResolution(petitionId: number): Promise<Resolution>
     {
-        await this.resolutionsService.createResolution(petitionId);
+        const resolution = await this.resolutionsService.createResolution(petitionId);
         await this.petitionRepository.update(petitionId, { status: PetitionStatus.IN_PROGRESS });
+        return resolution;
     }
 
 
@@ -84,6 +85,7 @@ export class PetitionsService
         return await this.petitionRepository.getPetitionInfoWDesc(petition);
     }
 
+
     async votePetition(petitionId: number, user: StudentUser): Promise<void>
     {
         const didUserVote = await this.petitionRepository.didUserVote(petitionId, user.id);
@@ -97,6 +99,12 @@ export class PetitionsService
         {
             if (Number(err.code) === 23503) throw new NotFoundException();
             else throw new InternalServerErrorException();
+        }
+
+        if (await this.petitionRepository.countNumberOfVotes(petitionId) >= MIN_VOTES)
+        {
+            const associatedRes = await this.createAssociatedResolution(petitionId);
+            await this.resolutionsService.triggerNewResolutionNotifications(associatedRes);
         }
     }
 }

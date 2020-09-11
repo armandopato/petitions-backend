@@ -9,12 +9,13 @@ export class SchedulingService
 {
     // pending: perform initial scheduling of all petitions etc
     //private resolutionsService: Resolution
+    /*
     constructor(private scheduler: SchedulerRegistry,
                 @Inject(forwardRef(() => PetitionsService))
                 private petitionsService: PetitionsService
                 ) {}
     
-    schedulePetitionDeadline(petitionId: number, deadline: Date): void
+    scheduleResolutionDeadline(resolutionId: number, deadline: Date): void
     {
         const handler = async () => await this.petitionsService.createAssociatedResolution(petitionId);
         const job = new CronJob(deadline, handler);
@@ -23,4 +24,7 @@ export class SchedulingService
         this.scheduler.addCronJob(jobName, job);
         job.start();
     }
+
+    async triggerResolutionCreation
+    */
 }
