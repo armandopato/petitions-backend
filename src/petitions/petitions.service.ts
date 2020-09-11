@@ -7,11 +7,20 @@ import { PetitionRepository } from './petitions.repository';
 import { Petition } from 'src/entities/petition.entity';
 import { CreatePetitionDto } from './dto/create-petition.dto';
 import { PetitionStatus } from 'src/types/ElementStatus';
+import { SchedulingService } from 'src/scheduling/scheduling.service';
+import { ResolutionsService } from 'src/resolutions/resolutions.service';
+
+const DAY = 1000*60*60*24;
+const RESOLUTION_WINDOW = DAY*30;
 
 @Injectable()
 export class PetitionsService
 {
-    constructor(private petitionRepository: PetitionRepository) {}
+    constructor(
+                private petitionRepository: PetitionRepository,
+                private schedulingService: SchedulingService,
+                private resolutionsService: ResolutionsService
+                ) {}
 
     async getPetitionsPageBySchool(params: PetitionQueryParams, user: User): Promise<Page<PetitionInfo>>
     {
@@ -41,15 +50,21 @@ export class PetitionsService
         {
             const numVotes = await this.petitionRepository.countNumberOfVotes(petition.id);
             const numComments = await this.petitionRepository.countNumberOfComments(petition.id);
-
-            petitionInfoArr.push({
+            const petitionInfo: PetitionInfo = {
                 id: petition.id,
                 title: petition.title,
                 date: petition.createdDate,
                 status: petition.status,
                 numVotes: numVotes,
                 numComments: numComments
-            });
+            };
+
+            if (petition.status === PetitionStatus.NO_RESOLUTION)
+            {
+                petitionInfo.deadline = petition.deadline;
+            }
+
+            petitionInfoArr.push(petitionInfo);
         }
 
         return petitionInfoArr;
@@ -72,6 +87,7 @@ export class PetitionsService
     async postPetition(user: StudentUser, createPetitionDto: CreatePetitionDto): Promise<number>
     {
         const { title, description } = createPetitionDto;
+        const deadline = new Date(Date.now() + RESOLUTION_WINDOW);
 
         const newPetition = new Petition();
         newPetition.campus = user.school.campus;
@@ -79,9 +95,18 @@ export class PetitionsService
         newPetition.description = description;
         newPetition.status = PetitionStatus.NO_RESOLUTION;
         newPetition.by = user;
+        newPetition.deadline = deadline;
 
         const { id } = await this.petitionRepository.save(newPetition);
+
+        this.schedulingService.schedulePetitionDeadline(id, deadline);
         
         return id;
+    }
+
+    async createAssociatedResolution(petitionId: number): Promise<void>
+    {
+        await this.resolutionsService.createResolution(petitionId);
+        await this.petitionRepository.update(petitionId, { status: PetitionStatus.IN_PROGRESS });
     }
 }

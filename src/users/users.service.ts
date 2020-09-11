@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, BadRequestException, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import { StudentUserRepository, SupportTeamUserRepository, UserRepository } from './users.repository';
@@ -31,21 +31,12 @@ export class UserService {
     protectedMail: string;
 
     constructor(
-        @InjectRepository(StudentUserRepository)
         private studentUserRepository: StudentUserRepository,
-
-        @InjectRepository(SupportTeamUserRepository)
         private supportTeamUserRepository: SupportTeamUserRepository,
-
-        @InjectRepository(UserRepository)
         private userRepository: UserRepository,
-
-        @InjectRepository(PetitionRepository)
         private petitionRepository: PetitionRepository,
-
-        @InjectRepository(ResolutionRepository)
         private resolutionRepository: ResolutionRepository,
-
+        
         @InjectRepository(Settings)
         private settingsRepository: Repository<Settings>,
 
@@ -67,9 +58,8 @@ export class UserService {
         }
         catch(err)
         {
-            // Includes user duplication
-            console.log(err);
-            throw new BadRequestException("Error while creating user");
+            if (Number(err.code) === 23505) throw new ConflictException("User already exists");
+            else throw new BadRequestException("Error while creating user");
         }
         
         const payload: Payload = {

@@ -28,4 +28,7 @@ export class PetitionsController
         const id = await this.petitionsService.postPetition(req.user, createPetitionDto);
         return { id };
     }
+
+    //@UseGuards(JwtOptionalAuthGuard)
+    //@Get("/:id")
 }

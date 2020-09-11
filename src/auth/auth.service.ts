@@ -1,7 +1,5 @@
 import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
-import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
 import { compare, hash } from 'bcrypt';
 import { UserCredentials } from './dto/user-credentials.dto';
 import { validateOrReject } from 'class-validator';
@@ -12,13 +10,13 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { Token } from 'src/types/Token';
 import { MailService } from './mail.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { UserRepository } from 'src/users/users.repository';
 
 @Injectable()
 export class AuthService {
 
     constructor(
-        @InjectRepository(User)
-        private userRepository: Repository<User>,
+        private userRepository: UserRepository,
         private jwtService: JwtService,
         private mailService: MailService
     ) { }

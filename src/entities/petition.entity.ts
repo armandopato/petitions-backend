@@ -15,6 +15,9 @@ export class Petition
     @CreateDateColumn()
     createdDate: Date;
 
+    @Column()
+    deadline: Date;
+
     @Column({
         type: "enum",
         enum: SchoolType

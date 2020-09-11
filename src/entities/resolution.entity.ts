@@ -35,7 +35,7 @@ export class Resolution
     petition: Petition;
 
     @ManyToOne(() => SupportTeamUser, user => user.myResolutions)
-    by: SupportTeamUser;
+    by?: SupportTeamUser;
 
     @ManyToMany(() => StudentUser, studentUser => studentUser.votedResolutions)
     @JoinTable()
