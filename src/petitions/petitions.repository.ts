@@ -44,9 +44,11 @@ export class PetitionRepository extends Repository<Petition>
                 break;
 
             case OrderBy.NUMBER_OF_VOTES:
-                query.leftJoin("petition.votedBy", "vote")
+                query.leftJoin("petition_voted_by_user", "vote", "vote.petitionId = petition.id")
+                    .addSelect("COUNT(vote.petitionId)", "votesperpetition")
                     .groupBy("petition.id")
-                    .orderBy("count(vote.petitionId)");
+                    .orderBy("votesperpetition", "DESC")
+                    .addOrderBy("petition.id", "DESC");
                 break;
 
             case OrderBy.RELEVANCE:
@@ -55,6 +57,7 @@ export class PetitionRepository extends Repository<Petition>
                 break;
         }
 
+        query.printSql();
         return await getPage(query, page);
     }
 
@@ -171,5 +174,21 @@ export class PetitionRepository extends Repository<Petition>
                             .relation(Petition, "votedBy")
                             .of(petitionId)
                             .add(userId);
+    }
+
+    async savePetition(petitionId: number, userId: number): Promise<void>
+    {
+        await this.connection.createQueryBuilder()
+                .relation(Petition, "savedBy")
+                .of(petitionId)
+                .add(userId);
+    }
+
+    async unsavePetition(petitionId: number, userId: number): Promise<void>
+    {
+        await this.connection.createQueryBuilder()
+                .relation(Petition, "savedBy")
+                .of(petitionId)
+                .remove(userId);
     }
 }

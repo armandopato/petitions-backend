@@ -107,4 +107,27 @@ export class PetitionsService
             await this.resolutionsService.triggerNewResolutionNotifications(associatedRes);
         }
     }
+
+
+    async saveOrUnsavePetition(petitionId: number, user: User): Promise<void>
+    {
+        const didUserSave = await this.petitionRepository.didUserSave(petitionId, user.id);
+        
+        try
+        {
+            if (didUserSave) 
+            {
+                await this.petitionRepository.unsavePetition(petitionId, user.id);
+            }
+            else
+            {
+                await this.petitionRepository.savePetition(petitionId, user.id);
+            }
+        }
+        catch(err)
+        {
+            if (Number(err.code) === 23503) throw new NotFoundException();
+            else throw new InternalServerErrorException();
+        }
+    }
 }

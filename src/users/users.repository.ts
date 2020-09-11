@@ -16,7 +16,7 @@ import { Page } from "src/types/Page";
 export class UserRepository extends Repository<User>
 {
     connection = getConnection();
-
+    // pending: add id to relation to sort according to saving date
     async getSavedPetitionsPage(userId: number, page: number): Promise<Page<Petition>>
     {
         const query = this.connection.createQueryBuilder(Petition, "petition")

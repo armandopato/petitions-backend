@@ -46,9 +46,9 @@ export class PetitionsController
 
     @UseGuards(JwtAuthGuard)
     @Patch("/:id")
-    async savePetition(): Promise<void>
+    async saveOrUnsavePetition(@Request() req: AuthRequest, @Param('id', PositiveIntPipe) petitionId: number): Promise<void>
     {
-        return;
+        await this.petitionsService.saveOrUnsavePetition(petitionId, req.user);
     }
 
     @UseGuards(JwtAuthGuard, IsStudentGuard)
