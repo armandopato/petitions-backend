@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { StudentUser, User } from 'src/entities/user.entity';
 import { PetitionQueryParams } from './dto/petition-query-params.dto';
 import { Page } from 'src/types/Page';
@@ -78,9 +78,25 @@ export class PetitionsService
 
         if (user)
         {
-            return await this.petitionRepository.getAuthPetitionInfo(petition, user);
+            return await this.petitionRepository.getAuthPetitionInfoWDesc(petition, user);
         }
         
-        return await this.petitionRepository.getPetitionInfo(petition);
+        return await this.petitionRepository.getPetitionInfoWDesc(petition);
+    }
+
+    async votePetition(petitionId: number, user: StudentUser): Promise<void>
+    {
+        const didUserVote = await this.petitionRepository.didUserVote(petitionId, user.id);
+        if (didUserVote) throw new ConflictException();
+
+        try
+        {
+            await this.petitionRepository.votePetition(petitionId, user.id);
+        }
+        catch(err)
+        {
+            if (Number(err.code) === 23503) throw new NotFoundException();
+            else throw new InternalServerErrorException();
+        }
     }
 }

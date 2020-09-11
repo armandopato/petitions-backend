@@ -124,6 +124,20 @@ export class PetitionRepository extends Repository<Petition>
         return petitionInfo;
     }
 
+    async getPetitionInfoWDesc(petition: Petition): Promise<PetitionInfo>
+    {
+        const petitionInfo = await this.getPetitionInfo(petition);
+        petitionInfo.description = petition.description;
+        return petitionInfo;
+    }
+
+    async getAuthPetitionInfoWDesc(petition: Petition, user: User): Promise<PetitionInfo>
+    {
+        const petitionInfo = await this.getAuthPetitionInfo(petition, user);
+        petitionInfo.description = petition.description;
+        return petitionInfo;
+    }
+
 
     async mapPetitionsToPetitionsInfo(petitions: Petition[]): Promise<PetitionInfo[]>
     {
@@ -149,5 +163,13 @@ export class PetitionRepository extends Repository<Petition>
         }
 
         return authPetitionsInfoArr;
+    }
+
+    async votePetition(petitionId: number, userId: number): Promise<void>
+    {
+        await this.connection.createQueryBuilder()
+                            .relation(Petition, "votedBy")
+                            .of(petitionId)
+                            .add(userId);
     }
 }

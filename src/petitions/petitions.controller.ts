@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Request, Query, Post, Body, Param } from '@nestjs/common';
+import { Controller, Get, UseGuards, Request, Query, Post, Body, Param, Delete, Put, Patch } from '@nestjs/common';
 import { PetitionsService } from './petitions.service';
 import { JwtOptionalAuthGuard } from 'src/auth/guards/jwt-optional-auth.guard';
 import { AuthRequest, AuthStudentRequest } from 'src/types/AuthRequest';
@@ -35,5 +35,68 @@ export class PetitionsController
     async getPetitionInfoById(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) petitionId: number): Promise<PetitionInfo>
     {
         return await this.petitionsService.getPetitionInfoById(petitionId, req.user);
+    }
+
+    @UseGuards(JwtAuthGuard, IsStudentGuard)
+    @Post("/:id")
+    async votePetition(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) petitionId: number): Promise<void>
+    {
+        await this.petitionsService.votePetition(petitionId, req.user);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Patch("/:id")
+    async savePetition(): Promise<void>
+    {
+        return;
+    }
+
+    @UseGuards(JwtAuthGuard, IsStudentGuard)
+    @Delete("/:id")
+    async deletePetition(): Promise<void>
+    {
+        return;
+    }
+
+    @UseGuards(JwtAuthGuard, IsStudentGuard)
+    @Put("/:id")
+    async editPetition(): Promise<void>
+    {
+        return;
+    }
+
+    @UseGuards(JwtOptionalAuthGuard)
+    @Get("/:id/comments")
+    async getComments(): Promise<void>
+    {
+        return;
+    }
+
+    @UseGuards(JwtAuthGuard, IsStudentGuard)
+    @Post("/:id/comments")
+    async postComment(): Promise<void>
+    {
+        return;
+    }
+
+    @UseGuards(JwtAuthGuard, IsStudentGuard)
+    @Put("/:id/comments/:commentId")
+    async editComment(): Promise<void>
+    {
+        return;
+    }
+
+    @UseGuards(JwtAuthGuard, IsStudentGuard)
+    @Delete("/:id/comments/:commentId")
+    async deleteComment(): Promise<void>
+    {
+        return;
+    }
+
+    @UseGuards(JwtAuthGuard, IsStudentGuard)
+    @Patch("/:id/comments/:commentId")
+    async likeComment(): Promise<void>
+    {
+        return;
     }
 }
