@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { StudentUser, User } from 'src/entities/user.entity';
 import { PetitionQueryParams } from './dto/petition-query-params.dto';
 import { Page } from 'src/types/Page';
@@ -29,58 +29,17 @@ export class PetitionsService
 
         if (user)
         {
-            petitionInfoArr = await this.mapPetitionsToAuthPetitionsInfo(petitions, user);
+            petitionInfoArr = await this.petitionRepository.mapPetitionsToAuthPetitionsInfo(petitions, user);
         }
         else
         {
-            petitionInfoArr = await this.mapPetitionsToPetitionsInfo(petitions);
+            petitionInfoArr = await this.petitionRepository.mapPetitionsToPetitionsInfo(petitions);
         }
 
         return {
             pageElements: petitionInfoArr,
             totalPages
         };
-    }
-
-    async mapPetitionsToPetitionsInfo(petitions: Petition[]): Promise<PetitionInfo[]>
-    {
-        const petitionInfoArr: PetitionInfo[] = [];
-
-        for (const petition of petitions)
-        {
-            const numVotes = await this.petitionRepository.countNumberOfVotes(petition.id);
-            const numComments = await this.petitionRepository.countNumberOfComments(petition.id);
-            const petitionInfo: PetitionInfo = {
-                id: petition.id,
-                title: petition.title,
-                date: petition.createdDate,
-                status: petition.status,
-                numVotes: numVotes,
-                numComments: numComments
-            };
-
-            if (petition.status === PetitionStatus.NO_RESOLUTION)
-            {
-                petitionInfo.deadline = petition.deadline;
-            }
-
-            petitionInfoArr.push(petitionInfo);
-        }
-
-        return petitionInfoArr;
-    }
-
-    async mapPetitionsToAuthPetitionsInfo(petitions: Petition[], user: User): Promise<PetitionInfo[]>
-    {
-        const petitionInfoArr = await this.mapPetitionsToPetitionsInfo(petitions);
-
-        for (const info of petitionInfoArr)
-        {
-            info.didVote = await this.petitionRepository.didUserVote(info.id, user.id);
-            info.didSave = await this.petitionRepository.didUserSave(info.id, user.id);
-        }
-
-        return petitionInfoArr;
     }
 
 
@@ -104,9 +63,24 @@ export class PetitionsService
         return id;
     }
 
+
     async createAssociatedResolution(petitionId: number): Promise<void>
     {
         await this.resolutionsService.createResolution(petitionId);
         await this.petitionRepository.update(petitionId, { status: PetitionStatus.IN_PROGRESS });
+    }
+
+
+    async getPetitionInfoById(petitionId: number, user: User): Promise<PetitionInfo>
+    {
+        const petition = await this.petitionRepository.findOne(petitionId);
+        if (!petition) throw new NotFoundException();
+
+        if (user)
+        {
+            return await this.petitionRepository.getAuthPetitionInfo(petition, user);
+        }
+        
+        return await this.petitionRepository.getPetitionInfo(petition);
     }
 }

@@ -8,6 +8,7 @@ export class PetitionInfo
     numVotes: number;
     numComments: number;
     status: PetitionStatus;
+    description?: string;
     deadline?: Date;
     didVote?: boolean;
     didSave?: boolean;

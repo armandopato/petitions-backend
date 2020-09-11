@@ -21,7 +21,6 @@ import { Settings } from 'src/entities/settings.entity';
 import { SchoolType } from 'src/types/School';
 import { Repository } from 'typeorm';
 import { Page } from 'src/types/Page';
-import { PetitionsService } from 'src/petitions/petitions.service';
 
 const SCHOOL_CHANGE_DAYS = 30;
 
@@ -40,7 +39,6 @@ export class UserService {
         @InjectRepository(Settings)
         private settingsRepository: Repository<Settings>,
 
-        private petitionsService: PetitionsService,
         private mailService: MailService,
         private jwtService: JwtService,
         private configService: ConfigService
@@ -113,7 +111,7 @@ export class UserService {
     async getSavedPetitions(user: User, page: number): Promise<Page<PetitionInfo>>
     {
         const { pageElements: petitions, totalPages } = await this.userRepository.getSavedPetitionsPage(user.id, page);
-        const savedPetitionsInfo = await this.petitionsService.mapPetitionsToAuthPetitionsInfo(petitions, user);
+        const savedPetitionsInfo = await this.petitionRepository.mapPetitionsToAuthPetitionsInfo(petitions, user);
         
         return {
             totalPages: totalPages,
