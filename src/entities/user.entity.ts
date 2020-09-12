@@ -6,6 +6,7 @@ import { Petition } from "src/entities/petition.entity";
 import { Resolution } from "src/entities/resolution.entity";
 import { UserNotification } from "./notification.entity";
 import { Length } from "src/types/Length";
+import { PetitionComment, ResolutionComment } from "./comment.entity";
 
 @Entity()
 @TableInheritance({ column: { type: 'enum', enum: Role, name: 'role' } })
@@ -71,6 +72,12 @@ export class StudentUser extends User
 
     @ManyToMany(() => Resolution, resolution => resolution.rejectionVotesBy)
     votedResolutions: Resolution[];
+
+    @ManyToMany(() => PetitionComment, comment => comment.likedBy)
+    likedPetitionComments: PetitionComment[];
+
+    @ManyToMany(() => ResolutionComment, comment => comment.likedBy)
+    likedResolutionComments: ResolutionComment[];
 }
 
 @ChildEntity(Role.SupportTeam)

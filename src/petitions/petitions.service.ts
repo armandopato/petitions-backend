@@ -2,7 +2,7 @@ import { ConflictException, Injectable, InternalServerErrorException, NotFoundEx
 import { StudentUser, User } from 'src/entities/user.entity';
 import { PetitionQueryParams } from './dto/petition-query-params.dto';
 import { Page } from 'src/types/Page';
-import { PetitionInfo } from 'src/types/ElementInfo';
+import { CommentInfo, PetitionInfo } from 'src/types/ElementInfo';
 import { PetitionRepository } from './petitions.repository';
 import { Petition } from 'src/entities/petition.entity';
 import { CreatePetitionDto } from './dto/create-petition.dto';
@@ -130,15 +130,47 @@ export class PetitionsService
             else throw new InternalServerErrorException();
         }
     }
-
-    async deletePetition(petitionId: number, user: StudentUser): Promise<void>
+    
+    private async checkPetitionMutationValidity(petitionId: number, userId: number): Promise<Petition>
     {
         const petition = await this.petitionRepository.findOne(petitionId, { relations: ["resolution", "by"] });
 
         if (!petition) throw new NotFoundException();
-        if (petition.by.id !== user.id) throw new UnauthorizedException();
+        if (petition.by.id !== userId) throw new UnauthorizedException();
         if (petition.resolution || await this.petitionRepository.countNumberOfVotes(petitionId) > 0) throw new ConflictException();
 
+        return petition;
+    }
+
+    async deletePetition(petitionId: number, user: StudentUser): Promise<void>
+    {
+        await this.checkPetitionMutationValidity(petitionId, user.id);
         await this.petitionRepository.deletePetitionAndSavedRelations(petitionId);
+    }
+
+    async editPetition(petitionId: number, user: StudentUser, editPetitionDto: CreatePetitionDto): Promise<void>
+    {
+        const petition = await this.checkPetitionMutationValidity(petitionId, user.id);
+        await this.petitionRepository.editPetition(petition, editPetitionDto);
+    }
+
+    async getPetitionCommentsInfoPage(petitionId: number, user: User, page: number): Promise<Page<CommentInfo>>
+    {
+        const { totalPages, pageElements: comments } = await this.petitionRepository.getPetitionCommentsPage(petitionId, page);
+        let commentInfoArr: CommentInfo[];
+
+        if (user)
+        {
+            commentInfoArr = await this.petitionRepository.mapPetitionCommentsToAuthCommentsInfo(comments, user);
+        }
+        else
+        {
+            commentInfoArr = await this.petitionRepository.mapPetitionCommentsToCommentsInfo(comments);
+        }
+
+        return {
+            pageElements: commentInfoArr,
+            totalPages
+        };
     }
 }

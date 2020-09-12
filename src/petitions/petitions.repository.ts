@@ -6,8 +6,9 @@ import { Page } from "src/types/Page";
 import { PetitionQueryParams } from "./dto/petition-query-params.dto";
 import { getPage } from "src/util/getPage";
 import { OrderBy } from "src/types/OrderBy";
-import { PetitionInfo } from "src/types/ElementInfo";
+import { CommentInfo, PetitionInfo } from "src/types/ElementInfo";
 import { PetitionStatus } from "src/types/ElementStatus";
+import { CreatePetitionDto } from "./dto/create-petition.dto";
 
 
 @EntityRepository(Petition)
@@ -57,7 +58,6 @@ export class PetitionRepository extends Repository<Petition>
                 break;
         }
 
-        query.printSql();
         return await getPage(query, page);
     }
 
@@ -168,6 +168,8 @@ export class PetitionRepository extends Repository<Petition>
         return authPetitionsInfoArr;
     }
 
+
+
     async votePetition(petitionId: number, userId: number): Promise<void>
     {
         await this.connection.createQueryBuilder()
@@ -200,5 +202,85 @@ export class PetitionRepository extends Repository<Petition>
                     .execute()
 
         await this.delete(petitionId);
+    }
+
+    async editPetition(petition: Petition, editPetitionDto: CreatePetitionDto): Promise<void>
+    {
+        petition.title = editPetitionDto.title;
+        petition.description = editPetitionDto.description;
+
+        await this.save(petition);
+    }
+
+
+    async getPetitionCommentsPage(petitionId: number, page: number): Promise<Page<PetitionComment>>
+    {
+        const query = this.connection.createQueryBuilder(PetitionComment, "comment")
+                                    .innerJoin("comment.petition", "petition")
+                                    .where("petition.id = :id", { id: petitionId })
+                                    .orderBy("comment.id", "DESC");
+
+        return await getPage(query, page);
+    }
+
+    async getNumberOfPetitionCommentLikes(commentId: number): Promise<number>
+    {
+        return await this.connection.createQueryBuilder(StudentUser, "user")
+                                    .innerJoinAndSelect("user.likedPetitionComments", "comment")
+                                    .where("comment.id = :id", { id: commentId })
+                                    .getCount();
+    }
+
+    async didUserLikePetitionComment(commentId: number, userId: number): Promise<boolean>
+    {
+        const like = await this.connection.createQueryBuilder(StudentUser, "user")
+                                            .innerJoinAndSelect("user.likedPetitionComments", "comment")
+                                            .where("user.id = :userId", { userId: userId })
+                                            .andWhere("comment.id = :id", { id: commentId })
+                                            .getCount();
+        return like === 1;
+    }
+
+    async getCommentInfo(comment: PetitionComment): Promise<CommentInfo>
+    {
+        return {
+            id: comment.id,
+            date: comment.createdDate,
+            text: comment.text,
+            numLikes: await this.getNumberOfPetitionCommentLikes(comment.id)
+        };
+    }
+
+    async getAuthCommentInfo(comment: PetitionComment, user: User): Promise<CommentInfo>
+    {
+        const commentInfo = await this.getCommentInfo(comment);
+        commentInfo.didLike = await this.didUserLikePetitionComment(comment.id, user.id)
+        return commentInfo;
+    }
+
+    async mapPetitionCommentsToCommentsInfo(comments: PetitionComment[]): Promise<CommentInfo[]>
+    {
+        const commentsInfoArr: CommentInfo[] = [];
+
+        for (const comment of comments)
+        {
+            const commentInfo = await this.getCommentInfo(comment);
+            commentsInfoArr.push(commentInfo);
+        }
+
+        return commentsInfoArr;
+    }
+
+    async mapPetitionCommentsToAuthCommentsInfo(comments: PetitionComment[], user: User): Promise<CommentInfo[]>
+    {
+        const authCommentsInfoArr: CommentInfo[] = [];
+
+        for (const comment of comments)
+        {
+            const authCommentInfo = await this.getAuthCommentInfo(comment, user);
+            authCommentsInfoArr.push(authCommentInfo);
+        }
+
+        return authCommentsInfoArr;
     }
 }

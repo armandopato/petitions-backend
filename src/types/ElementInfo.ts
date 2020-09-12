@@ -27,3 +27,12 @@ export class ResolutionInfo
     didSave?: boolean;
     didVote?: boolean;
 }
+
+export class CommentInfo
+{
+    id: number;
+    date: Date;
+    text: string;
+    numLikes: number;
+    didLike?: boolean;
+}

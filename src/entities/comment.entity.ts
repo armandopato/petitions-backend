@@ -4,7 +4,7 @@ import { Petition } from "./petition.entity";
 import { Resolution } from "./resolution.entity";
 import { Length } from "src/types/Length";
 
-abstract class GenericComment
+export abstract class GenericComment
 {
     @PrimaryGeneratedColumn()
     id: number;
@@ -17,10 +17,6 @@ abstract class GenericComment
 
     @ManyToOne(() => StudentUser)
     by: StudentUser;
-
-    @ManyToMany(() => StudentUser)
-    @JoinTable()
-    likedBy: StudentUser[];
 }
 
 @Entity()
@@ -29,6 +25,10 @@ export class PetitionComment extends GenericComment
     // Owner of relationship
     @ManyToOne(() => Petition, petition => petition.comments)
     petition: Petition;
+
+    @ManyToMany(() => StudentUser, user => user.likedPetitionComments)
+    @JoinTable()
+    likedBy: StudentUser[];
 }
 
 @Entity()
@@ -37,4 +37,8 @@ export class ResolutionComment extends GenericComment
     // Owner of relationship
     @ManyToOne(() => Resolution, resolution => resolution.comments)
     resolution: Resolution;
+
+    @ManyToMany(() => StudentUser, user => user.likedResolutionComments)
+    @JoinTable()
+    likedBy: StudentUser[];
 }

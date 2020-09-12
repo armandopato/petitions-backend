@@ -4,7 +4,7 @@ import { JwtOptionalAuthGuard } from 'src/auth/guards/jwt-optional-auth.guard';
 import { AuthRequest, AuthStudentRequest } from 'src/types/AuthRequest';
 import { PetitionQueryParams } from './dto/petition-query-params.dto';
 import { Page } from 'src/types/Page';
-import { PetitionInfo } from 'src/types/ElementInfo';
+import { CommentInfo, PetitionInfo } from 'src/types/ElementInfo';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { IsStudentGuard } from 'src/auth/guards/isStudent.guard';
 import { CreatePetitionDto } from './dto/create-petition.dto';
@@ -60,16 +60,16 @@ export class PetitionsController
 
     @UseGuards(JwtAuthGuard, IsStudentGuard)
     @Put("/:id")
-    async editPetition(): Promise<void>
+    async editPetition(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) petitionId: number, @Body() editPetitionDto: CreatePetitionDto): Promise<void>
     {
-        return;
+        await this.petitionsService.editPetition(petitionId, req.user, editPetitionDto);
     }
 
     @UseGuards(JwtOptionalAuthGuard)
     @Get("/:id/comments")
-    async getComments(): Promise<void>
+    async getComments(@Request() req: AuthRequest, @Param('id', PositiveIntPipe) petitionId: number, @Query("page", PositiveIntPipe) page: number): Promise<Page<CommentInfo>>
     {
-        return;
+        return await this.petitionsService.getPetitionCommentsInfoPage(petitionId, req.user, page);
     }
 
     @UseGuards(JwtAuthGuard, IsStudentGuard)
