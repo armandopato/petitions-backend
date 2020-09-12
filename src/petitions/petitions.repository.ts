@@ -191,4 +191,14 @@ export class PetitionRepository extends Repository<Petition>
                 .of(petitionId)
                 .remove(userId);
     }
+
+    async deletePetitionAndSavedRelations(petitionId: number): Promise<void>
+    {
+        await this.connection.createQueryBuilder().delete()
+                    .from("user_saved_petitions_petition")
+                    .where("petitionId = :petitionId", { petitionId: petitionId })
+                    .execute()
+
+        await this.delete(petitionId);
+    }
 }

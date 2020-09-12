@@ -53,9 +53,9 @@ export class PetitionsController
 
     @UseGuards(JwtAuthGuard, IsStudentGuard)
     @Delete("/:id")
-    async deletePetition(): Promise<void>
+    async deletePetition(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) petitionId: number): Promise<void>
     {
-        return;
+        await this.petitionsService.deletePetition(petitionId, req.user);
     }
 
     @UseGuards(JwtAuthGuard, IsStudentGuard)

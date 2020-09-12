@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { StudentUser, User } from 'src/entities/user.entity';
 import { PetitionQueryParams } from './dto/petition-query-params.dto';
 import { Page } from 'src/types/Page';
@@ -129,5 +129,16 @@ export class PetitionsService
             if (Number(err.code) === 23503) throw new NotFoundException();
             else throw new InternalServerErrorException();
         }
+    }
+
+    async deletePetition(petitionId: number, user: StudentUser): Promise<void>
+    {
+        const petition = await this.petitionRepository.findOne(petitionId, { relations: ["resolution", "by"] });
+
+        if (!petition) throw new NotFoundException();
+        if (petition.by.id !== user.id) throw new UnauthorizedException();
+        if (petition.resolution || await this.petitionRepository.countNumberOfVotes(petitionId) > 0) throw new ConflictException();
+
+        await this.petitionRepository.deletePetitionAndSavedRelations(petitionId);
     }
 }
