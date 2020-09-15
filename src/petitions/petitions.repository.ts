@@ -253,7 +253,7 @@ export class PetitionRepository extends Repository<Petition>
     async didUserLikePetitionComment(commentId: number, userId: number): Promise<boolean>
     {
         const like = await this.connection.createQueryBuilder(StudentUser, "user")
-                                            .innerJoinAndSelect("user.likedPetitionComments", "comment")
+                                            .innerJoin("user.likedPetitionComments", "comment")
                                             .where("user.id = :userId", { userId: userId })
                                             .andWhere("comment.id = :id", { id: commentId })
                                             .getCount();
@@ -301,5 +301,35 @@ export class PetitionRepository extends Repository<Petition>
         }
 
         return authCommentsInfoArr;
+    }
+
+    async deleteComment(comment: PetitionComment): Promise<void>
+    {
+        const query = this.connection.createQueryBuilder().delete();
+        
+        await query.from("petition_comment_liked_by_user")
+                    .where("petitionCommentId = :commentId", { commentId: comment.id })
+                    .execute();
+
+        await query.delete()
+                    .from(PetitionComment)
+                    .where("id = :id", { id: comment.id })
+                    .execute();
+    }
+
+    async likeComment(commentId: number, userId: number): Promise<void>
+    {
+        await this.connection.createQueryBuilder()
+                .relation(PetitionComment, "likedBy")
+                .of(commentId)
+                .add(userId);
+    }
+
+    async dislikeComment(commentId: number, userId: number): Promise<void>
+    {
+        await this.connection.createQueryBuilder()
+                .relation(PetitionComment, "likedBy")
+                .of(commentId)
+                .remove(userId);
     }
 }

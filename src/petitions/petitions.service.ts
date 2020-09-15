@@ -197,4 +197,43 @@ export class PetitionsService
 
         await this.petitionCommentRepository.save(newComment);
     }
+
+
+    async editMyComment(petitionId: number, user: StudentUser, newCommentText: string): Promise<void>
+    {
+        const userComment = await this.petitionRepository.getUserComment(petitionId, user.id);
+        if (!userComment) throw new NotFoundException();
+
+        await this.petitionCommentRepository.update(userComment.id, { text: newCommentText });
+    }
+
+    async deleteMyComment(petitionId: number, user: StudentUser): Promise<void>
+    {
+        const comment = await this.petitionRepository.getUserComment(petitionId, user.id);
+        if (!comment) throw new NotFoundException();
+
+        await this.petitionRepository.deleteComment(comment);
+    }
+
+    async likeOrDislikeComment(commentId: number, user: StudentUser): Promise<void>
+    {
+        const didUserLikeComment = await this.petitionRepository.didUserLikePetitionComment(commentId, user.id)
+        
+        try
+        {
+            if (didUserLikeComment)
+            {
+                await this.petitionRepository.dislikeComment(commentId, user.id);
+            }
+            else
+            {
+                await this.petitionRepository.likeComment(commentId, user.id);
+            }
+        }
+        catch(err)
+        {
+            if (Number(err.code) === 23503) throw new NotFoundException();
+            else throw new InternalServerErrorException();
+        }
+    }
 }
