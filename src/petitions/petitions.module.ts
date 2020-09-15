@@ -5,10 +5,11 @@ import { PetitionsController } from './petitions.controller';
 import { PetitionsService } from './petitions.service';
 import { SchedulingModule } from 'src/scheduling/scheduling.module';
 import { ResolutionsModule } from 'src/resolutions/resolutions.module';
+import { PetitionComment } from 'src/entities/comment.entity';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([PetitionRepository]),
+        TypeOrmModule.forFeature([PetitionRepository, PetitionComment]),
         forwardRef(() => SchedulingModule),
         ResolutionsModule
     ],

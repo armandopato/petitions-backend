@@ -9,6 +9,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { IsStudentGuard } from 'src/auth/guards/isStudent.guard';
 import { CreatePetitionDto } from './dto/create-petition.dto';
 import { PositiveIntPipe } from 'src/util/positive-int.pipe';
+import { PostCommentDto } from './dto/post-comment.dto';
 
 @Controller('petitions')
 export class PetitionsController
@@ -67,16 +68,23 @@ export class PetitionsController
 
     @UseGuards(JwtOptionalAuthGuard)
     @Get("/:id/comments")
-    async getComments(@Request() req: AuthRequest, @Param('id', PositiveIntPipe) petitionId: number, @Query("page", PositiveIntPipe) page: number): Promise<Page<CommentInfo>>
+    async getCommentsPage(@Request() req: AuthRequest, @Param('id', PositiveIntPipe) petitionId: number, @Query("page", PositiveIntPipe) page: number): Promise<Page<CommentInfo>>
     {
         return await this.petitionsService.getPetitionCommentsInfoPage(petitionId, req.user, page);
     }
 
     @UseGuards(JwtAuthGuard, IsStudentGuard)
-    @Post("/:id/comments")
-    async postComment(): Promise<void>
+    @Get("/:id/mycomment")
+    async getMyComment(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) petitionId: number): Promise<{ myComment: CommentInfo }>
     {
-        return;
+        return { myComment: await this.petitionsService.getMyCommentInfo(petitionId, req.user) };
+    }
+
+    @UseGuards(JwtAuthGuard, IsStudentGuard)
+    @Post("/:id/comments")
+    async postComment(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) petitionId: number, @Body() postCommentDto: PostCommentDto): Promise<void>
+    {
+        await this.petitionsService.postComment(petitionId, req.user, postCommentDto.comment);
     }
 
     @UseGuards(JwtAuthGuard, IsStudentGuard)

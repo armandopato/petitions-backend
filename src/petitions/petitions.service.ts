@@ -10,6 +10,9 @@ import { PetitionStatus } from 'src/types/ElementStatus';
 import { SchedulingService } from 'src/scheduling/scheduling.service';
 import { ResolutionsService } from 'src/resolutions/resolutions.service';
 import { Resolution } from 'src/entities/resolution.entity';
+import { PetitionComment } from 'src/entities/comment.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 const DAY = 1000*60*60*24;
 const RESOLUTION_WINDOW = DAY*30;
@@ -21,7 +24,9 @@ export class PetitionsService
     constructor(
                 private petitionRepository: PetitionRepository,
                 private schedulingService: SchedulingService,
-                private resolutionsService: ResolutionsService
+                private resolutionsService: ResolutionsService,
+                @InjectRepository(PetitionComment)
+                private petitionCommentRepository: Repository<PetitionComment>
                 ) {}
 
     async getPetitionsPageBySchool(params: PetitionQueryParams, user: User): Promise<Page<PetitionInfo>>
@@ -172,5 +177,24 @@ export class PetitionsService
             pageElements: commentInfoArr,
             totalPages
         };
+    }
+
+    async getMyCommentInfo(petitionId: number, user: StudentUser): Promise<CommentInfo>
+    {
+        return await this.petitionRepository.getUserCommentInfo(petitionId, user.id);
+    }
+
+    
+    async postComment(petitionId: number, user: StudentUser, commentText: string): Promise<void>
+    {
+        const userComment = await this.petitionRepository.getUserComment(petitionId, user.id);
+        if (userComment) throw new ConflictException();
+
+        const newComment = new PetitionComment();
+        newComment.by = user;
+        newComment.petition = { id: petitionId } as Petition;
+        newComment.text = commentText;
+
+        await this.petitionCommentRepository.save(newComment);
     }
 }

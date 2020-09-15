@@ -9,6 +9,7 @@ import { OrderBy } from "src/types/OrderBy";
 import { CommentInfo, PetitionInfo } from "src/types/ElementInfo";
 import { PetitionStatus } from "src/types/ElementStatus";
 import { CreatePetitionDto } from "./dto/create-petition.dto";
+import { NotFoundException } from "@nestjs/common";
 
 
 @EntityRepository(Petition)
@@ -222,6 +223,24 @@ export class PetitionRepository extends Repository<Petition>
 
         return await getPage(query, page);
     }
+
+    async getUserComment(petitionId: number, userId: number): Promise<PetitionComment>
+    {
+        return await this.connection.createQueryBuilder(PetitionComment, "comment")
+                                    .innerJoin("comment.petition", "petition")
+                                    .innerJoin("comment.by", "user")
+                                    .where("petition.id = :id", { id: petitionId })
+                                    .andWhere("user.id = :userId", { userId: userId })
+                                    .getOne();
+    }
+
+    async getUserCommentInfo(petitionId: number, userId: number): Promise<CommentInfo>
+    {
+        const comment = await this.getUserComment(petitionId, userId);
+        if (!comment) throw new NotFoundException();
+        return await this.getCommentInfo(comment);
+    }
+
 
     async getNumberOfPetitionCommentLikes(commentId: number): Promise<number>
     {
