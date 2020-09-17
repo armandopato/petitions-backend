@@ -5,7 +5,7 @@ import { PetitionComment } from "src/entities/comment.entity";
 import { Page } from "src/types/Page";
 import { PetitionQueryParams } from "./dto/petition-query-params.dto";
 import { getPage } from "src/util/getPage";
-import { OrderBy } from "src/types/OrderBy";
+import { PetitionOrderBy as OrderBy } from "src/types/OrderBy";
 import { CommentInfo, PetitionInfo } from "src/types/ElementInfo";
 import { PetitionStatus } from "src/types/ElementStatus";
 import { CreatePetitionDto } from "./dto/create-petition.dto";
@@ -90,7 +90,7 @@ export class PetitionRepository extends Repository<Petition>
 
     async didUserSave(id: number, userId: number): Promise<boolean>
     {
-        const saved = await this.connection.createQueryBuilder(StudentUser, "user")
+        const saved = await this.connection.createQueryBuilder(User, "user")
                                             .innerJoinAndSelect("user.savedPetitions", "petition")
                                             .where("user.id = :userId", { userId: userId })
                                             .andWhere("petition.id = :id", { id: id })

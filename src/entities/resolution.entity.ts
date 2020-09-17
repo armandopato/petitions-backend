@@ -4,6 +4,7 @@ import { SupportTeamUser, StudentUser, User } from "src/entities/user.entity";
 import { ResolutionComment } from "./comment.entity";
 import { SchoolType } from "src/types/School";
 import { Length } from "src/types/Length";
+import { ResolutionStatus } from "src/types/ElementStatus";
 
 
 @Entity()
@@ -33,6 +34,12 @@ export class Resolution
     @OneToOne(() => Petition, petition => petition.resolution)
     @JoinColumn()
     petition: Petition;
+
+    @Column({
+        type: "enum",
+        enum: ResolutionStatus
+    })
+    status: ResolutionStatus;
 
     @ManyToOne(() => SupportTeamUser, user => user.myResolutions)
     by?: SupportTeamUser;

@@ -9,7 +9,6 @@ import { CreatePetitionDto } from './dto/create-petition.dto';
 import { PetitionStatus } from 'src/types/ElementStatus';
 import { SchedulingService } from 'src/scheduling/scheduling.service';
 import { ResolutionsService } from 'src/resolutions/resolutions.service';
-import { Resolution } from 'src/entities/resolution.entity';
 import { PetitionComment } from 'src/entities/comment.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -69,14 +68,6 @@ export class PetitionsService
     }
 
 
-    async createAssociatedResolution(petitionId: number): Promise<Resolution>
-    {
-        const resolution = await this.resolutionsService.createResolution(petitionId);
-        await this.petitionRepository.update(petitionId, { status: PetitionStatus.IN_PROGRESS });
-        return resolution;
-    }
-
-
     async getPetitionInfoById(petitionId: number, user: User): Promise<PetitionInfo>
     {
         const petition = await this.petitionRepository.findOne(petitionId);
@@ -108,7 +99,7 @@ export class PetitionsService
 
         if (await this.petitionRepository.countNumberOfVotes(petitionId) >= MIN_VOTES)
         {
-            const associatedRes = await this.createAssociatedResolution(petitionId);
+            const associatedRes = await this.resolutionsService.createAssociatedResolution(petitionId);
             await this.resolutionsService.triggerNewResolutionNotifications(associatedRes);
         }
     }

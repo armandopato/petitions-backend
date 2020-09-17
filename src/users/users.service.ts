@@ -122,34 +122,7 @@ export class UserService {
     async getSavedResolutions(user: User, page: number): Promise<Page<ResolutionInfo>>
     {
         const { pageElements: resolutions, totalPages } = await this.userRepository.getSavedResolutionsPage(user.id, page);
-        const savedResolutionsInfo: ResolutionInfo[] = [];
-
-        for (const resolution of resolutions)
-        {
-            const status = this.resolutionRepository.determineResolutionStatus(resolution);
-
-            const resolutionInfo: ResolutionInfo = {
-                id: resolution.id,
-                title: await this.resolutionRepository.getTitle(resolution.id),
-                status: status,
-                didSave: true
-            };
-
-            if (status === ResolutionStatus.TERMINATED)
-            {
-                resolutionInfo.resolutionDate = resolution.resolutionDate;
-                resolutionInfo.numRejectionVotes = await this.resolutionRepository.countNumberOfRejectionVotes(resolution.id);
-                resolutionInfo.numComments = await this.resolutionRepository.countNumberOfComments(resolution.id);
-                resolutionInfo.didVote = await this.resolutionRepository.didUserVote(resolution.id, user.id);
-            }
-            else
-            {
-                resolutionInfo.startDate = resolution.startDate;
-                resolutionInfo.deadline = resolution.deadline;
-            }
-
-            savedResolutionsInfo.push(resolutionInfo);
-        } 
+        const savedResolutionsInfo: ResolutionInfo[] = await this.resolutionRepository.mapResolutionsToAuthResolutionsInfo(resolutions, user);
 
         return {
             totalPages: totalPages,
