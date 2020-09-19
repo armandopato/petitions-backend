@@ -9,6 +9,8 @@ import { PetitionOrderBy as OrderBy } from "src/types/OrderBy";
 import { CommentInfo, PetitionInfo } from "src/types/ElementInfo";
 import { CreatePetitionDto } from "./dto/create-petition.dto";
 import { NotFoundException } from "@nestjs/common";
+import { Resolution } from "src/entities/resolution.entity";
+import { PetitionStatus } from "src/types/ElementStatus";
 
 
 @EntityRepository(Petition)
@@ -25,7 +27,30 @@ export class PetitionRepository extends Repository<Petition>
         
         if (show)
         {
-            query.andWhere("petition.status = :status", { status: show });
+            switch(show)
+            {
+                case PetitionStatus.NO_RESOLUTION:
+                    query.leftJoin("petition.resolution", "res")
+                        .andWhere("res.id = null");
+                    break;
+
+                case PetitionStatus.IN_PROGRESS:
+                    query.innerJoin("petition.resolution", "res")
+                        .andWhere("res.resolutionDate = null")
+                        .andWhere("res.deadline <= NOW()");
+                    break;                
+                
+                case PetitionStatus.OVERDUE:
+                    query.innerJoin("petition.resolution", "res")
+                        .andWhere("res.resolutionDate = null")
+                        .andWhere("res.deadline > NOW()");
+                    break;
+        
+                case PetitionStatus.TERMINATED:
+                    query.innerJoin("petition.resolution", "res")
+                        .andWhere("NOT res.resolutionDate = null");
+                    break;
+            }
         }
         
         if (search)
@@ -53,8 +78,13 @@ export class PetitionRepository extends Repository<Petition>
                 break;
 
             case OrderBy.RELEVANCE:
-                query.orderBy("CASE WHEN petition.status = 'overdue' THEN 1 ELSE 2 END")
-                    .addOrderBy("petition.id", "DESC");
+                if (!show)
+                {
+                    query.leftJoin("petition.resolution", "res")
+                        .addSelect("CASE WHEN res.resolutionDate = null AND res.deadline > NOW() THEN 1 ELSE 2 END", "relevance")
+                        .orderBy("relevance", "ASC");
+                }
+                query.addOrderBy("petition.id", "DESC")
                 break;
         }
 
@@ -101,12 +131,13 @@ export class PetitionRepository extends Repository<Petition>
     {
         const numVotes = await this.countNumberOfVotes(petition.id);
         const numComments = await this.countNumberOfComments(petition.id);
+        const status = await this.getPetitionStatus(petition.id);
 
         const petitionInfo: PetitionInfo = {
             id: petition.id,
             title: petition.title,
             date: petition.createdDate,
-            status: petition.status,
+            status: status,
             numVotes: numVotes,
             numComments: numComments
         };
@@ -325,5 +356,21 @@ export class PetitionRepository extends Repository<Petition>
                 .relation(PetitionComment, "likedBy")
                 .of(commentId)
                 .remove(userId);
+    }
+
+    async getPetitionStatus(id: number): Promise<PetitionStatus>
+    {
+        const resolution = await this.connection.createQueryBuilder(Resolution, "resolution")
+                                                .innerJoin("resolution.petition", "petition")
+                                                .where("petition.id = :id", { id: id })
+                                                .getOne();
+        
+        if (!resolution) return PetitionStatus.NO_RESOLUTION;
+
+        else if (resolution.resolutionText) return PetitionStatus.TERMINATED;
+
+        else if (resolution.deadline < new Date(Date.now())) return PetitionStatus.OVERDUE;
+
+        else return PetitionStatus.IN_PROGRESS;
     }
 }

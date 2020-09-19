@@ -14,7 +14,6 @@ import { Role } from 'src/types/Role';
 import { PetitionInfo, ResolutionInfo } from 'src/types/ElementInfo';
 import { PetitionRepository } from 'src/petitions/petitions.repository';
 import { ResolutionRepository } from 'src/resolutions/resolutions.repository';
-import { ResolutionStatus } from 'src/types/ElementStatus';
 import { UserNotificationInfo } from 'src/types/UserNotificationInfo';
 import { UserSettingsAndSchoolDto, ChangeUserSettingsDto } from './dto/user-settings.dto';
 import { Settings } from 'src/entities/settings.entity';
@@ -172,7 +171,7 @@ export class UserService {
     getUserSettingsAndSchool(user: User): UserSettingsAndSchoolDto
     {
         return {
-            new: user.settings.notifyNewResolutions,
+            newRes: user.settings.notifyNewResolutions,
             terminated: user.settings.notifyTerminatedResolutions,
             overdue: user.settings.notifyOverdueResolutions,
             school: {

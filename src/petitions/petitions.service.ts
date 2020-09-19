@@ -6,7 +6,6 @@ import { CommentInfo, PetitionInfo } from 'src/types/ElementInfo';
 import { PetitionRepository } from './petitions.repository';
 import { Petition } from 'src/entities/petition.entity';
 import { CreatePetitionDto } from './dto/create-petition.dto';
-import { PetitionStatus } from 'src/types/ElementStatus';
 import { ResolutionsService } from 'src/resolutions/resolutions.service';
 import { PetitionComment } from 'src/entities/comment.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -54,7 +53,6 @@ export class PetitionsService
         newPetition.campus = user.school.campus;
         newPetition.title = title;
         newPetition.description = description;
-        newPetition.status = PetitionStatus.NO_RESOLUTION;
         newPetition.by = user;
 
         const { id } = await this.petitionRepository.save(newPetition);

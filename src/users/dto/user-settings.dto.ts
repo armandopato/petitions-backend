@@ -3,7 +3,7 @@ import { IsBoolean, IsEnum } from "class-validator";
 
 export class UserSettingsAndSchoolDto
 {
-    new: boolean;
+    newRes: boolean;
     terminated: boolean;
     overdue: boolean;
     school: {

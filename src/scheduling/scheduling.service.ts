@@ -2,6 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { CronJob } from 'cron';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { ResolutionsService } from 'src/resolutions/resolutions.service';
+import { Resolution } from 'src/entities/resolution.entity';
 
 
 @Injectable()
@@ -12,12 +13,12 @@ export class SchedulingService
                 private resolutionsService: ResolutionsService
                 ) {}
     
-    scheduleResolutionDeadline(resolutionId: number, petitionId: number, deadline: Date): void
+    scheduleResolutionDeadline(resolution: Resolution, deadline: Date): void
     {
-        const handler = async () => await this.resolutionsService.changeResolutionStatusToOverdue(resolutionId, petitionId);
+        const handler = async () => await this.resolutionsService.triggerOverdueResolutionNotifications(resolution);
         const job = new CronJob(deadline, handler);
 
-        this.scheduler.addCronJob(resolutionId.toString(), job);
+        this.scheduler.addCronJob(resolution.id.toString(), job);
         job.start();
     }
 
