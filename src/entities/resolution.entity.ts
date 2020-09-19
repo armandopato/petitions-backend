@@ -19,7 +19,7 @@ export class Resolution
     @Column()
     deadline: Date;
 
-    @Column()
+    @Column({ nullable: true })
     resolutionDate?: Date;
 
     @Column({
@@ -28,7 +28,7 @@ export class Resolution
     })
     campus: SchoolType;
 
-    @Column({ type: "varchar", length: Length.RESOLUTION_TEXT })
+    @Column({ type: "varchar", length: Length.RESOLUTION_TEXT, nullable: true })
     resolutionText?: string;
 
     @OneToOne(() => Petition, petition => petition.resolution)
@@ -41,7 +41,7 @@ export class Resolution
     })
     status: ResolutionStatus;
 
-    @ManyToOne(() => SupportTeamUser, user => user.myResolutions)
+    @ManyToOne(() => SupportTeamUser, user => user.myResolutions, { nullable: true })
     by?: SupportTeamUser;
 
     @ManyToMany(() => StudentUser, studentUser => studentUser.votedResolutions)

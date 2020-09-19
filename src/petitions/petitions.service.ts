@@ -7,14 +7,12 @@ import { PetitionRepository } from './petitions.repository';
 import { Petition } from 'src/entities/petition.entity';
 import { CreatePetitionDto } from './dto/create-petition.dto';
 import { PetitionStatus } from 'src/types/ElementStatus';
-import { SchedulingService } from 'src/scheduling/scheduling.service';
 import { ResolutionsService } from 'src/resolutions/resolutions.service';
 import { PetitionComment } from 'src/entities/comment.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-const DAY = 1000*60*60*24;
-const RESOLUTION_WINDOW = DAY*30;
+
 const MIN_VOTES = 100;
 
 @Injectable()
@@ -22,7 +20,6 @@ export class PetitionsService
 {
     constructor(
                 private petitionRepository: PetitionRepository,
-                private schedulingService: SchedulingService,
                 private resolutionsService: ResolutionsService,
                 @InjectRepository(PetitionComment)
                 private petitionCommentRepository: Repository<PetitionComment>
@@ -52,7 +49,6 @@ export class PetitionsService
     async postPetition(user: StudentUser, createPetitionDto: CreatePetitionDto): Promise<number>
     {
         const { title, description } = createPetitionDto;
-        const deadline = new Date(Date.now() + RESOLUTION_WINDOW);
 
         const newPetition = new Petition();
         newPetition.campus = user.school.campus;
@@ -60,7 +56,6 @@ export class PetitionsService
         newPetition.description = description;
         newPetition.status = PetitionStatus.NO_RESOLUTION;
         newPetition.by = user;
-        newPetition.deadline = deadline;
 
         const { id } = await this.petitionRepository.save(newPetition);
         

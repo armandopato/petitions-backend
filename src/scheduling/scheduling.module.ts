@@ -1,10 +1,9 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { PetitionsModule } from 'src/petitions/petitions.module';
 import { SchedulingService } from './scheduling.service';
-import { ScheduleModule } from '@nestjs/schedule';
+import { ResolutionsModule } from 'src/resolutions/resolutions.module';
 
 @Module({
-    imports: [ScheduleModule, forwardRef(() => PetitionsModule)],
+    imports: [forwardRef(() => ResolutionsModule)],
     providers: [SchedulingService],
     exports: [SchedulingService]
 })

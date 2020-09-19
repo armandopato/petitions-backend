@@ -28,7 +28,7 @@ export class ResolutionRepository extends Repository<Resolution>
         {
             query.andWhere("resolution.status = :status", { status: show });
         }
-        
+
         if (search)
         {
             query.leftJoin("resolution.petition", "petition")
@@ -47,12 +47,13 @@ export class ResolutionRepository extends Repository<Resolution>
                 break;
 
             case OrderBy.RELEVANCE:
-                query.orderBy("CASE WHEN resolution.status = 'overdue' THEN 1 ELSE 2 END")
+                query.addSelect("CASE WHEN resolution.status = 'overdue' THEN 1 ELSE 2 END", "relevance")
+                    .orderBy("relevance", "ASC")
                     .addOrderBy("resolution.id", "DESC");
                 break;
         }
-
-        return await getPage(query, page);;
+        query.printSql()
+        return await getPage(query, page);
     }
 
     async getResolutionInfo(resolution: Resolution): Promise<ResolutionInfo>

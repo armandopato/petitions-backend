@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { StudentUser, User } from 'src/entities/user.entity';
+import { StudentUser, SupportTeamUser, User } from 'src/entities/user.entity';
 
 export interface AuthRequest extends Request
 {
@@ -9,4 +9,9 @@ export interface AuthRequest extends Request
 export interface AuthStudentRequest extends Request
 {
     user: StudentUser;
+}
+
+export interface AuthSupportRequest extends Request
+{
+    user: SupportTeamUser;
 }

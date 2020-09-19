@@ -1,11 +1,12 @@
-import { Controller, Get, Param, Patch, Post, Query, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
 import { IsSupportGuard } from 'src/auth/guards/isSupport.guard';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { JwtOptionalAuthGuard } from 'src/auth/guards/jwt-optional-auth.guard';
-import { AuthRequest } from 'src/types/AuthRequest';
+import { AuthRequest, AuthSupportRequest } from 'src/types/AuthRequest';
 import { ResolutionInfo } from 'src/types/ElementInfo';
 import { Page } from 'src/types/Page';
 import { PositiveIntPipe } from 'src/util/positive-int.pipe';
+import { PostTerminatedResolutionDto } from './dto/post-terminated-resolution.dto';
 import { ResolutionQueryParams } from './dto/resolution-query.params.dto';
 import { ResolutionsService } from './resolutions.service';
 
@@ -23,9 +24,11 @@ export class ResolutionsController
 
     @UseGuards(JwtAuthGuard, IsSupportGuard)
     @Post()
-    async postResolution(): Promise<void>
+    async postTerminatedResolution(@Request() req: AuthSupportRequest, @Body() postTerminatedResolutionDto: PostTerminatedResolutionDto): Promise<{ resolutionId: number }>
     {
-        return;
+        return {
+            resolutionId: await this.resolutionsService.resolvePetition(postTerminatedResolutionDto, req.user)
+        };
     }
 
     @UseGuards(JwtOptionalAuthGuard)
@@ -35,12 +38,21 @@ export class ResolutionsController
         return;
     }
 
+    @UseGuards(JwtOptionalAuthGuard)
+    @Put(':id')
+    async terminateResolutionById(): Promise<void>
+    {
+        return;
+    }
+
     @UseGuards(JwtAuthGuard)
-    @Patch("/:id")
+    @Patch(":id")
     async saveOrUnsaveResolution(@Request() req: AuthRequest, @Param('id', PositiveIntPipe) resolutionId: number): Promise<void>
     {
         return;//await this.petitionsService.saveOrUnsavePetition(petitionId, req.user);
     }
+
+    // rejection votes functionality
 
     /*
 

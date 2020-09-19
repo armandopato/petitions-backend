@@ -7,7 +7,6 @@ import { PetitionQueryParams } from "./dto/petition-query-params.dto";
 import { getPage } from "src/util/getPage";
 import { PetitionOrderBy as OrderBy } from "src/types/OrderBy";
 import { CommentInfo, PetitionInfo } from "src/types/ElementInfo";
-import { PetitionStatus } from "src/types/ElementStatus";
 import { CreatePetitionDto } from "./dto/create-petition.dto";
 import { NotFoundException } from "@nestjs/common";
 
@@ -111,11 +110,6 @@ export class PetitionRepository extends Repository<Petition>
             numVotes: numVotes,
             numComments: numComments
         };
-
-        if (petition.status === PetitionStatus.NO_RESOLUTION)
-        {
-            petitionInfo.deadline = petition.deadline;
-        }
 
         return petitionInfo;
     }
