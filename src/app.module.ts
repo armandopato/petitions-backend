@@ -8,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SchedulingModule } from './scheduling/scheduling.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -18,7 +19,8 @@ import { SchedulingModule } from './scheduling/scheduling.module';
     PetitionsModule,
     ResolutionsModule,
     UserModule,
-    SchedulingModule
+    SchedulingModule,
+    NotificationsModule
   ],
   controllers: [AppController]
 })

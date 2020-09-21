@@ -2,7 +2,6 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToOne, Joi
 import { Petition } from "src/entities/petition.entity";
 import { SupportTeamUser, StudentUser, User } from "src/entities/user.entity";
 import { ResolutionComment } from "./comment.entity";
-import { SchoolType } from "src/types/School";
 import { Length } from "src/types/Length";
 
 
@@ -20,12 +19,6 @@ export class Resolution
 
     @Column({ nullable: true })
     resolutionDate?: Date;
-
-    @Column({
-        type: "enum",
-        enum: SchoolType
-    })
-    campus: SchoolType;
 
     @Column({ type: "varchar", length: Length.RESOLUTION_TEXT, nullable: true })
     resolutionText?: string;

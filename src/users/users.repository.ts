@@ -4,10 +4,8 @@ import { CreateUserDto } from "./dto/create-user.dto";
 import { School } from "src/entities/school.entity";
 import { Settings } from "src/entities/settings.entity";
 import { hash } from 'bcrypt';
-import { NotFoundException } from "@nestjs/common";
 import { Petition } from "src/entities/petition.entity";
 import { Resolution } from "src/entities/resolution.entity";
-import { UserNotification } from "src/entities/notification.entity";
 import { getPage } from "src/util/getPage";
 import { Page } from "src/types/Page";
 
@@ -35,87 +33,6 @@ export class UserRepository extends Repository<User>
                                             .orderBy("resolution.id", "DESC");
 											
         return await getPage(query, page);
-    }
-
-    
-    async deleteUserNotifications(userId: number): Promise<void>
-    {
-        const query = this.connection.createQueryBuilder(UserNotification, "notification")
-                                    .innerJoinAndSelect("notification.users", "user")
-                                    .where("user.id = :userId", { userId: userId });
-
-        const [notifications, numNotifications] = await query.getManyAndCount();
-        if (numNotifications === 0) throw new NotFoundException();
-
-        await query.delete()
-                    .from("user_notifications_user_notification")
-                    .where("userId = :userId", { userId: userId })
-                    .execute()
-        
-        const notificationIds = notifications.map(not => not.id);
-        this.cleanNotifications(notificationIds);
-    }
-
-
-    async deleteUserNotificationById(userId: number, notificationId: number): Promise<void>
-    {
-        const query = this.connection.createQueryBuilder(UserNotification, "notification")
-                                    .innerJoinAndSelect("notification.users", "user")
-                                    .where("user.id = :userId", { userId: userId })
-                                    .andWhere("notification.id = :id", { id: notificationId });
-                        
-        const notification = await query.getCount();
-        if (!notification) throw new NotFoundException();
-
-        await query.relation(UserNotification, "users")
-                    .of(notificationId)
-                    .remove(userId);
-        
-        this.cleanNotification(notificationId);
-    }
-
-
-    async getUserNotificationsPage(userId: number, page: number): Promise<Page<UserNotification>>
-    {
-        const query = this.connection.createQueryBuilder(UserNotification, "notification")
-                                                .innerJoinAndSelect("notification.users", "user")
-                                                .where("user.id = :id", { id: userId });
-        
-        return await getPage(query, page);
-    }
-
-    async getNumberOfUnreadNotifications(userId: number): Promise<number>
-    {
-        return await this.connection.createQueryBuilder(UserNotification, "notification")
-                        .innerJoinAndSelect("notification.users", "user")
-                        .where("user.id = :id", { id: userId })
-                        .andWhere("notification.seen = :seen", { seen: false })
-                        .getCount();
-    }
-
-    private async cleanNotifications(notificationIds: number[]): Promise<void>
-    {
-        for (const id of notificationIds)
-        {
-            await this.cleanNotification(id);
-        }
-    }
-
-    private async cleanNotification(notificationId: number): Promise<void>
-    {
-        const queryBuilder = this.connection.createQueryBuilder(UserNotification, "notification");
-
-        const numOfAssociatedUsers = await queryBuilder.innerJoinAndSelect("notification.users", "user")
-                                    .where("notification.id = :id", { id: notificationId })
-                                    .getCount();
-        
-        if (numOfAssociatedUsers === 0)
-        {
-            await queryBuilder.delete()
-                                .from(UserNotification, "notification")
-                                .where("notification.id = :notificationId", { notificationId: notificationId })
-                                .execute();
-        }
     }
 }
 

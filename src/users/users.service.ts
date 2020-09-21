@@ -14,7 +14,6 @@ import { Role } from 'src/types/Role';
 import { PetitionInfo, ResolutionInfo } from 'src/types/ElementInfo';
 import { PetitionRepository } from 'src/petitions/petitions.repository';
 import { ResolutionRepository } from 'src/resolutions/resolutions.repository';
-import { UserNotificationInfo } from 'src/types/UserNotificationInfo';
 import { UserSettingsAndSchoolDto, ChangeUserSettingsDto } from './dto/user-settings.dto';
 import { Settings } from 'src/entities/settings.entity';
 import { SchoolType } from 'src/types/School';
@@ -127,45 +126,6 @@ export class UserService {
             totalPages: totalPages,
             pageElements: savedResolutionsInfo
         };
-    }
-
-    async getUserNotifications(user: User, page: number): Promise<Page<UserNotificationInfo>>
-    {
-        const { totalPages, pageElements: notifications } = await this.userRepository.getUserNotificationsPage(user.id, page);
-        const notificationsInfo: UserNotificationInfo[] = [];
-        
-        for (const notification of notifications)
-        {
-            const { id, title } = await this.resolutionRepository.getIdAndTitleByNotificationId(notification.id);
-
-            notificationsInfo.push({
-                id: notification.id,
-                seen: notification.seen,
-                type: notification.type,
-                resolutionId: id,
-                resoutionTitle: title
-            });
-        }
-
-        return {
-            totalPages: totalPages,
-            pageElements: notificationsInfo
-        };
-    }
-
-    async getNumberOfUnreadNotifications(user: User): Promise<number>
-    {
-        return await this.userRepository.getNumberOfUnreadNotifications(user.id);
-    }
-
-    async deleteUserNotifications(user: User): Promise<void>
-    {
-        await this.userRepository.deleteUserNotifications(user.id);
-    }
-
-    async deleteUserNotificationById(user: User, notificationId: number): Promise<void>
-    {
-        await this.userRepository.deleteUserNotificationById(user.id, notificationId);
     }
 
     getUserSettingsAndSchool(user: User): UserSettingsAndSchoolDto

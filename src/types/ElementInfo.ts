@@ -18,9 +18,11 @@ export class ResolutionInfo
     id: number;
     title: string;
     status: ResolutionStatus;
+    petitionId: number;
     startDate?: Date;
     deadline?: Date;
     resolutionDate?: Date;
+    resolutionText?: string;
     numRejectionVotes?: number;
     numComments?: number;
     didSave?: boolean;

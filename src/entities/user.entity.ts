@@ -4,9 +4,9 @@ import { Settings } from "./settings.entity";
 import { Role } from "src/types/Role";
 import { Petition } from "src/entities/petition.entity";
 import { Resolution } from "src/entities/resolution.entity";
-import { UserNotification } from "./notification.entity";
 import { Length } from "src/types/Length";
 import { PetitionComment, ResolutionComment } from "./comment.entity";
+import { UserToNotification } from "./user-to-notification.entity";
 
 @Entity()
 @TableInheritance({ column: { type: 'enum', enum: Role, name: 'role' } })
@@ -47,9 +47,8 @@ export class User
     @JoinColumn()
     settings: Settings;
 
-    @ManyToMany(() => UserNotification, notification => notification.users)
-    @JoinTable()
-    notifications: UserNotification[];
+    @OneToMany(() => UserToNotification, notificationRelation => notificationRelation.user)
+    userToNotifications: UserToNotification[];
 
     @ManyToMany(() => Petition, petition => petition.savedBy)
     @JoinTable()

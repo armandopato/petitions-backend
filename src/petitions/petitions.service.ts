@@ -92,8 +92,7 @@ export class PetitionsService
 
         if (await this.petitionRepository.countNumberOfVotes(petitionId) >= MIN_VOTES)
         {
-            const associatedRes = await this.resolutionsService.createAssociatedResolution(petitionId);
-            await this.resolutionsService.triggerNewResolutionNotifications(associatedRes);
+            await this.resolutionsService.createAssociatedResolution(petitionId);
         }
     }
 

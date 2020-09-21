@@ -21,7 +21,8 @@ export class ResolutionRepository extends Repository<Resolution>
     {
         const { page, orderBy, year, school, show, search } = params;
         const query = this.connection.createQueryBuilder(Resolution, "resolution")
-                                    .where("resolution.campus = :school", { school })
+                                    .innerJoinAndSelect("resolution.petition", "petition")
+                                    .where("petition.campus = :school", { school })
                                     .andWhere("date_part('year', resolution.startDate) = :year", { year });
         
         if (show)
@@ -29,16 +30,16 @@ export class ResolutionRepository extends Repository<Resolution>
             switch(show)
             {
                 case ResolutionStatus.TERMINATED:
-                    query.andWhere("NOT resolution.resolutionDate = null");
+                    query.andWhere("NOT resolution.resolutionDate IS NULL");
                     break;
                 
                 case ResolutionStatus.OVERDUE:
-                    query.andWhere("resolution.resolutionDate = null")
+                    query.andWhere("resolution.resolutionDate IS NULL")
                         .andWhere("resolution.deadline > NOW()");
                     break;
         
                 case ResolutionStatus.IN_PROGRESS:
-                    query.andWhere("resolution.resolutionDate = null")
+                    query.andWhere("resolution.resolutionDate IS NULL")
                         .andWhere("resolution.deadline <= NOW()");
                     break;
             }
@@ -64,7 +65,7 @@ export class ResolutionRepository extends Repository<Resolution>
             case OrderBy.RELEVANCE:
                 if (!show)
                 {
-                    query.addSelect("CASE WHEN resolution.resolutionDate = null AND resolution.deadline > NOW() THEN 1 ELSE 2 END", "relevance")
+                    query.addSelect("CASE WHEN resolution.resolutionDate IS NULL AND resolution.deadline > NOW() THEN 1 ELSE 2 END", "relevance")
                         .orderBy("relevance", "ASC");
                 }
                 query.addOrderBy("resolution.id", "DESC");
@@ -85,7 +86,8 @@ export class ResolutionRepository extends Repository<Resolution>
     {
         const resolutionInfo: ResolutionInfo = {
             id: resolution.id,
-            title: await this.getTitle(resolution.id),
+            petitionId: resolution.petition.id,
+            title: resolution.petition.title,
             status: this.getResolutionStatus(resolution)
         };
 

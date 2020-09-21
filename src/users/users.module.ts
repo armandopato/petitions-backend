@@ -10,10 +10,12 @@ import { PetitionRepository } from 'src/petitions/petitions.repository';
 import { ResolutionRepository } from 'src/resolutions/resolutions.repository';
 import { Settings } from 'src/entities/settings.entity';
 import { PetitionsModule } from 'src/petitions/petitions.module';
+import { NotificationsModule } from 'src/notifications/notifications.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([StudentUserRepository, SupportTeamUserRepository, UserRepository, PetitionRepository, ResolutionRepository, Settings]),
             AuthModule,
+            NotificationsModule,
             PetitionsModule,
             JwtModule.registerAsync({
               imports: [AuthModule],

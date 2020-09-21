@@ -31,24 +31,24 @@ export class PetitionRepository extends Repository<Petition>
             {
                 case PetitionStatus.NO_RESOLUTION:
                     query.leftJoin("petition.resolution", "res")
-                        .andWhere("res.id = null");
+                        .andWhere("res.id IS NULL");
                     break;
 
                 case PetitionStatus.IN_PROGRESS:
                     query.innerJoin("petition.resolution", "res")
-                        .andWhere("res.resolutionDate = null")
+                        .andWhere("res.resolutionDate IS NULL")
                         .andWhere("res.deadline <= NOW()");
                     break;                
                 
                 case PetitionStatus.OVERDUE:
                     query.innerJoin("petition.resolution", "res")
-                        .andWhere("res.resolutionDate = null")
+                        .andWhere("res.resolutionDate IS NULL")
                         .andWhere("res.deadline > NOW()");
                     break;
         
                 case PetitionStatus.TERMINATED:
                     query.innerJoin("petition.resolution", "res")
-                        .andWhere("NOT res.resolutionDate = null");
+                        .andWhere("NOT res.resolutionDate IS NULL");
                     break;
             }
         }
@@ -81,7 +81,7 @@ export class PetitionRepository extends Repository<Petition>
                 if (!show)
                 {
                     query.leftJoin("petition.resolution", "res")
-                        .addSelect("CASE WHEN res.resolutionDate = null AND res.deadline > NOW() THEN 1 ELSE 2 END", "relevance")
+                        .addSelect("CASE WHEN res.resolutionDate IS NULL AND res.deadline > NOW() THEN 1 ELSE 2 END", "relevance")
                         .orderBy("relevance", "ASC");
                 }
                 query.addOrderBy("petition.id", "DESC")
@@ -369,8 +369,8 @@ export class PetitionRepository extends Repository<Petition>
 
         else if (resolution.resolutionText) return PetitionStatus.TERMINATED;
 
-        else if (resolution.deadline < new Date(Date.now())) return PetitionStatus.OVERDUE;
+        else if (resolution.deadline <= new Date(Date.now())) return PetitionStatus.IN_PROGRESS;
 
-        else return PetitionStatus.IN_PROGRESS;
+        else return PetitionStatus.OVERDUE;
     }
 }

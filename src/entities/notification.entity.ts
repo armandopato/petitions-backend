@@ -1,8 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, OneToOne, JoinColumn } from "typeorm";
-import { User } from "./user.entity";
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, OneToMany } from "typeorm";
 import { Resolution } from "src/entities/resolution.entity";
-import { SchoolType } from "src/types/School";
-import { NotificationType } from "src/types/NotificationType";
+import { UserToNotification } from "./user-to-notification.entity";
+import { ResolutionStatus } from "src/types/ElementStatus";
 
 @Entity()
 export class UserNotification
@@ -10,23 +9,14 @@ export class UserNotification
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToMany(() => User, user => user.notifications)
-    users: User[];
+    @OneToMany(() => UserToNotification, notificationRelation => notificationRelation.notification)
+    userToNotifications: UserToNotification[];
 
     @Column({
         type: "enum",
-        enum: SchoolType
+        enum: ResolutionStatus
     })
-    campus: SchoolType;
-
-    @Column({ default: false })
-    seen: boolean;
-
-    @Column({
-        type: "enum",
-        enum: NotificationType
-    })
-    type: NotificationType;
+    type: ResolutionStatus;
 
     @OneToOne(() => Resolution)
     @JoinColumn()

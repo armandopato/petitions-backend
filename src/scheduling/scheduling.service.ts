@@ -1,21 +1,20 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CronJob } from 'cron';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { ResolutionsService } from 'src/resolutions/resolutions.service';
 import { Resolution } from 'src/entities/resolution.entity';
+import { NotificationsService } from 'src/notifications/notifications.service';
 
 
 @Injectable()
 export class SchedulingService
 {    
     constructor(private scheduler: SchedulerRegistry,
-                @Inject(forwardRef(() => ResolutionsService))
-                private resolutionsService: ResolutionsService
+                private notificationsService: NotificationsService
                 ) {}
     
     scheduleResolutionDeadline(resolution: Resolution, deadline: Date): void
     {
-        const handler = async () => await this.resolutionsService.triggerOverdueResolutionNotifications(resolution);
+        const handler = async () => await this.notificationsService.triggerNotifications(resolution);
         const job = new CronJob(deadline, handler);
 
         this.scheduler.addCronJob(resolution.id.toString(), job);

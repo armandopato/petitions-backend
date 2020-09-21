@@ -1,10 +1,10 @@
-import { NotificationType } from "./NotificationType";
+import { ResolutionStatus } from "./ElementStatus";
 
 export class UserNotificationInfo
 {
     id: number;
     seen: boolean;
-    type: NotificationType;
+    type: ResolutionStatus;
     resolutionId: number;
     resoutionTitle: string;
 }
