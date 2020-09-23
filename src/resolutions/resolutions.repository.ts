@@ -1,15 +1,15 @@
-import { EntityRepository, Repository, getConnection } from "typeorm";
-import { Resolution } from "src/entities/resolution.entity";
-import { ResolutionStatus } from "src/types/ElementStatus";
-import { StudentUser, User } from "src/entities/user.entity";
-import { ResolutionComment } from "src/entities/comment.entity";
-import { Petition } from "src/entities/petition.entity";
-import { UserNotification } from "src/entities/notification.entity";
-import { Page } from "src/types/Page";
-import { ResolutionQueryParams } from "./dto/resolution-query.params.dto";
-import { ResolutionInfo } from "src/types/ElementInfo";
+import { EntityRepository, getConnection, Repository } from 'typeorm';
+import { Resolution } from 'src/entities/resolution.entity';
+import { ResolutionStatus } from 'src/types/ElementStatus';
+import { StudentUser, User } from 'src/entities/user.entity';
+import { ResolutionComment } from 'src/entities/comment.entity';
+import { Petition } from 'src/entities/petition.entity';
+import { UserNotification } from 'src/entities/notification.entity';
+import { Page } from 'src/types/Page';
+import { ResolutionQueryParams } from './dto/resolution-query.params.dto';
+import { ResolutionInfo } from 'src/types/ElementInfo';
 import { ResolutionOrderBy as OrderBy } from '../types/OrderBy';
-import { getPage } from "src/util/getPage";
+import { getPage } from 'src/util/getPage';
 
 
 @EntityRepository(Resolution)
@@ -35,12 +35,12 @@ export class ResolutionRepository extends Repository<Resolution>
                 
                 case ResolutionStatus.OVERDUE:
                     query.andWhere("resolution.resolutionDate IS NULL")
-                        .andWhere("resolution.deadline > NOW()");
+                        .andWhere("resolution.deadline < NOW()");
                     break;
         
                 case ResolutionStatus.IN_PROGRESS:
                     query.andWhere("resolution.resolutionDate IS NULL")
-                        .andWhere("resolution.deadline <= NOW()");
+                        .andWhere("resolution.deadline >= NOW()");
                     break;
             }
         }
@@ -65,7 +65,7 @@ export class ResolutionRepository extends Repository<Resolution>
             case OrderBy.RELEVANCE:
                 if (!show)
                 {
-                    query.addSelect("CASE WHEN resolution.resolutionDate IS NULL AND resolution.deadline > NOW() THEN 1 ELSE 2 END", "relevance")
+                    query.addSelect("CASE WHEN resolution.resolutionDate IS NULL AND resolution.deadline < NOW() THEN 1 ELSE 2 END", "relevance")
                         .orderBy("relevance", "ASC");
                 }
                 query.addOrderBy("resolution.id", "DESC");
@@ -78,7 +78,7 @@ export class ResolutionRepository extends Repository<Resolution>
     {
         const { deadline, resolutionDate } = resolution;
         if (resolutionDate) return ResolutionStatus.TERMINATED;
-        else if (deadline < new Date(Date.now())) return ResolutionStatus.IN_PROGRESS;
+        else if (deadline >= new Date(Date.now())) return ResolutionStatus.IN_PROGRESS;
         else return ResolutionStatus.OVERDUE;
     }
 
@@ -93,7 +93,7 @@ export class ResolutionRepository extends Repository<Resolution>
 
         if (resolutionInfo.status === ResolutionStatus.TERMINATED)
         {
-            resolutionInfo.numRejectionVotes = await this.countNumberOfRejectionVotes(resolution.id),
+            resolutionInfo.numRejectionVotes = await this.countNumberOfRejectionVotes(resolution.id);
             resolutionInfo.resolutionDate = resolution.resolutionDate;
             resolutionInfo.numComments = await this.countNumberOfComments(resolution.id);
         }
@@ -104,6 +104,26 @@ export class ResolutionRepository extends Repository<Resolution>
         }
 
         return resolutionInfo;
+    }
+
+    async getResolutionInfoWResText(resolution: Resolution): Promise<ResolutionInfo>
+    {
+        const info = await this.getResolutionInfo(resolution);
+        if (info.status === ResolutionStatus.TERMINATED)
+        {
+            info.resolutionText = resolution.resolutionText;
+        }
+        return info;
+    }
+
+    async getAuthResolutionInfoWResText(resolution: Resolution, user: User): Promise<ResolutionInfo>
+    {
+        const info = await this.getAuthResolutionInfo(resolution, user);
+        if (info.status === ResolutionStatus.TERMINATED)
+        {
+            info.resolutionText = resolution.resolutionText;
+        }
+        return info;
     }
 
     async getAuthResolutionInfo(resolution: Resolution, user: User): Promise<ResolutionInfo>

@@ -6,5 +6,5 @@ export class UserNotificationInfo
     seen: boolean;
     type: ResolutionStatus;
     resolutionId: number;
-    resoutionTitle: string;
+    resolutionTitle: string;
 }

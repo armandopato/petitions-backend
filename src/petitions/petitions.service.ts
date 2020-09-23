@@ -27,7 +27,7 @@ export class PetitionsService
     async getPetitionsPageBySchool(params: PetitionQueryParams, user: User): Promise<Page<PetitionInfo>>
     {
         const { pageElements: petitions, totalPages } = await this.petitionRepository.getPetitionsPage(params);
-        let petitionInfoArr: PetitionInfo[] = [];
+        let petitionInfoArr: PetitionInfo[];
 
         if (user)
         {
@@ -89,10 +89,10 @@ export class PetitionsService
             if (Number(err.code) === 23503) throw new NotFoundException();
             else throw new InternalServerErrorException();
         }
-
+        await this.resolutionsService.createAssociatedResolution(petitionId);
         if (await this.petitionRepository.countNumberOfVotes(petitionId) >= MIN_VOTES)
         {
-            await this.resolutionsService.createAssociatedResolution(petitionId);
+        
         }
     }
 

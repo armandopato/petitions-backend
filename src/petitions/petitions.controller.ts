@@ -33,7 +33,7 @@ export class PetitionsController
 
     @UseGuards(JwtOptionalAuthGuard)
     @Get("/:id")
-    async getPetitionInfoById(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) petitionId: number): Promise<PetitionInfo>
+    async getPetitionInfoById(@Request() req: AuthRequest, @Param('id', PositiveIntPipe) petitionId: number): Promise<PetitionInfo>
     {
         return await this.petitionsService.getPetitionInfoById(petitionId, req.user);
     }

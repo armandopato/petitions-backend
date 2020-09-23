@@ -1,16 +1,16 @@
-import { EntityRepository, Repository, getConnection } from "typeorm";
-import { Petition } from "src/entities/petition.entity";
-import { StudentUser, User } from "src/entities/user.entity";
-import { PetitionComment } from "src/entities/comment.entity";
-import { Page } from "src/types/Page";
-import { PetitionQueryParams } from "./dto/petition-query-params.dto";
-import { getPage } from "src/util/getPage";
-import { PetitionOrderBy as OrderBy } from "src/types/OrderBy";
-import { CommentInfo, PetitionInfo } from "src/types/ElementInfo";
-import { CreatePetitionDto } from "./dto/create-petition.dto";
-import { NotFoundException } from "@nestjs/common";
-import { Resolution } from "src/entities/resolution.entity";
-import { PetitionStatus } from "src/types/ElementStatus";
+import { EntityRepository, getConnection, Repository } from 'typeorm';
+import { Petition } from 'src/entities/petition.entity';
+import { StudentUser, User } from 'src/entities/user.entity';
+import { PetitionComment } from 'src/entities/comment.entity';
+import { Page } from 'src/types/Page';
+import { PetitionQueryParams } from './dto/petition-query-params.dto';
+import { getPage } from 'src/util/getPage';
+import { PetitionOrderBy as OrderBy } from 'src/types/OrderBy';
+import { CommentInfo, PetitionInfo } from 'src/types/ElementInfo';
+import { CreatePetitionDto } from './dto/create-petition.dto';
+import { NotFoundException } from '@nestjs/common';
+import { Resolution } from 'src/entities/resolution.entity';
+import { PetitionStatus } from 'src/types/ElementStatus';
 
 
 @EntityRepository(Petition)
@@ -37,13 +37,13 @@ export class PetitionRepository extends Repository<Petition>
                 case PetitionStatus.IN_PROGRESS:
                     query.innerJoin("petition.resolution", "res")
                         .andWhere("res.resolutionDate IS NULL")
-                        .andWhere("res.deadline <= NOW()");
+                        .andWhere("res.deadline >= NOW()");
                     break;                
                 
                 case PetitionStatus.OVERDUE:
                     query.innerJoin("petition.resolution", "res")
                         .andWhere("res.resolutionDate IS NULL")
-                        .andWhere("res.deadline > NOW()");
+                        .andWhere("res.deadline < NOW()");
                     break;
         
                 case PetitionStatus.TERMINATED:
@@ -81,7 +81,7 @@ export class PetitionRepository extends Repository<Petition>
                 if (!show)
                 {
                     query.leftJoin("petition.resolution", "res")
-                        .addSelect("CASE WHEN res.resolutionDate IS NULL AND res.deadline > NOW() THEN 1 ELSE 2 END", "relevance")
+                        .addSelect("CASE WHEN res.resolutionDate IS NULL AND res.deadline < NOW() THEN 1 ELSE 2 END", "relevance")
                         .orderBy("relevance", "ASC");
                 }
                 query.addOrderBy("petition.id", "DESC")
@@ -133,7 +133,7 @@ export class PetitionRepository extends Repository<Petition>
         const numComments = await this.countNumberOfComments(petition.id);
         const status = await this.getPetitionStatus(petition.id);
 
-        const petitionInfo: PetitionInfo = {
+        return {
             id: petition.id,
             title: petition.title,
             date: petition.createdDate,
@@ -141,8 +141,6 @@ export class PetitionRepository extends Repository<Petition>
             numVotes: numVotes,
             numComments: numComments
         };
-
-        return petitionInfo;
     }
 
     async getAuthPetitionInfo(petition: Petition, user: User): Promise<PetitionInfo>
@@ -367,9 +365,9 @@ export class PetitionRepository extends Repository<Petition>
         
         if (!resolution) return PetitionStatus.NO_RESOLUTION;
 
-        else if (resolution.resolutionText) return PetitionStatus.TERMINATED;
+        else if (resolution.resolutionDate) return PetitionStatus.TERMINATED;
 
-        else if (resolution.deadline <= new Date(Date.now())) return PetitionStatus.IN_PROGRESS;
+        else if (resolution.deadline >= new Date(Date.now())) return PetitionStatus.IN_PROGRESS;
 
         else return PetitionStatus.OVERDUE;
     }

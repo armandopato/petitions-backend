@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, OneToMany } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, JoinColumn, OneToMany, ManyToOne } from 'typeorm';
 import { Resolution } from "src/entities/resolution.entity";
 import { UserToNotification } from "./user-to-notification.entity";
 import { ResolutionStatus } from "src/types/ElementStatus";
@@ -18,7 +18,7 @@ export class UserNotification
     })
     type: ResolutionStatus;
 
-    @OneToOne(() => Resolution)
+    @ManyToOne(() => Resolution)
     @JoinColumn()
     resolution: Resolution;
 }

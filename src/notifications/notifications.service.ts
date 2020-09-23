@@ -27,7 +27,7 @@ export class NotificationsService
                 seen: notificationRel.seen,
                 type: notificationRel.notification.type,
                 resolutionId: id,
-                resoutionTitle: title
+                resolutionTitle: title
             });
         }
 

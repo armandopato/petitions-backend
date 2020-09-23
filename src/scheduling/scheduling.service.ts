@@ -23,6 +23,13 @@ export class SchedulingService
 
     cancelResolutionDeadline(resolutionId: number): void
     {
-        this.scheduler.deleteCronJob(resolutionId.toString());
+        try
+        {
+            this.scheduler.deleteCronJob(resolutionId.toString());
+        }
+        catch(err)
+        {
+            console.log("No cron job was found for resolution " + resolutionId);
+        }
     }
 }
