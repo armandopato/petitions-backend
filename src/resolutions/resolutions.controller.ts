@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Patch, Post, Put, Query, Request, UseGuar
 import { IsSupportGuard } from 'src/auth/guards/isSupport.guard';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { JwtOptionalAuthGuard } from 'src/auth/guards/jwt-optional-auth.guard';
-import { AuthRequest, AuthSupportRequest } from 'src/types/AuthRequest';
+import { AuthRequest, AuthStudentRequest, AuthSupportRequest } from 'src/types/AuthRequest';
 import { ResolutionInfo } from 'src/types/ElementInfo';
 import { Page } from 'src/types/Page';
 import { PositiveIntPipe } from 'src/util/positive-int.pipe';
@@ -10,6 +10,7 @@ import { PostTerminatedResolutionDto } from './dto/post-terminated-resolution.dt
 import { ResolutionQueryParams } from './dto/resolution-query.params.dto';
 import { ResolutionsService } from './resolutions.service';
 import { ResolutionTextDto } from './dto/terminate-resolution.dto';
+import { IsStudentGuard } from '../auth/guards/isStudent.guard';
 
 @Controller('resolutions')
 export class ResolutionsController
@@ -50,10 +51,15 @@ export class ResolutionsController
 	@Patch(":id")
 	async saveOrUnsaveResolution(@Request() req: AuthRequest, @Param('id', PositiveIntPipe) resolutionId: number): Promise<void>
 	{
-		return;//await this.petitionsService.saveOrUnsavePetition(petitionId, req.user);
+		return await this.resolutionsService.saveOrUnsaveResolution(resolutionId, req.user);
 	}
 	
-	// rejection votes functionality
+	@UseGuards(JwtAuthGuard, IsStudentGuard)
+	@Patch(":id")
+	async voteResolution(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) resolutionId: number): Promise<void>
+	{
+		return await this.resolutionsService.voteResolution(resolutionId, req.user);
+	}
 	
 	/*
 
