@@ -1,6 +1,12 @@
-import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+	ConflictException,
+	Injectable,
+	InternalServerErrorException,
+	NotFoundException,
+	UnauthorizedException,
+} from '@nestjs/common';
 import { Resolution } from 'src/entities/resolution.entity';
-import { SupportTeamUser, User } from 'src/entities/user.entity';
+import { StudentUser, SupportTeamUser, User } from 'src/entities/user.entity';
 import { NotificationsService } from 'src/notifications/notifications.service';
 import { PetitionRepository } from 'src/petitions/petitions.repository';
 import { SchedulingService } from 'src/scheduling/scheduling.service';
@@ -13,6 +19,7 @@ import { ResolutionRepository } from './resolutions.repository';
 
 const DAY = 1000 * 60 * 60 * 24;
 const RESOLUTION_WINDOW = DAY * 30;
+const MIN_VOTES = 50;
 
 @Injectable()
 export class ResolutionsService
@@ -32,7 +39,8 @@ export class ResolutionsService
 		if (user)
 		{
 			resolutionInfoArr = await this.resolutionsRepository.mapResolutionsToAuthResolutionsInfo(resolutions, user);
-		} else
+		}
+		else
 		{
 			resolutionInfoArr = await this.resolutionsRepository.mapResolutionsToResolutionsInfo(resolutions);
 		}
@@ -105,4 +113,50 @@ export class ResolutionsService
 		
 		return newResolution;
 	}
+	
+	async saveOrUnsaveResolution(resolutionId: number, user: User): Promise<void>
+	{
+		const didUserSave = await this.resolutionsRepository.didUserSave(resolutionId, user.id);
+		
+		try
+		{
+			if (didUserSave)
+			{
+				await this.resolutionsRepository.unsaveResolution(resolutionId, user.id);
+			}
+			else
+			{
+				await this.resolutionsRepository.saveResolution(resolutionId, user.id);
+			}
+		}
+		catch(err)
+		{
+			if (Number(err.code) === 23503) throw new NotFoundException();
+			else throw new InternalServerErrorException();
+		}
+	}
+	
+	async voteResolution(resolutionId: number, user: StudentUser): Promise<void>
+	{
+		const resolution = await this.resolutionsRepository.findOne(resolutionId);
+		if (!resolution) throw new NotFoundException();
+		if (this.resolutionsRepository.getResolutionStatus(resolution) !== ResolutionStatus.TERMINATED) throw new UnauthorizedException();
+		
+		const didUserVote = await this.resolutionsRepository.didUserVote(resolutionId, user.id);
+		if (didUserVote) throw new ConflictException();
+		
+		await this.resolutionsRepository.voteResolution(resolutionId, user.id);
+		
+		if (await this.resolutionsRepository.countNumberOfRejectionVotes(resolutionId) >= MIN_VOTES)
+		{
+			await this.returnToProgress(resolution);
+		}
+	}
+	
+	async returnToProgress(resolution: Resolution): Promise<void>
+	{
+		return;
+	}
+	
+	// Add potential resolution text and date retrieval if resolution was already done
 }

@@ -222,4 +222,28 @@ export class ResolutionRepository extends Repository<Resolution>
         const title = await this.getTitle(id);
         return { id, title };
     }
+
+    async saveResolution(resolutionId: number, userId: number): Promise<void>
+    {
+        await this.connection.createQueryBuilder()
+            .relation(Resolution, "savedBy")
+            .of(resolutionId)
+            .add(userId);
+    }
+    
+    async unsaveResolution(resolutionId: number, userId: number): Promise<void>
+    {
+        await this.connection.createQueryBuilder()
+            .relation(Resolution, "savedBy")
+            .of(resolutionId)
+            .remove(userId);
+    }
+    
+    async voteResolution(resolutionId: number, userId: number): Promise<void>
+    {
+        await this.connection.createQueryBuilder()
+            .relation(Resolution, "rejectionVotesBy")
+            .of(resolutionId)
+            .add(userId);
+    }
 }

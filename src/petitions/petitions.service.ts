@@ -89,10 +89,9 @@ export class PetitionsService
             if (Number(err.code) === 23503) throw new NotFoundException();
             else throw new InternalServerErrorException();
         }
-        await this.resolutionsService.createAssociatedResolution(petitionId);
         if (await this.petitionRepository.countNumberOfVotes(petitionId) >= MIN_VOTES)
         {
-        
+            await this.resolutionsService.createAssociatedResolution(petitionId);
         }
     }
 
