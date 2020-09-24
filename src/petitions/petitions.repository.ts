@@ -132,8 +132,8 @@ export class PetitionRepository extends Repository<Petition>
         const numVotes = await this.countNumberOfVotes(petition.id);
         const numComments = await this.countNumberOfComments(petition.id);
         const status = await this.getPetitionStatus(petition.id);
-
-        return {
+        
+        const info: PetitionInfo = {
             id: petition.id,
             title: petition.title,
             date: petition.createdDate,
@@ -141,6 +141,16 @@ export class PetitionRepository extends Repository<Petition>
             numVotes: numVotes,
             numComments: numComments
         };
+        
+        if (status !== PetitionStatus.NO_RESOLUTION)
+        {
+            if (!petition.resolution)
+            {
+                petition = await this.findOne(petition.id, { relations: ["resolution"] });
+            }
+            info.resolutionId = petition.resolution.id;
+        }
+        return info;
     }
 
     async getAuthPetitionInfo(petition: Petition, user: User): Promise<PetitionInfo>
@@ -223,7 +233,7 @@ export class PetitionRepository extends Repository<Petition>
         await this.connection.createQueryBuilder().delete()
                     .from("user_saved_petitions_petition")
                     .where("petitionId = :petitionId", { petitionId: petitionId })
-                    .execute()
+                    .execute();
 
         await this.delete(petitionId);
     }

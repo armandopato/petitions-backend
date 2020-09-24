@@ -8,6 +8,7 @@ export class PetitionInfo
     numVotes: number;
     numComments: number;
     status: PetitionStatus;
+    resolutionId?: number;
     description?: string;
     didVote?: boolean;
     didSave?: boolean;

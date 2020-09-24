@@ -55,7 +55,7 @@ export class ResolutionsController
 	}
 	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
-	@Patch(":id")
+	@Post(":id")
 	async voteResolution(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) resolutionId: number): Promise<void>
 	{
 		return await this.resolutionsService.voteResolution(resolutionId, req.user);

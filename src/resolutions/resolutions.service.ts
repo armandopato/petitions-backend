@@ -138,7 +138,7 @@ export class ResolutionsService
 	
 	async voteResolution(resolutionId: number, user: StudentUser): Promise<void>
 	{
-		const resolution = await this.resolutionsRepository.findOne(resolutionId);
+		const resolution = await this.resolutionsRepository.findOne(resolutionId, { relations: ["petition"] });
 		if (!resolution) throw new NotFoundException();
 		if (this.resolutionsRepository.getResolutionStatus(resolution) !== ResolutionStatus.TERMINATED) throw new UnauthorizedException();
 		
@@ -155,8 +155,14 @@ export class ResolutionsService
 	
 	async returnToProgress(resolution: Resolution): Promise<void>
 	{
-		return;
+		await this.resolutionsRepository.deleteRejectionVotes(resolution.id);
+		
+		const deadline = new Date(Date.now() + RESOLUTION_WINDOW);
+		resolution.resolutionDate = null;
+		resolution.deadline = deadline;
+		resolution = await this.resolutionsRepository.save(resolution);
+		
+		this.schedulingService.scheduleResolutionDeadline(resolution, deadline);
+		await this.notificationsService.triggerNotifications(resolution);
 	}
-	
-	// Add potential resolution text and date retrieval if resolution was already done
 }

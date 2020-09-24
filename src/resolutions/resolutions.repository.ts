@@ -109,7 +109,7 @@ export class ResolutionRepository extends Repository<Resolution>
     async getResolutionInfoWResText(resolution: Resolution): Promise<ResolutionInfo>
     {
         const info = await this.getResolutionInfo(resolution);
-        if (info.status === ResolutionStatus.TERMINATED)
+        if (resolution.resolutionText)
         {
             info.resolutionText = resolution.resolutionText;
         }
@@ -119,7 +119,7 @@ export class ResolutionRepository extends Repository<Resolution>
     async getAuthResolutionInfoWResText(resolution: Resolution, user: User): Promise<ResolutionInfo>
     {
         const info = await this.getAuthResolutionInfo(resolution, user);
-        if (info.status === ResolutionStatus.TERMINATED)
+        if (resolution.resolutionText)
         {
             info.resolutionText = resolution.resolutionText;
         }
@@ -245,5 +245,13 @@ export class ResolutionRepository extends Repository<Resolution>
             .relation(Resolution, "rejectionVotesBy")
             .of(resolutionId)
             .add(userId);
+    }
+    
+    async deleteRejectionVotes(resolutionId: number): Promise<void>
+    {
+        await this.connection.createQueryBuilder().delete()
+            .from("resolution_rejection_votes_by_user", "vote")
+            .where("resolutionId = :id", { id: resolutionId })
+            .execute();
     }
 }
