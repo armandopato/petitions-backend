@@ -24,9 +24,9 @@ export class PetitionComment extends GenericComment
 {
     // Owner of relationship
     @ManyToOne(() => Petition, petition => petition.comments)
-    petition: Petition;
+    element: Petition;
 
-    @ManyToMany(() => StudentUser, user => user.likedPetitionComments)
+    @ManyToMany(() => StudentUser, user => user.likedPetitionComments, { onDelete: 'CASCADE' })
     @JoinTable()
     likedBy: StudentUser[];
 }
@@ -36,7 +36,7 @@ export class ResolutionComment extends GenericComment
 {
     // Owner of relationship
     @ManyToOne(() => Resolution, resolution => resolution.comments)
-    resolution: Resolution;
+    element: Resolution;
 
     @ManyToMany(() => StudentUser, user => user.likedResolutionComments)
     @JoinTable()

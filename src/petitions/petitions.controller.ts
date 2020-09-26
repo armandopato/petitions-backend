@@ -10,11 +10,14 @@ import { IsStudentGuard } from 'src/auth/guards/isStudent.guard';
 import { CreatePetitionDto } from './dto/create-petition.dto';
 import { PositiveIntPipe } from 'src/util/positive-int.pipe';
 import { PostCommentDto } from './dto/post-comment.dto';
+import { CommentsService } from '../comments/comments.service';
+import { PetitionComment } from '../entities/comment.entity';
 
 @Controller('petitions')
 export class PetitionsController
 {
-	constructor(private petitionsService: PetitionsService) {}
+	constructor(private petitionsService: PetitionsService,
+	            private commentsService: CommentsService) {}
 	
 	@UseGuards(JwtOptionalAuthGuard)
 	@Get()
@@ -66,25 +69,27 @@ export class PetitionsController
 		await this.petitionsService.editPetition(petitionId, req.user, editPetitionDto);
 	}
 	
+	// COMMENTS
+	
 	@UseGuards(JwtOptionalAuthGuard)
 	@Get("/:id/comments")
 	async getCommentsPage(@Request() req: AuthRequest, @Param('id', PositiveIntPipe) petitionId: number, @Query("page", PositiveIntPipe) page: number): Promise<Page<CommentInfo>>
 	{
-		return await this.petitionsService.getPetitionCommentsInfoPage(petitionId, req.user, page);
+		return await this.commentsService.getCommentInfoPage(petitionId, PetitionComment, req.user, page);
 	}
 	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
 	@Post("/:id/comments")
 	async postComment(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) petitionId: number, @Body() postCommentDto: PostCommentDto): Promise<void>
 	{
-		await this.petitionsService.postComment(petitionId, req.user, postCommentDto.comment);
+		await this.commentsService.postComment(petitionId, PetitionComment, req.user, postCommentDto.comment);
 	}
 	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
 	@Get("/:id/mycomment")
 	async getMyComment(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) petitionId: number): Promise<{ myComment: CommentInfo }>
 	{
-		return { myComment: await this.petitionsService.getMyCommentInfo(petitionId, req.user) };
+		return { myComment: await this.commentsService.getMyCommentInfo(petitionId, PetitionComment, req.user) };
 	}
 	
 	
@@ -92,20 +97,20 @@ export class PetitionsController
 	@Put("/:id/mycomment")
 	async editComment(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) petitionId: number, @Body() putCommentDto: PostCommentDto): Promise<void>
 	{
-		await this.petitionsService.editMyComment(petitionId, req.user, putCommentDto.comment);
+		await this.commentsService.editMyComment(petitionId, PetitionComment, req.user, putCommentDto.comment);
 	}
 	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
 	@Delete("/:id/mycomment")
 	async deleteComment(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) petitionId: number): Promise<void>
 	{
-		await this.petitionsService.deleteMyComment(petitionId, req.user);
+		await this.commentsService.deleteMyComment(petitionId, PetitionComment, req.user);
 	}
 	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
 	@Patch("/comments/:commentId")
 	async likeOrDislikeComment(@Request() req: AuthStudentRequest, @Param('commentId', PositiveIntPipe) commentId: number): Promise<void>
 	{
-		await this.petitionsService.likeOrDislikeComment(commentId, req.user);
+		await this.commentsService.likeOrDislikeComment(commentId, PetitionComment, req.user);
 	}
 }

@@ -9,6 +9,8 @@ import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SchedulingModule } from './scheduling/scheduling.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { CommentsModule } from './comments/comments.module';
+import { ElementsModule } from './elements/elements.module';
 
 @Module({
   imports: [
@@ -20,7 +22,9 @@ import { NotificationsModule } from './notifications/notifications.module';
     ResolutionsModule,
     UserModule,
     SchedulingModule,
-    NotificationsModule
+    NotificationsModule,
+    CommentsModule,
+    ElementsModule
   ],
   controllers: [AppController]
 })

@@ -2,7 +2,7 @@ import { ConflictException, Injectable, InternalServerErrorException, NotFoundEx
 import { StudentUser, User } from 'src/entities/user.entity';
 import { PetitionQueryParams } from './dto/petition-query-params.dto';
 import { Page } from 'src/types/Page';
-import { CommentInfo, PetitionInfo } from 'src/types/ElementInfo';
+import { PetitionInfo } from 'src/types/ElementInfo';
 import { PetitionRepository } from './petitions.repository';
 import { Petition } from 'src/entities/petition.entity';
 import { CreatePetitionDto } from './dto/create-petition.dto';
@@ -139,83 +139,5 @@ export class PetitionsService
     {
         const petition = await this.checkPetitionMutationValidity(petitionId, user.id);
         await this.petitionRepository.editPetition(petition, editPetitionDto);
-    }
-
-    async getPetitionCommentsInfoPage(petitionId: number, user: User, page: number): Promise<Page<CommentInfo>>
-    {
-        const { totalPages, pageElements: comments } = await this.petitionRepository.getPetitionCommentsPage(petitionId, page);
-        let commentInfoArr: CommentInfo[];
-
-        if (user)
-        {
-            commentInfoArr = await this.petitionRepository.mapPetitionCommentsToAuthCommentsInfo(comments, user);
-        }
-        else
-        {
-            commentInfoArr = await this.petitionRepository.mapPetitionCommentsToCommentsInfo(comments);
-        }
-
-        return {
-            pageElements: commentInfoArr,
-            totalPages
-        };
-    }
-
-    async getMyCommentInfo(petitionId: number, user: StudentUser): Promise<CommentInfo>
-    {
-        return await this.petitionRepository.getUserCommentInfo(petitionId, user.id);
-    }
-
-    
-    async postComment(petitionId: number, user: StudentUser, commentText: string): Promise<void>
-    {
-        const userComment = await this.petitionRepository.getUserComment(petitionId, user.id);
-        if (userComment) throw new ConflictException();
-
-        const newComment = new PetitionComment();
-        newComment.by = user;
-        newComment.petition = { id: petitionId } as Petition;
-        newComment.text = commentText;
-
-        await this.petitionCommentRepository.save(newComment);
-    }
-
-
-    async editMyComment(petitionId: number, user: StudentUser, newCommentText: string): Promise<void>
-    {
-        const userComment = await this.petitionRepository.getUserComment(petitionId, user.id);
-        if (!userComment) throw new NotFoundException();
-
-        await this.petitionCommentRepository.update(userComment.id, { text: newCommentText });
-    }
-
-    async deleteMyComment(petitionId: number, user: StudentUser): Promise<void>
-    {
-        const comment = await this.petitionRepository.getUserComment(petitionId, user.id);
-        if (!comment) throw new NotFoundException();
-
-        await this.petitionRepository.deleteComment(comment);
-    }
-
-    async likeOrDislikeComment(commentId: number, user: StudentUser): Promise<void>
-    {
-        const didUserLikeComment = await this.petitionRepository.didUserLikePetitionComment(commentId, user.id)
-        
-        try
-        {
-            if (didUserLikeComment)
-            {
-                await this.petitionRepository.dislikeComment(commentId, user.id);
-            }
-            else
-            {
-                await this.petitionRepository.likeComment(commentId, user.id);
-            }
-        }
-        catch(err)
-        {
-            if (Number(err.code) === 23503) throw new NotFoundException();
-            else throw new InternalServerErrorException();
-        }
     }
 }

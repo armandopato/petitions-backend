@@ -37,7 +37,7 @@ export class Petition
     @JoinTable()
     votedBy: StudentUser[];
 
-    @OneToMany(() => PetitionComment, petitionComment => petitionComment.petition)
+    @OneToMany(() => PetitionComment, petitionComment => petitionComment.element)
     comments: PetitionComment[];
 
     @ManyToMany(() => User, user => user.savedPetitions)

@@ -34,7 +34,7 @@ export class Resolution
     @JoinTable()
     rejectionVotesBy: StudentUser[];
 
-    @OneToMany(() => ResolutionComment, resolutionComment => resolutionComment.resolution)
+    @OneToMany(() => ResolutionComment, resolutionComment => resolutionComment.element)
     comments: ResolutionComment[];
 
     @ManyToMany(() => User, user => user.savedResolutions)

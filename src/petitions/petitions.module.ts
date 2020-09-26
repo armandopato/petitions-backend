@@ -5,14 +5,16 @@ import { PetitionsController } from './petitions.controller';
 import { PetitionsService } from './petitions.service';
 import { ResolutionsModule } from 'src/resolutions/resolutions.module';
 import { PetitionComment } from 'src/entities/comment.entity';
+import { CommentsModule } from '../comments/comments.module';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([PetitionRepository, PetitionComment]),
-        ResolutionsModule
+        ResolutionsModule,
+        CommentsModule
     ],
     controllers: [PetitionsController],
-    providers: [PetitionsService],
+    providers: [PetitionsService, PetitionRepository],
     exports: [PetitionsService]
 })
 export class PetitionsModule {}
