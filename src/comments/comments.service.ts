@@ -1,15 +1,23 @@
-import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+	ConflictException,
+	ForbiddenException,
+	Injectable,
+	InternalServerErrorException,
+	NotFoundException,
+} from '@nestjs/common';
 import { StudentUser, User } from '../entities/user.entity';
 import { Page } from '../types/Page';
 import { CommentInfo } from '../types/ElementInfo';
-import { GenericComment, PetitionComment } from '../entities/comment.entity';
-import { CommentsRepository } from './comments.repository';
-import { Entity } from './comments.repository';
+import { GenericComment, PetitionComment, ResolutionComment } from '../entities/comment.entity';
+import { CommentsRepository, Entity } from './comments.repository';
+import { ResolutionRepository } from '../resolutions/resolutions.repository';
+import { ResolutionStatus } from '../types/ElementStatus';
 
 @Injectable()
 export class CommentsService
 {
-	constructor(private commentsRepository: CommentsRepository)
+	constructor(private commentsRepository: CommentsRepository,
+	            private resolutionsRepository: ResolutionRepository)
 	{
 	}
 	
@@ -21,11 +29,11 @@ export class CommentsService
 		
 		if (user)
 		{
-			commentInfoArr = await this.commentsRepository.mapCommentsToAuthCommentsInfo(comments, commentEntity, user);
+			commentInfoArr = await this.mapCommentsToAuthCommentsInfo(comments, commentEntity, user);
 		}
 		else
 		{
-			commentInfoArr = await this.commentsRepository.mapCommentsToCommentsInfo(comments, commentEntity);
+			commentInfoArr = await this.mapCommentsToCommentsInfo(comments, commentEntity);
 		}
 		
 		return {
@@ -36,26 +44,39 @@ export class CommentsService
 	
 	async getMyCommentInfo<CommentType extends GenericComment>(elementId: number, commentEntity: Entity<CommentType>, user: StudentUser): Promise<CommentInfo>
 	{
-		return await this.commentsRepository.getUserCommentInfo(elementId, commentEntity, user.id);
+		return await this.getUserCommentInfo(elementId, commentEntity, user.id);
 	}
 	
 	
 	async postComment<CommentType extends GenericComment>(elementId: number, commentEntity: Entity<CommentType>, user: StudentUser, commentText: string): Promise<void>
 	{
+		let newComment;
+		if (commentEntity.constructor === ResolutionComment.constructor)
+		{
+			const resolution = await this.resolutionsRepository.findOne(elementId);
+			if (!resolution) throw new NotFoundException();
+			if (this.resolutionsRepository.getResolutionStatus(resolution) !== ResolutionStatus.TERMINATED) throw new ForbiddenException();
+			newComment = new ResolutionComment();
+		}
+		else
+		{
+			newComment = new PetitionComment();
+		}
+		
 		const userComment = await this.commentsRepository.getUserComment(elementId, commentEntity, user.id);
 		if (userComment) throw new ConflictException();
 		
-		const newComment = new PetitionComment();
 		newComment.by = user;
 		newComment.element = { id: elementId } as any;
 		newComment.text = commentText;
+		
 		try
 		{
-			await this.commentsRepository.save(newComment);
+			await this.commentsRepository.save(newComment, commentEntity);
 		}
 		catch (err)
 		{
-			if (err.code === '23503') throw new NotFoundException("Element does not exist");
+			if (err.code === '23503') throw new NotFoundException('Element does not exist');
 			else throw new InternalServerErrorException();
 		}
 	}
@@ -97,5 +118,56 @@ export class CommentsService
 			if (Number(err.code) === 23503) throw new NotFoundException();
 			else throw new InternalServerErrorException();
 		}
+	}
+	
+	// CRUD
+	async getCommentInfo<CommentType extends GenericComment>(comment: CommentType, commentEntity: Entity<CommentType>): Promise<CommentInfo>
+	{
+		return {
+			id: comment.id,
+			date: comment.createdDate,
+			text: comment.text,
+			numLikes: await this.commentsRepository.getNumberOfCommentLikes(comment.id, commentEntity),
+		};
+	}
+	
+	async getAuthCommentInfo<CommentType extends GenericComment>(comment: CommentType, commentEntity: Entity<CommentType>, user: User): Promise<CommentInfo>
+	{
+		const commentInfo = await this.getCommentInfo(comment, commentEntity);
+		commentInfo.didLike = await this.commentsRepository.didUserLikeComment(comment.id, commentEntity, user.id);
+		return commentInfo;
+	}
+	
+	async mapCommentsToCommentsInfo<CommentType extends GenericComment>(comments: CommentType[], commentEntity: Entity<CommentType>): Promise<CommentInfo[]>
+	{
+		const commentsInfoArr: CommentInfo[] = [];
+		
+		for (const comment of comments)
+		{
+			const commentInfo = await this.getCommentInfo(comment, commentEntity);
+			commentsInfoArr.push(commentInfo);
+		}
+		
+		return commentsInfoArr;
+	}
+	
+	async mapCommentsToAuthCommentsInfo<CommentType extends GenericComment>(comments: CommentType[], commentEntity: Entity<CommentType>, user: User): Promise<CommentInfo[]>
+	{
+		const authCommentsInfoArr: CommentInfo[] = [];
+		
+		for (const comment of comments)
+		{
+			const authCommentInfo = await this.getAuthCommentInfo(comment, commentEntity, user);
+			authCommentsInfoArr.push(authCommentInfo);
+		}
+		
+		return authCommentsInfoArr;
+	}
+	
+	async getUserCommentInfo<CommentType extends GenericComment>(elementId: number, commentEntity: Entity<CommentType>, userId: number): Promise<CommentInfo>
+	{
+		const comment = await this.commentsRepository.getUserComment(elementId, commentEntity, userId);
+		if (!comment) throw new NotFoundException();
+		return await this.getCommentInfo(comment, commentEntity);
 	}
 }

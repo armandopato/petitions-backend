@@ -14,7 +14,7 @@ import { CommentsModule } from '../comments/comments.module';
         CommentsModule
     ],
     controllers: [PetitionsController],
-    providers: [PetitionsService, PetitionRepository],
+    providers: [PetitionsService],
     exports: [PetitionsService]
 })
 export class PetitionsModule {}

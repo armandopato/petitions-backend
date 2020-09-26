@@ -1,4 +1,17 @@
-import { Controller, Get, UseGuards, Request, Query, Post, Body, Param, Delete, Put, Patch } from '@nestjs/common';
+import {
+	Controller,
+	Get,
+	UseGuards,
+	Request,
+	Query,
+	Post,
+	Body,
+	Param,
+	Delete,
+	Put,
+	Patch,
+	Injectable,
+} from '@nestjs/common';
 import { PetitionsService } from './petitions.service';
 import { JwtOptionalAuthGuard } from 'src/auth/guards/jwt-optional-auth.guard';
 import { AuthRequest, AuthStudentRequest } from 'src/types/AuthRequest';
@@ -9,10 +22,11 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { IsStudentGuard } from 'src/auth/guards/isStudent.guard';
 import { CreatePetitionDto } from './dto/create-petition.dto';
 import { PositiveIntPipe } from 'src/util/positive-int.pipe';
-import { PostCommentDto } from './dto/post-comment.dto';
+import { PostCommentDto } from '../comments/dto/post-comment.dto';
 import { CommentsService } from '../comments/comments.service';
 import { PetitionComment } from '../entities/comment.entity';
 
+@Injectable()
 @Controller('petitions')
 export class PetitionsController
 {

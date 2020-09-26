@@ -6,12 +6,14 @@ import { ResolutionsController } from './resolutions.controller';
 import { PetitionRepository } from 'src/petitions/petitions.repository';
 import { SchedulingModule } from 'src/scheduling/scheduling.module';
 import { NotificationsModule } from 'src/notifications/notifications.module';
+import { CommentsModule } from '../comments/comments.module';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([ResolutionRepository, PetitionRepository]),
         SchedulingModule,
-        NotificationsModule
+        NotificationsModule,
+        CommentsModule
     ],
     providers: [ResolutionsService],
     exports: [ResolutionsService],

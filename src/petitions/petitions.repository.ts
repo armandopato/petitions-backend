@@ -1,29 +1,19 @@
 import { EntityRepository, getConnection, Repository } from 'typeorm';
 import { Petition } from 'src/entities/petition.entity';
 import { StudentUser, User } from 'src/entities/user.entity';
-import { PetitionComment } from 'src/entities/comment.entity';
 import { Page } from 'src/types/Page';
 import { PetitionQueryParams } from './dto/petition-query-params.dto';
 import { getPage } from 'src/util/getPage';
 import { PetitionOrderBy as OrderBy } from 'src/types/OrderBy';
-import { PetitionInfo } from 'src/types/ElementInfo';
 import { CreatePetitionDto } from './dto/create-petition.dto';
-import { Injectable } from '@nestjs/common';
 import { Resolution } from 'src/entities/resolution.entity';
 import { PetitionStatus } from 'src/types/ElementStatus';
-import { CommentsRepository } from '../comments/comments.repository';
 
 
 @EntityRepository(Petition)
-@Injectable()
 export class PetitionRepository extends Repository<Petition>
 {
 	private connection = getConnection();
-	
-	constructor(private commentsRepository: CommentsRepository)
-	{
-		super();
-	}
 	
 	async getPetitionsPage(params: PetitionQueryParams): Promise<Page<Petition>>
 	{
@@ -124,81 +114,6 @@ export class PetitionRepository extends Repository<Petition>
 			.andWhere('petition.id = :id', { id: id })
 			.getCount();
 		return saved === 1;
-	}
-	
-	async getPetitionInfo(petition: Petition): Promise<PetitionInfo>
-	{
-		const numVotes = await this.countNumberOfVotes(petition.id);
-		const numComments = await this.commentsRepository.countNumberOfComments(petition.id, PetitionComment);
-		const status = await this.getPetitionStatus(petition.id);
-		
-		const info: PetitionInfo = {
-			id: petition.id,
-			title: petition.title,
-			date: petition.createdDate,
-			status: status,
-			numVotes: numVotes,
-			numComments: numComments,
-		};
-		
-		if (status !== PetitionStatus.NO_RESOLUTION)
-		{
-			if (!petition.resolution)
-			{
-				petition = await this.findOne(petition.id, { relations: ['resolution'] });
-			}
-			info.resolutionId = petition.resolution.id;
-		}
-		return info;
-	}
-	
-	async getAuthPetitionInfo(petition: Petition, user: User): Promise<PetitionInfo>
-	{
-		const petitionInfo = await this.getPetitionInfo(petition);
-		petitionInfo.didSave = await this.didUserSave(petition.id, user.id);
-		petitionInfo.didVote = await this.didUserVote(petition.id, user.id);
-		return petitionInfo;
-	}
-	
-	async getPetitionInfoWDesc(petition: Petition): Promise<PetitionInfo>
-	{
-		const petitionInfo = await this.getPetitionInfo(petition);
-		petitionInfo.description = petition.description;
-		return petitionInfo;
-	}
-	
-	async getAuthPetitionInfoWDesc(petition: Petition, user: User): Promise<PetitionInfo>
-	{
-		const petitionInfo = await this.getAuthPetitionInfo(petition, user);
-		petitionInfo.description = petition.description;
-		return petitionInfo;
-	}
-	
-	
-	async mapPetitionsToPetitionsInfo(petitions: Petition[]): Promise<PetitionInfo[]>
-	{
-		const petitionsInfoArr: PetitionInfo[] = [];
-		
-		for (const petition of petitions)
-		{
-			const petitionInfo = await this.getPetitionInfo(petition);
-			petitionsInfoArr.push(petitionInfo);
-		}
-		
-		return petitionsInfoArr;
-	}
-	
-	async mapPetitionsToAuthPetitionsInfo(petitions: Petition[], user: User): Promise<PetitionInfo[]>
-	{
-		const authPetitionsInfoArr: PetitionInfo[] = [];
-		
-		for (const petition of petitions)
-		{
-			const petitionInfo = await this.getAuthPetitionInfo(petition, user);
-			authPetitionsInfoArr.push(petitionInfo);
-		}
-		
-		return authPetitionsInfoArr;
 	}
 	
 	

@@ -2,12 +2,10 @@ import { EntityRepository, getConnection, Repository } from 'typeorm';
 import { Resolution } from 'src/entities/resolution.entity';
 import { ResolutionStatus } from 'src/types/ElementStatus';
 import { StudentUser, User } from 'src/entities/user.entity';
-import { ResolutionComment } from 'src/entities/comment.entity';
 import { Petition } from 'src/entities/petition.entity';
 import { UserNotification } from 'src/entities/notification.entity';
 import { Page } from 'src/types/Page';
 import { ResolutionQueryParams } from './dto/resolution-query.params.dto';
-import { ResolutionInfo } from 'src/types/ElementInfo';
 import { ResolutionOrderBy as OrderBy } from '../types/OrderBy';
 import { getPage } from 'src/util/getPage';
 
@@ -82,102 +80,12 @@ export class ResolutionRepository extends Repository<Resolution>
         else return ResolutionStatus.OVERDUE;
     }
 
-    async getResolutionInfo(resolution: Resolution): Promise<ResolutionInfo>
-    {
-        const resolutionInfo: ResolutionInfo = {
-            id: resolution.id,
-            petitionId: resolution.petition.id,
-            title: resolution.petition.title,
-            status: this.getResolutionStatus(resolution)
-        };
-
-        if (resolutionInfo.status === ResolutionStatus.TERMINATED)
-        {
-            resolutionInfo.numRejectionVotes = await this.countNumberOfRejectionVotes(resolution.id);
-            resolutionInfo.resolutionDate = resolution.resolutionDate;
-            resolutionInfo.numComments = await this.countNumberOfComments(resolution.id);
-        }
-        else
-        {
-            resolutionInfo.startDate = resolution.startDate;
-            resolutionInfo.deadline = resolution.deadline;
-        }
-
-        return resolutionInfo;
-    }
-
-    async getResolutionInfoWResText(resolution: Resolution): Promise<ResolutionInfo>
-    {
-        const info = await this.getResolutionInfo(resolution);
-        if (resolution.resolutionText)
-        {
-            info.resolutionText = resolution.resolutionText;
-        }
-        return info;
-    }
-
-    async getAuthResolutionInfoWResText(resolution: Resolution, user: User): Promise<ResolutionInfo>
-    {
-        const info = await this.getAuthResolutionInfo(resolution, user);
-        if (resolution.resolutionText)
-        {
-            info.resolutionText = resolution.resolutionText;
-        }
-        return info;
-    }
-
-    async getAuthResolutionInfo(resolution: Resolution, user: User): Promise<ResolutionInfo>
-    {
-        const resolutionInfo = await this.getResolutionInfo(resolution);
-        if (resolutionInfo.status === ResolutionStatus.TERMINATED)
-        {
-            resolutionInfo.didVote = await this.didUserVote(resolution.id, user.id);
-        }
-        resolutionInfo.didSave = await this.didUserSave(resolution.id, user.id);
-        return resolutionInfo;
-    }
-
-    async mapResolutionsToResolutionsInfo(resolutions: Resolution[]): Promise<ResolutionInfo[]>
-    {
-        const resolutionsInfoArr: ResolutionInfo[] = [];
-
-        for (const resolution of resolutions)
-        {
-            const resolutionInfo = await this.getResolutionInfo(resolution);
-            resolutionsInfoArr.push(resolutionInfo);
-        }
-
-        return resolutionsInfoArr;
-    }
-
-    async mapResolutionsToAuthResolutionsInfo(resolutions: Resolution[], user: User): Promise<ResolutionInfo[]>
-    {
-        const authResolutionsInfoArr: ResolutionInfo[] = [];
-
-        for (const resolution of resolutions)
-        {
-            const authResolutionInfo = await this.getAuthResolutionInfo(resolution, user);
-            authResolutionsInfoArr.push(authResolutionInfo);
-        }
-
-        return authResolutionsInfoArr;
-    }
-
-
     async countNumberOfRejectionVotes(id: number): Promise<number>
     {
         return await this.connection.createQueryBuilder(StudentUser, "user")
                                     .innerJoinAndSelect("user.votedResolutions", "resolution")
                                     .where("resolution.id = :id", { id: id })
                                     .getCount();
-    }
-
-    async countNumberOfComments(id: number): Promise<number>
-    {
-        return await this.connection.createQueryBuilder(ResolutionComment, "comment")
-                        .innerJoinAndSelect("comment.resolution", "resolution")
-                        .where("resolution.id = :id", { id: id })
-						.getCount();
     }
 
     async didUserVote(id: number, userId: number): Promise<boolean>

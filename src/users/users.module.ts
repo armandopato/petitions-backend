@@ -6,17 +6,17 @@ import { StudentUserRepository, SupportTeamUserRepository, UserRepository } from
 import { AuthModule } from 'src/auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtConfigService } from 'src/auth/config/jwt.config.service';
-import { PetitionRepository } from 'src/petitions/petitions.repository';
-import { ResolutionRepository } from 'src/resolutions/resolutions.repository';
 import { Settings } from 'src/entities/settings.entity';
 import { PetitionsModule } from 'src/petitions/petitions.module';
 import { NotificationsModule } from 'src/notifications/notifications.module';
+import { ResolutionsModule } from '../resolutions/resolutions.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([StudentUserRepository, SupportTeamUserRepository, UserRepository, PetitionRepository, ResolutionRepository, Settings]),
+  imports: [TypeOrmModule.forFeature([StudentUserRepository, SupportTeamUserRepository, UserRepository, Settings]),
             AuthModule,
             NotificationsModule,
             PetitionsModule,
+            ResolutionsModule,
             JwtModule.registerAsync({
               imports: [AuthModule],
               useExisting: JwtConfigService

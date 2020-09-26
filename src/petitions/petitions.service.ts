@@ -10,6 +10,8 @@ import { ResolutionsService } from 'src/resolutions/resolutions.service';
 import { PetitionComment } from 'src/entities/comment.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { PetitionStatus } from '../types/ElementStatus';
+import { CommentsRepository } from '../comments/comments.repository';
 
 
 const MIN_VOTES = 100;
@@ -20,6 +22,7 @@ export class PetitionsService
     constructor(
                 private petitionRepository: PetitionRepository,
                 private resolutionsService: ResolutionsService,
+                private commentsRepository: CommentsRepository,
                 @InjectRepository(PetitionComment)
                 private petitionCommentRepository: Repository<PetitionComment>
                 ) {}
@@ -31,11 +34,11 @@ export class PetitionsService
 
         if (user)
         {
-            petitionInfoArr = await this.petitionRepository.mapPetitionsToAuthPetitionsInfo(petitions, user);
+            petitionInfoArr = await this.mapPetitionsToAuthPetitionsInfo(petitions, user);
         }
         else
         {
-            petitionInfoArr = await this.petitionRepository.mapPetitionsToPetitionsInfo(petitions);
+            petitionInfoArr = await this.mapPetitionsToPetitionsInfo(petitions);
         }
 
         return {
@@ -68,10 +71,10 @@ export class PetitionsService
 
         if (user)
         {
-            return await this.petitionRepository.getAuthPetitionInfoWDesc(petition, user);
+            return await this.getAuthPetitionInfoWDesc(petition, user);
         }
         
-        return await this.petitionRepository.getPetitionInfoWDesc(petition);
+        return await this.getPetitionInfoWDesc(petition);
     }
 
 
@@ -139,5 +142,84 @@ export class PetitionsService
     {
         const petition = await this.checkPetitionMutationValidity(petitionId, user.id);
         await this.petitionRepository.editPetition(petition, editPetitionDto);
+    }
+    
+    
+    
+    // CRUD
+    
+    async getPetitionInfo(petition: Petition): Promise<PetitionInfo>
+    {
+        const numVotes = await this.petitionRepository.countNumberOfVotes(petition.id);
+        const numComments = await this.commentsRepository.countNumberOfComments(petition.id, PetitionComment);
+        const status = await this.petitionRepository.getPetitionStatus(petition.id);
+        
+        const info: PetitionInfo = {
+            id: petition.id,
+            title: petition.title,
+            date: petition.createdDate,
+            status: status,
+            numVotes: numVotes,
+            numComments: numComments,
+        };
+        
+        if (status !== PetitionStatus.NO_RESOLUTION)
+        {
+            if (!petition.resolution)
+            {
+                petition = await this.petitionRepository.findOne(petition.id, { relations: ['resolution'] });
+            }
+            info.resolutionId = petition.resolution.id;
+        }
+        return info;
+    }
+    
+    async getAuthPetitionInfo(petition: Petition, user: User): Promise<PetitionInfo>
+    {
+        const petitionInfo = await this.getPetitionInfo(petition);
+        petitionInfo.didSave = await this.petitionRepository.didUserSave(petition.id, user.id);
+        petitionInfo.didVote = await this.petitionRepository.didUserVote(petition.id, user.id);
+        return petitionInfo;
+    }
+    
+    async getPetitionInfoWDesc(petition: Petition): Promise<PetitionInfo>
+    {
+        const petitionInfo = await this.getPetitionInfo(petition);
+        petitionInfo.description = petition.description;
+        return petitionInfo;
+    }
+    
+    async getAuthPetitionInfoWDesc(petition: Petition, user: User): Promise<PetitionInfo>
+    {
+        const petitionInfo = await this.getAuthPetitionInfo(petition, user);
+        petitionInfo.description = petition.description;
+        return petitionInfo;
+    }
+    
+    
+    async mapPetitionsToPetitionsInfo(petitions: Petition[]): Promise<PetitionInfo[]>
+    {
+        const petitionsInfoArr: PetitionInfo[] = [];
+        
+        for (const petition of petitions)
+        {
+            const petitionInfo = await this.getPetitionInfo(petition);
+            petitionsInfoArr.push(petitionInfo);
+        }
+        
+        return petitionsInfoArr;
+    }
+    
+    async mapPetitionsToAuthPetitionsInfo(petitions: Petition[], user: User): Promise<PetitionInfo[]>
+    {
+        const authPetitionsInfoArr: PetitionInfo[] = [];
+        
+        for (const petition of petitions)
+        {
+            const petitionInfo = await this.getAuthPetitionInfo(petition, user);
+            authPetitionsInfoArr.push(petitionInfo);
+        }
+        
+        return authPetitionsInfoArr;
     }
 }

@@ -16,6 +16,8 @@ import { Page } from 'src/types/Page';
 import { PostTerminatedResolutionDto } from './dto/post-terminated-resolution.dto';
 import { ResolutionQueryParams } from './dto/resolution-query.params.dto';
 import { ResolutionRepository } from './resolutions.repository';
+import { CommentsRepository } from '../comments/comments.repository';
+import { ResolutionComment } from '../entities/comment.entity';
 
 const DAY = 1000 * 60 * 60 * 24;
 const RESOLUTION_WINDOW = DAY * 30;
@@ -25,6 +27,7 @@ const MIN_VOTES = 50;
 export class ResolutionsService
 {
 	constructor(private resolutionsRepository: ResolutionRepository,
+	            private commentsRepository: CommentsRepository,
 	            private petitionsRepository: PetitionRepository,
 	            private schedulingService: SchedulingService,
 	            private notificationsService: NotificationsService)
@@ -38,11 +41,11 @@ export class ResolutionsService
 		
 		if (user)
 		{
-			resolutionInfoArr = await this.resolutionsRepository.mapResolutionsToAuthResolutionsInfo(resolutions, user);
+			resolutionInfoArr = await this.mapResolutionsToAuthResolutionsInfo(resolutions, user);
 		}
 		else
 		{
-			resolutionInfoArr = await this.resolutionsRepository.mapResolutionsToResolutionsInfo(resolutions);
+			resolutionInfoArr = await this.mapResolutionsToResolutionsInfo(resolutions);
 		}
 		
 		return {
@@ -58,10 +61,10 @@ export class ResolutionsService
 		
 		if (user)
 		{
-			return await this.resolutionsRepository.getAuthResolutionInfoWResText(resolution, user);
+			return await this.getAuthResolutionInfoWResText(resolution, user);
 		}
 		
-		return await this.resolutionsRepository.getResolutionInfoWResText(resolution);
+		return await this.getResolutionInfoWResText(resolution);
 	}
 	
 	async resolvePetition(postTerminatedResolutionDto: PostTerminatedResolutionDto, supportUser: SupportTeamUser): Promise<number>
@@ -164,5 +167,88 @@ export class ResolutionsService
 		
 		this.schedulingService.scheduleResolutionDeadline(resolution, deadline);
 		await this.notificationsService.triggerNotifications(resolution);
+	}
+	
+	// CRUD
+	
+	async getResolutionInfo(resolution: Resolution): Promise<ResolutionInfo>
+	{
+		const resolutionInfo: ResolutionInfo = {
+			id: resolution.id,
+			petitionId: resolution.petition.id,
+			title: resolution.petition.title,
+			status: this.resolutionsRepository.getResolutionStatus(resolution)
+		};
+		
+		if (resolutionInfo.status === ResolutionStatus.TERMINATED)
+		{
+			resolutionInfo.numRejectionVotes = await this.resolutionsRepository.countNumberOfRejectionVotes(resolution.id);
+			resolutionInfo.resolutionDate = resolution.resolutionDate;
+			resolutionInfo.numComments = await this.commentsRepository.countNumberOfComments(resolution.id, ResolutionComment);
+		}
+		else
+		{
+			resolutionInfo.startDate = resolution.startDate;
+			resolutionInfo.deadline = resolution.deadline;
+		}
+		
+		return resolutionInfo;
+	}
+	
+	async getResolutionInfoWResText(resolution: Resolution): Promise<ResolutionInfo>
+	{
+		const info = await this.getResolutionInfo(resolution);
+		if (resolution.resolutionText)
+		{
+			info.resolutionText = resolution.resolutionText;
+		}
+		return info;
+	}
+	
+	async getAuthResolutionInfoWResText(resolution: Resolution, user: User): Promise<ResolutionInfo>
+	{
+		const info = await this.getAuthResolutionInfo(resolution, user);
+		if (resolution.resolutionText)
+		{
+			info.resolutionText = resolution.resolutionText;
+		}
+		return info;
+	}
+	
+	async getAuthResolutionInfo(resolution: Resolution, user: User): Promise<ResolutionInfo>
+	{
+		const resolutionInfo = await this.getResolutionInfo(resolution);
+		if (resolutionInfo.status === ResolutionStatus.TERMINATED)
+		{
+			resolutionInfo.didVote = await this.resolutionsRepository.didUserVote(resolution.id, user.id);
+		}
+		resolutionInfo.didSave = await this.resolutionsRepository.didUserSave(resolution.id, user.id);
+		return resolutionInfo;
+	}
+	
+	async mapResolutionsToResolutionsInfo(resolutions: Resolution[]): Promise<ResolutionInfo[]>
+	{
+		const resolutionsInfoArr: ResolutionInfo[] = [];
+		
+		for (const resolution of resolutions)
+		{
+			const resolutionInfo = await this.getResolutionInfo(resolution);
+			resolutionsInfoArr.push(resolutionInfo);
+		}
+		
+		return resolutionsInfoArr;
+	}
+	
+	async mapResolutionsToAuthResolutionsInfo(resolutions: Resolution[], user: User): Promise<ResolutionInfo[]>
+	{
+		const authResolutionsInfoArr: ResolutionInfo[] = [];
+		
+		for (const resolution of resolutions)
+		{
+			const authResolutionInfo = await this.getAuthResolutionInfo(resolution, user);
+			authResolutionsInfoArr.push(authResolutionInfo);
+		}
+		
+		return authResolutionsInfoArr;
 	}
 }
