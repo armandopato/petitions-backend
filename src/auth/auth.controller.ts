@@ -84,7 +84,7 @@ export class AuthController {
             httpOnly: true,
             secure: true,
             sameSite: "strict",
-            expires: new Date(Date.now() + 12096e5),
+            expires: new Date(Date.now() + 12096e5), // 14 days
             path: '/auth'
         };
 

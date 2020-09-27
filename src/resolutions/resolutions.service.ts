@@ -112,7 +112,7 @@ export class ResolutionsService
 		{
 			await this.notificationsService.triggerNotifications(newResolution);
 		}
-		this.schedulingService.scheduleResolutionDeadline(newResolution, deadline);
+		this.schedulingService.scheduleResolutionDeadline(newResolution);
 		
 		return newResolution;
 	}
@@ -165,7 +165,7 @@ export class ResolutionsService
 		resolution.deadline = deadline;
 		resolution = await this.resolutionsRepository.save(resolution);
 		
-		this.schedulingService.scheduleResolutionDeadline(resolution, deadline);
+		this.schedulingService.scheduleResolutionDeadline(resolution);
 		await this.notificationsService.triggerNotifications(resolution);
 	}
 	
