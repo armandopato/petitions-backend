@@ -5,10 +5,10 @@ import {
 	NotFoundException,
 	UnauthorizedException,
 } from '@nestjs/common';
-import { Resolution } from 'src/entities/resolution.entity';
-import { StudentUser, SupportTeamUser, User } from 'src/entities/user.entity';
+import { Resolution } from 'src/posts/resolutions/resolution.entity';
+import { StudentUser, SupportTeamUser, User } from 'src/users/entities/user.entity';
 import { NotificationsService } from 'src/notifications/notifications.service';
-import { PetitionRepository } from 'src/petitions/petitions.repository';
+import { PetitionRepository } from 'src/posts/petitions/petitions.repository';
 import { SchedulingService } from 'src/scheduling/scheduling.service';
 import { ResolutionInfo } from 'src/types/ElementInfo';
 import { PetitionStatus, ResolutionStatus } from 'src/types/ElementStatus';
@@ -16,8 +16,8 @@ import { Page } from 'src/types/Page';
 import { PostTerminatedResolutionDto } from './dto/post-terminated-resolution.dto';
 import { ResolutionQueryParams } from './dto/resolution-query.params.dto';
 import { ResolutionRepository } from './resolutions.repository';
-import { CommentsRepository } from '../comments/comments.repository';
-import { ResolutionComment } from '../entities/comment.entity';
+import { CommentsRepository } from '../../comments/comments.repository';
+import { ResolutionComment } from '../../comments/comment.entity';
 
 const DAY = 1000 * 60 * 60 * 24;
 const RESOLUTION_WINDOW = DAY * 30;

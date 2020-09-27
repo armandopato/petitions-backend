@@ -2,7 +2,7 @@ import { getConnection, Repository } from 'typeorm';
 import { Page } from 'src/types/Page';
 import { getPage } from 'src/util/getPage';
 import { Injectable } from '@nestjs/common';
-import { GenericComment, PetitionComment, ResolutionComment } from '../entities/comment.entity';
+import { GenericComment, PetitionComment, ResolutionComment } from './comment.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 

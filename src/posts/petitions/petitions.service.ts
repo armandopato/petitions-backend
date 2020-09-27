@@ -1,17 +1,17 @@
 import { ConflictException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { StudentUser, User } from 'src/entities/user.entity';
+import { StudentUser, User } from 'src/users/entities/user.entity';
 import { PetitionQueryParams } from './dto/petition-query-params.dto';
 import { Page } from 'src/types/Page';
 import { PetitionInfo } from 'src/types/ElementInfo';
 import { PetitionRepository } from './petitions.repository';
-import { Petition } from 'src/entities/petition.entity';
+import { Petition } from 'src/posts/petitions/petition.entity';
 import { CreatePetitionDto } from './dto/create-petition.dto';
-import { ResolutionsService } from 'src/resolutions/resolutions.service';
-import { PetitionComment } from 'src/entities/comment.entity';
+import { ResolutionsService } from 'src/posts/resolutions/resolutions.service';
+import { PetitionComment } from 'src/comments/comment.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { PetitionStatus } from '../types/ElementStatus';
-import { CommentsRepository } from '../comments/comments.repository';
+import { PetitionStatus } from '../../types/ElementStatus';
+import { CommentsRepository } from '../../comments/comments.repository';
 
 
 const MIN_VOTES = 100;

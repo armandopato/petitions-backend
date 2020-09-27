@@ -22,9 +22,9 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { IsStudentGuard } from 'src/auth/guards/isStudent.guard';
 import { CreatePetitionDto } from './dto/create-petition.dto';
 import { PositiveIntPipe } from 'src/util/positive-int.pipe';
-import { PostCommentDto } from '../comments/dto/post-comment.dto';
-import { CommentsService } from '../comments/comments.service';
-import { PetitionComment } from '../entities/comment.entity';
+import { PostCommentDto } from '../../comments/dto/post-comment.dto';
+import { CommentsService } from '../../comments/comments.service';
+import { PetitionComment } from '../../comments/comment.entity';
 
 @Injectable()
 @Controller('petitions')

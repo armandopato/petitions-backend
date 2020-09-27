@@ -1,5 +1,5 @@
 import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
-import { User } from 'src/entities/user.entity';
+import { User } from 'src/users/entities/user.entity';
 import { compare, hash } from 'bcrypt';
 import { UserCredentials } from './dto/user-credentials.dto';
 import { validateOrReject } from 'class-validator';

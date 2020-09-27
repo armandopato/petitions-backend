@@ -6,10 +6,10 @@ import { StudentUserRepository, SupportTeamUserRepository, UserRepository } from
 import { AuthModule } from 'src/auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtConfigService } from 'src/auth/config/jwt.config.service';
-import { Settings } from 'src/entities/settings.entity';
-import { PetitionsModule } from 'src/petitions/petitions.module';
+import { Settings } from 'src/users/entities/settings.entity';
+import { PetitionsModule } from 'src/posts/petitions/petitions.module';
 import { NotificationsModule } from 'src/notifications/notifications.module';
-import { ResolutionsModule } from '../resolutions/resolutions.module';
+import { ResolutionsModule } from '../posts/resolutions/resolutions.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([StudentUserRepository, SupportTeamUserRepository, UserRepository, Settings]),

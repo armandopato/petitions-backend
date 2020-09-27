@@ -1,7 +1,7 @@
 import { PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, ManyToMany, JoinTable, Entity } from "typeorm";
-import { StudentUser } from "src/entities/user.entity";
-import { Petition } from "./petition.entity";
-import { Resolution } from "./resolution.entity";
+import { StudentUser } from "src/users/entities/user.entity";
+import { Petition } from "../posts/petitions/petition.entity";
+import { Resolution } from "../posts/resolutions/resolution.entity";
 import { Length } from "src/types/Length";
 
 export abstract class GenericComment

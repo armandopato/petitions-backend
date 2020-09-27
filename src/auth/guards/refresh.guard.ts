@@ -4,7 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Payload } from 'src/types/Payload';
 import { Token } from 'src/types/Token';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/entities/user.entity';
+import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()

@@ -1,7 +1,7 @@
 import { ConflictException, NotFoundException } from "@nestjs/common";
-import { UserNotification } from "src/entities/notification.entity";
-import { UserToNotification } from "src/entities/user-to-notification.entity";
-import { User } from "src/entities/user.entity";
+import { UserNotification } from "src/notifications/notification.entity";
+import { UserToNotification } from "src/users/entities/user-to-notification.entity";
+import { User } from "src/users/entities/user.entity";
 import { ResolutionStatus } from "src/types/ElementStatus";
 import { Page } from "src/types/Page";
 import { getPage } from "src/util/getPage";

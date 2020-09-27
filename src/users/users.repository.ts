@@ -1,11 +1,11 @@
 import { EntityRepository, getConnection, Repository } from 'typeorm';
-import { StudentUser, SupportTeamUser, User } from 'src/entities/user.entity';
+import { StudentUser, SupportTeamUser, User } from 'src/users/entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
-import { School } from 'src/entities/school.entity';
-import { Settings } from 'src/entities/settings.entity';
+import { School } from 'src/users/entities/school.entity';
+import { Settings } from 'src/users/entities/settings.entity';
 import { hash } from 'bcrypt';
-import { Petition } from 'src/entities/petition.entity';
-import { Resolution } from 'src/entities/resolution.entity';
+import { Petition } from 'src/posts/petitions/petition.entity';
+import { Resolution } from 'src/posts/resolutions/resolution.entity';
 import { getPage } from 'src/util/getPage';
 import { Page } from 'src/types/Page';
 

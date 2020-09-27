@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { NotificationsModule } from 'src/notifications/notifications.module';
 import { SchedulingService } from './scheduling.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ResolutionRepository } from '../resolutions/resolutions.repository';
+import { ResolutionRepository } from '../posts/resolutions/resolutions.repository';
 import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({

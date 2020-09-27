@@ -3,9 +3,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PetitionRepository } from './petitions.repository';
 import { PetitionsController } from './petitions.controller';
 import { PetitionsService } from './petitions.service';
-import { ResolutionsModule } from 'src/resolutions/resolutions.module';
-import { PetitionComment } from 'src/entities/comment.entity';
-import { CommentsModule } from '../comments/comments.module';
+import { ResolutionsModule } from 'src/posts/resolutions/resolutions.module';
+import { PetitionComment } from 'src/comments/comment.entity';
+import { CommentsModule } from '../../comments/comments.module';
 
 @Module({
     imports: [

@@ -2,10 +2,10 @@ import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToOne, One
 import { School } from "./school.entity";
 import { Settings } from "./settings.entity";
 import { Role } from "src/types/Role";
-import { Petition } from "src/entities/petition.entity";
-import { Resolution } from "src/entities/resolution.entity";
+import { Petition } from "src/posts/petitions/petition.entity";
+import { Resolution } from "src/posts/resolutions/resolution.entity";
 import { Length } from "src/types/Length";
-import { PetitionComment, ResolutionComment } from "./comment.entity";
+import { PetitionComment, ResolutionComment } from "../../comments/comment.entity";
 import { UserToNotification } from "./user-to-notification.entity";
 
 @Entity()

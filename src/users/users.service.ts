@@ -8,17 +8,17 @@ import { Payload } from 'src/types/Payload';
 import { Token } from 'src/types/Token';
 import { ModifyUserDto, ModifyUserRoleDto } from './dto/modify-user.dto';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
-import { User } from 'src/entities/user.entity';
+import { User } from 'src/users/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { Role } from 'src/types/Role';
 import { PetitionInfo, ResolutionInfo } from 'src/types/ElementInfo';
 import { ChangeUserSettingsDto, UserSettingsAndSchoolDto } from './dto/user-settings.dto';
-import { Settings } from 'src/entities/settings.entity';
+import { Settings } from 'src/users/entities/settings.entity';
 import { SchoolType } from 'src/types/School';
 import { Repository } from 'typeorm';
 import { Page } from 'src/types/Page';
-import { PetitionsService } from '../petitions/petitions.service';
-import { ResolutionsService } from '../resolutions/resolutions.service';
+import { PetitionsService } from '../posts/petitions/petitions.service';
+import { ResolutionsService } from '../posts/resolutions/resolutions.service';
 
 const SCHOOL_CHANGE_DAYS = 30;
 

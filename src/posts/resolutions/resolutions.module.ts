@@ -3,10 +3,10 @@ import { ResolutionRepository } from './resolutions.repository';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ResolutionsService } from './resolutions.service';
 import { ResolutionsController } from './resolutions.controller';
-import { PetitionRepository } from 'src/petitions/petitions.repository';
+import { PetitionRepository } from 'src/posts/petitions/petitions.repository';
 import { SchedulingModule } from 'src/scheduling/scheduling.module';
 import { NotificationsModule } from 'src/notifications/notifications.module';
-import { CommentsModule } from '../comments/comments.module';
+import { CommentsModule } from '../../comments/comments.module';
 
 @Module({
     imports: [

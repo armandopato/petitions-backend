@@ -10,10 +10,10 @@ import { PostTerminatedResolutionDto } from './dto/post-terminated-resolution.dt
 import { ResolutionQueryParams } from './dto/resolution-query.params.dto';
 import { ResolutionsService } from './resolutions.service';
 import { ResolutionTextDto } from './dto/terminate-resolution.dto';
-import { IsStudentGuard } from '../auth/guards/isStudent.guard';
-import { CommentsService } from '../comments/comments.service';
-import { ResolutionComment } from '../entities/comment.entity';
-import { PostCommentDto } from '../comments/dto/post-comment.dto';
+import { IsStudentGuard } from '../../auth/guards/isStudent.guard';
+import { CommentsService } from '../../comments/comments.service';
+import { ResolutionComment } from '../../comments/comment.entity';
+import { PostCommentDto } from '../../comments/dto/post-comment.dto';
 
 @Controller('resolutions')
 export class ResolutionsController

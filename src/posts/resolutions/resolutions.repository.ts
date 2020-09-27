@@ -1,12 +1,12 @@
 import { EntityRepository, getConnection, Repository } from 'typeorm';
-import { Resolution } from 'src/entities/resolution.entity';
+import { Resolution } from 'src/posts/resolutions/resolution.entity';
 import { ResolutionStatus } from 'src/types/ElementStatus';
-import { StudentUser, User } from 'src/entities/user.entity';
-import { Petition } from 'src/entities/petition.entity';
-import { UserNotification } from 'src/entities/notification.entity';
+import { StudentUser, User } from 'src/users/entities/user.entity';
+import { Petition } from 'src/posts/petitions/petition.entity';
+import { UserNotification } from 'src/notifications/notification.entity';
 import { Page } from 'src/types/Page';
 import { ResolutionQueryParams } from './dto/resolution-query.params.dto';
-import { ResolutionOrderBy as OrderBy } from '../types/OrderBy';
+import { ResolutionOrderBy as OrderBy } from '../../types/OrderBy';
 import { getPage } from 'src/util/getPage';
 
 

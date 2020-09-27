@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { CronJob } from 'cron';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { Resolution } from 'src/entities/resolution.entity';
+import { Resolution } from 'src/posts/resolutions/resolution.entity';
 import { NotificationsService } from 'src/notifications/notifications.service';
-import { ResolutionRepository } from '../resolutions/resolutions.repository';
+import { ResolutionRepository } from '../posts/resolutions/resolutions.repository';
 import { ResolutionStatus } from '../types/ElementStatus';
 
 

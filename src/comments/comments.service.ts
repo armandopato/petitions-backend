@@ -5,12 +5,12 @@ import {
 	InternalServerErrorException,
 	NotFoundException,
 } from '@nestjs/common';
-import { StudentUser, User } from '../entities/user.entity';
+import { StudentUser, User } from '../users/entities/user.entity';
 import { Page } from '../types/Page';
 import { CommentInfo } from '../types/ElementInfo';
-import { GenericComment, PetitionComment, ResolutionComment } from '../entities/comment.entity';
+import { GenericComment, PetitionComment, ResolutionComment } from './comment.entity';
 import { CommentsRepository, Entity } from './comments.repository';
-import { ResolutionRepository } from '../resolutions/resolutions.repository';
+import { ResolutionRepository } from '../posts/resolutions/resolutions.repository';
 import { ResolutionStatus } from '../types/ElementStatus';
 
 @Injectable()

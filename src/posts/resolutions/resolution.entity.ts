@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToOne, JoinColumn, ManyToOne, ManyToMany, JoinTable, OneToMany } from "typeorm";
-import { Petition } from "src/entities/petition.entity";
-import { SupportTeamUser, StudentUser, User } from "src/entities/user.entity";
-import { ResolutionComment } from "./comment.entity";
+import { Petition } from "src/posts/petitions/petition.entity";
+import { SupportTeamUser, StudentUser, User } from "src/users/entities/user.entity";
+import { ResolutionComment } from "../../comments/comment.entity";
 import { Length } from "src/types/Length";
 
 
