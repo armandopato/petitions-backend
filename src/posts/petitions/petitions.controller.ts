@@ -31,7 +31,9 @@ import { PetitionComment } from '../../comments/comment.entity';
 export class PetitionsController
 {
 	constructor(private petitionsService: PetitionsService,
-	            private commentsService: CommentsService) {}
+	            private commentsService: CommentsService)
+	{
+	}
 	
 	@UseGuards(JwtOptionalAuthGuard)
 	@Get()
@@ -49,35 +51,35 @@ export class PetitionsController
 	}
 	
 	@UseGuards(JwtOptionalAuthGuard)
-	@Get("/:id")
+	@Get('/:id')
 	async getPetitionInfoById(@Request() req: AuthRequest, @Param('id', PositiveIntPipe) petitionId: number): Promise<PetitionInfo>
 	{
 		return await this.petitionsService.getPetitionInfoById(petitionId, req.user);
 	}
 	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
-	@Post("/:id")
+	@Post('/:id')
 	async votePetition(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) petitionId: number): Promise<void>
 	{
 		await this.petitionsService.votePetition(petitionId, req.user);
 	}
 	
 	@UseGuards(JwtAuthGuard)
-	@Patch("/:id")
+	@Patch('/:id')
 	async saveOrUnsavePetition(@Request() req: AuthRequest, @Param('id', PositiveIntPipe) petitionId: number): Promise<void>
 	{
 		await this.petitionsService.saveOrUnsavePetition(petitionId, req.user);
 	}
 	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
-	@Delete("/:id")
+	@Delete('/:id')
 	async deletePetition(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) petitionId: number): Promise<void>
 	{
 		await this.petitionsService.deletePetition(petitionId, req.user);
 	}
 	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
-	@Put("/:id")
+	@Put('/:id')
 	async editPetition(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) petitionId: number, @Body() editPetitionDto: CreatePetitionDto): Promise<void>
 	{
 		await this.petitionsService.editPetition(petitionId, req.user, editPetitionDto);
@@ -86,21 +88,21 @@ export class PetitionsController
 	// COMMENTS
 	
 	@UseGuards(JwtOptionalAuthGuard)
-	@Get("/:id/comments")
-	async getCommentsPage(@Request() req: AuthRequest, @Param('id', PositiveIntPipe) petitionId: number, @Query("page", PositiveIntPipe) page: number): Promise<Page<CommentInfo>>
+	@Get('/:id/comments')
+	async getCommentsPage(@Request() req: AuthRequest, @Param('id', PositiveIntPipe) petitionId: number, @Query('page', PositiveIntPipe) page: number): Promise<Page<CommentInfo>>
 	{
 		return await this.commentsService.getCommentInfoPage(petitionId, PetitionComment, req.user, page);
 	}
 	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
-	@Post("/:id/comments")
+	@Post('/:id/comments')
 	async postComment(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) petitionId: number, @Body() postCommentDto: PostCommentDto): Promise<void>
 	{
 		await this.commentsService.postComment(petitionId, PetitionComment, req.user, postCommentDto.comment);
 	}
 	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
-	@Get("/:id/mycomment")
+	@Get('/:id/mycomment')
 	async getMyComment(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) petitionId: number): Promise<{ myComment: CommentInfo }>
 	{
 		return { myComment: await this.commentsService.getMyCommentInfo(petitionId, PetitionComment, req.user) };
@@ -108,21 +110,21 @@ export class PetitionsController
 	
 	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
-	@Put("/:id/mycomment")
+	@Put('/:id/mycomment')
 	async editComment(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) petitionId: number, @Body() putCommentDto: PostCommentDto): Promise<void>
 	{
 		await this.commentsService.editMyComment(petitionId, PetitionComment, req.user, putCommentDto.comment);
 	}
 	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
-	@Delete("/:id/mycomment")
+	@Delete('/:id/mycomment')
 	async deleteComment(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) petitionId: number): Promise<void>
 	{
 		await this.commentsService.deleteMyComment(petitionId, PetitionComment, req.user);
 	}
 	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
-	@Patch("/comments/:commentId")
+	@Patch('/comments/:commentId')
 	async likeOrDislikeComment(@Request() req: AuthStudentRequest, @Param('commentId', PositiveIntPipe) commentId: number): Promise<void>
 	{
 		await this.commentsService.likeOrDislikeComment(commentId, PetitionComment, req.user);

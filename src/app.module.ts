@@ -10,6 +10,7 @@ import { SchedulingModule } from './scheduling/scheduling.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { CommentsModule } from './comments/comments.module';
 import { ElementsModule } from './elements/elements.module';
+import { PostsModule } from './posts/posts.module';
 
 @Module({
 	imports: [
@@ -23,6 +24,7 @@ import { ElementsModule } from './elements/elements.module';
 		NotificationsModule,
 		CommentsModule,
 		ElementsModule,
+		PostsModule,
 	],
 	controllers: [AppController],
 })

@@ -2,7 +2,7 @@ import { ConflictException, Injectable, InternalServerErrorException, NotFoundEx
 import { StudentUser, User } from 'src/users/entities/user.entity';
 import { PetitionQueryParams } from './dto/petition-query-params.dto';
 import { Page } from 'src/types/Page';
-import { PetitionInfo } from 'src/types/ElementInfo';
+import { PetitionInfo, ResolutionInfo } from 'src/types/ElementInfo';
 import { PetitionRepository } from './petitions.repository';
 import { Petition } from 'src/posts/petitions/petition.entity';
 import { CreatePetitionDto } from './dto/create-petition.dto';
@@ -10,8 +10,10 @@ import { ResolutionsService } from 'src/posts/resolutions/resolutions.service';
 import { PetitionComment } from 'src/comments/comment.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { PetitionStatus } from '../../types/ElementStatus';
+import { PetitionStatus, ResolutionStatus } from '../../types/ElementStatus';
 import { CommentsRepository } from '../../comments/comments.repository';
+import * as _ from 'lodash';
+import { PostsService } from '../posts.service';
 
 
 const MIN_VOTES = 100;
@@ -23,28 +25,27 @@ export class PetitionsService
                 private petitionRepository: PetitionRepository,
                 private resolutionsService: ResolutionsService,
                 private commentsRepository: CommentsRepository,
+                private postsService: PostsService,
                 @InjectRepository(PetitionComment)
                 private petitionCommentRepository: Repository<PetitionComment>
                 ) {}
 
     async getPetitionsPageBySchool(params: PetitionQueryParams, user: User): Promise<Page<PetitionInfo>>
     {
-        const { pageElements: petitions, totalPages } = await this.petitionRepository.getPetitionsPage(params);
-        let petitionInfoArr: PetitionInfo[];
-
+        function propertyRemover(petition: PetitionInfo): void
+        {
+            petition.description = undefined;
+        }
+        
+        const page = await this.petitionRepository.getPetitionsPage(params);
+        const getInfoPage = _.partial(this.postsService.getPostsInfoPage, page, this.getPetitionInfo.bind(this), propertyRemover)
+    
         if (user)
         {
-            petitionInfoArr = await this.mapPetitionsToAuthPetitionsInfo(petitions, user);
+            return await getInfoPage(info => this.addAuthInfo(info, user));
         }
-        else
-        {
-            petitionInfoArr = await this.mapPetitionsToPetitionsInfo(petitions);
-        }
-
-        return {
-            pageElements: petitionInfoArr,
-            totalPages
-        };
+    
+        return await getInfoPage(undefined);
     }
 
 
@@ -68,13 +69,15 @@ export class PetitionsService
     {
         const petition = await this.petitionRepository.findOne(petitionId);
         if (!petition) throw new NotFoundException();
-
+    
+        const info = await this.getPetitionInfo(petition);
+    
         if (user)
         {
-            return await this.getAuthPetitionInfoWDesc(petition, user);
+            return await this.addAuthInfo(info, user);
         }
-        
-        return await this.getPetitionInfoWDesc(petition);
+    
+        return info;
     }
 
 
@@ -161,6 +164,7 @@ export class PetitionsService
             status: status,
             numVotes: numVotes,
             numComments: numComments,
+            description: petition.description
         };
         
         if (status !== PetitionStatus.NO_RESOLUTION)
@@ -174,52 +178,10 @@ export class PetitionsService
         return info;
     }
     
-    async getAuthPetitionInfo(petition: Petition, user: User): Promise<PetitionInfo>
+    async addAuthInfo(info: PetitionInfo, user: User): Promise<PetitionInfo>
     {
-        const petitionInfo = await this.getPetitionInfo(petition);
-        petitionInfo.didSave = await this.petitionRepository.didUserSave(petition.id, user.id);
-        petitionInfo.didVote = await this.petitionRepository.didUserVote(petition.id, user.id);
-        return petitionInfo;
-    }
-    
-    async getPetitionInfoWDesc(petition: Petition): Promise<PetitionInfo>
-    {
-        const petitionInfo = await this.getPetitionInfo(petition);
-        petitionInfo.description = petition.description;
-        return petitionInfo;
-    }
-    
-    async getAuthPetitionInfoWDesc(petition: Petition, user: User): Promise<PetitionInfo>
-    {
-        const petitionInfo = await this.getAuthPetitionInfo(petition, user);
-        petitionInfo.description = petition.description;
-        return petitionInfo;
-    }
-    
-    
-    async mapPetitionsToPetitionsInfo(petitions: Petition[]): Promise<PetitionInfo[]>
-    {
-        const petitionsInfoArr: PetitionInfo[] = [];
-        
-        for (const petition of petitions)
-        {
-            const petitionInfo = await this.getPetitionInfo(petition);
-            petitionsInfoArr.push(petitionInfo);
-        }
-        
-        return petitionsInfoArr;
-    }
-    
-    async mapPetitionsToAuthPetitionsInfo(petitions: Petition[], user: User): Promise<PetitionInfo[]>
-    {
-        const authPetitionsInfoArr: PetitionInfo[] = [];
-        
-        for (const petition of petitions)
-        {
-            const petitionInfo = await this.getAuthPetitionInfo(petition, user);
-            authPetitionsInfoArr.push(petitionInfo);
-        }
-        
-        return authPetitionsInfoArr;
+        info.didSave = await this.petitionRepository.didUserSave(info.id, user.id);
+        info.didVote = await this.petitionRepository.didUserVote(info.id, user.id);
+        return info;
     }
 }

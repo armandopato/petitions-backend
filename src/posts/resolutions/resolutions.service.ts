@@ -18,6 +18,8 @@ import { ResolutionQueryParams } from './dto/resolution-query.params.dto';
 import { ResolutionRepository } from './resolutions.repository';
 import { CommentsRepository } from '../../comments/comments.repository';
 import { ResolutionComment } from '../../comments/comment.entity';
+import { PostsService } from '../posts.service';
+import * as _ from 'lodash';
 
 const DAY = 1000 * 60 * 60 * 24;
 const RESOLUTION_WINDOW = DAY * 30;
@@ -30,28 +32,27 @@ export class ResolutionsService
 	            private commentsRepository: CommentsRepository,
 	            private petitionsRepository: PetitionRepository,
 	            private schedulingService: SchedulingService,
-	            private notificationsService: NotificationsService)
+	            private notificationsService: NotificationsService,
+	            private postsService: PostsService)
 	{
 	}
 	
 	async getResolutionsPageBySchool(params: ResolutionQueryParams, user: User): Promise<Page<ResolutionInfo>>
 	{
-		const { pageElements: resolutions, totalPages } = await this.resolutionsRepository.getResolutionsPage(params);
-		let resolutionInfoArr: ResolutionInfo[];
+		function propertyRemover(info: ResolutionInfo): void
+		{
+			info.resolutionText = undefined;
+		}
+		
+		const page = await this.resolutionsRepository.getResolutionsPage(params);
+		const getInfoPage = _.partial(this.postsService.getPostsInfoPage, page, this.getResolutionInfo.bind(this), propertyRemover)
 		
 		if (user)
 		{
-			resolutionInfoArr = await this.mapResolutionsToAuthResolutionsInfo(resolutions, user);
-		}
-		else
-		{
-			resolutionInfoArr = await this.mapResolutionsToResolutionsInfo(resolutions);
+			return await getInfoPage(info => this.addAuthInfo(info, user));
 		}
 		
-		return {
-			pageElements: resolutionInfoArr,
-			totalPages,
-		};
+		return await getInfoPage(undefined);
 	}
 	
 	async getResolutionInfoById(resolutionId: number, user: User): Promise<ResolutionInfo>
@@ -59,12 +60,36 @@ export class ResolutionsService
 		const resolution = await this.resolutionsRepository.findOne(resolutionId, { relations: ['petition'] });
 		if (!resolution) throw new NotFoundException();
 		
+		const info = await this.getResolutionInfo(resolution);
+		
 		if (user)
 		{
-			return await this.getAuthResolutionInfoWResText(resolution, user);
+			return await this.addAuthInfo(info, user);
 		}
 		
-		return await this.getResolutionInfoWResText(resolution);
+		return info;
+	}
+	
+	async saveOrUnsaveResolution(resolutionId: number, user: User): Promise<void>
+	{
+		const didUserSave = await this.resolutionsRepository.didUserSave(resolutionId, user.id);
+		
+		try
+		{
+			if (didUserSave)
+			{
+				await this.resolutionsRepository.unsaveResolution(resolutionId, user.id);
+			}
+			else
+			{
+				await this.resolutionsRepository.saveResolution(resolutionId, user.id);
+			}
+		}
+		catch (err)
+		{
+			if (Number(err.code) === 23503) throw new NotFoundException();
+			else throw new InternalServerErrorException();
+		}
 	}
 	
 	async resolvePetition(postTerminatedResolutionDto: PostTerminatedResolutionDto, supportUser: SupportTeamUser): Promise<number>
@@ -117,31 +142,10 @@ export class ResolutionsService
 		return newResolution;
 	}
 	
-	async saveOrUnsaveResolution(resolutionId: number, user: User): Promise<void>
-	{
-		const didUserSave = await this.resolutionsRepository.didUserSave(resolutionId, user.id);
-		
-		try
-		{
-			if (didUserSave)
-			{
-				await this.resolutionsRepository.unsaveResolution(resolutionId, user.id);
-			}
-			else
-			{
-				await this.resolutionsRepository.saveResolution(resolutionId, user.id);
-			}
-		}
-		catch(err)
-		{
-			if (Number(err.code) === 23503) throw new NotFoundException();
-			else throw new InternalServerErrorException();
-		}
-	}
 	
 	async voteResolution(resolutionId: number, user: StudentUser): Promise<void>
 	{
-		const resolution = await this.resolutionsRepository.findOne(resolutionId, { relations: ["petition"] });
+		const resolution = await this.resolutionsRepository.findOne(resolutionId, { relations: ['petition'] });
 		if (!resolution) throw new NotFoundException();
 		if (this.resolutionsRepository.getResolutionStatus(resolution) !== ResolutionStatus.TERMINATED) throw new UnauthorizedException();
 		
@@ -177,7 +181,8 @@ export class ResolutionsService
 			id: resolution.id,
 			petitionId: resolution.petition.id,
 			title: resolution.petition.title,
-			status: this.resolutionsRepository.getResolutionStatus(resolution)
+			status: this.resolutionsRepository.getResolutionStatus(resolution),
+			resolutionText: resolution.resolutionText,
 		};
 		
 		if (resolutionInfo.status === ResolutionStatus.TERMINATED)
@@ -195,60 +200,13 @@ export class ResolutionsService
 		return resolutionInfo;
 	}
 	
-	async getResolutionInfoWResText(resolution: Resolution): Promise<ResolutionInfo>
+	async addAuthInfo(info: ResolutionInfo, user: User): Promise<ResolutionInfo>
 	{
-		const info = await this.getResolutionInfo(resolution);
-		if (resolution.resolutionText)
+		if (info.status === ResolutionStatus.TERMINATED)
 		{
-			info.resolutionText = resolution.resolutionText;
+			info.didVote = await this.resolutionsRepository.didUserVote(info.id, user.id);
 		}
+		info.didSave = await this.resolutionsRepository.didUserSave(info.id, user.id);
 		return info;
-	}
-	
-	async getAuthResolutionInfoWResText(resolution: Resolution, user: User): Promise<ResolutionInfo>
-	{
-		const info = await this.getAuthResolutionInfo(resolution, user);
-		if (resolution.resolutionText)
-		{
-			info.resolutionText = resolution.resolutionText;
-		}
-		return info;
-	}
-	
-	async getAuthResolutionInfo(resolution: Resolution, user: User): Promise<ResolutionInfo>
-	{
-		const resolutionInfo = await this.getResolutionInfo(resolution);
-		if (resolutionInfo.status === ResolutionStatus.TERMINATED)
-		{
-			resolutionInfo.didVote = await this.resolutionsRepository.didUserVote(resolution.id, user.id);
-		}
-		resolutionInfo.didSave = await this.resolutionsRepository.didUserSave(resolution.id, user.id);
-		return resolutionInfo;
-	}
-	
-	async mapResolutionsToResolutionsInfo(resolutions: Resolution[]): Promise<ResolutionInfo[]>
-	{
-		const resolutionsInfoArr: ResolutionInfo[] = [];
-		
-		for (const resolution of resolutions)
-		{
-			const resolutionInfo = await this.getResolutionInfo(resolution);
-			resolutionsInfoArr.push(resolutionInfo);
-		}
-		
-		return resolutionsInfoArr;
-	}
-	
-	async mapResolutionsToAuthResolutionsInfo(resolutions: Resolution[], user: User): Promise<ResolutionInfo[]>
-	{
-		const authResolutionsInfoArr: ResolutionInfo[] = [];
-		
-		for (const resolution of resolutions)
-		{
-			const authResolutionInfo = await this.getAuthResolutionInfo(resolution, user);
-			authResolutionsInfoArr.push(authResolutionInfo);
-		}
-		
-		return authResolutionsInfoArr;
 	}
 }

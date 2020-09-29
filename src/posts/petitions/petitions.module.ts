@@ -6,12 +6,14 @@ import { PetitionsService } from './petitions.service';
 import { ResolutionsModule } from 'src/posts/resolutions/resolutions.module';
 import { PetitionComment } from 'src/comments/comment.entity';
 import { CommentsModule } from '../../comments/comments.module';
+import { PostsModule } from '../posts.module';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([PetitionRepository, PetitionComment]),
         ResolutionsModule,
-        CommentsModule
+        CommentsModule,
+        PostsModule
     ],
     controllers: [PetitionsController],
     providers: [PetitionsService],

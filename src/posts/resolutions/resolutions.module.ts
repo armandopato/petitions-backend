@@ -7,13 +7,15 @@ import { PetitionRepository } from 'src/posts/petitions/petitions.repository';
 import { SchedulingModule } from 'src/scheduling/scheduling.module';
 import { NotificationsModule } from 'src/notifications/notifications.module';
 import { CommentsModule } from '../../comments/comments.module';
+import { PostsModule } from '../posts.module';
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([ResolutionRepository, PetitionRepository]),
         SchedulingModule,
         NotificationsModule,
-        CommentsModule
+        CommentsModule,
+        PostsModule
     ],
     providers: [ResolutionsService],
     exports: [ResolutionsService],
