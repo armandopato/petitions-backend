@@ -15,7 +15,7 @@ export class PetitionRepository extends Repository<Petition>
 {
 	private connection = getConnection();
 	
-	async getPetitionsPage(params: PetitionQueryParams): Promise<Page<Petition>>
+	async getPage(params: PetitionQueryParams): Promise<Page<Petition>>
 	{
 		const { page, orderBy, year, school, show, search } = params;
 		const query = this.connection.createQueryBuilder(Petition, 'petition')

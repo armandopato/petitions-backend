@@ -17,7 +17,7 @@ import { JwtOptionalAuthGuard } from 'src/auth/guards/jwt-optional-auth.guard';
 import { AuthRequest, AuthStudentRequest } from 'src/types/AuthRequest';
 import { PetitionQueryParams } from './dto/petition-query-params.dto';
 import { Page } from 'src/types/Page';
-import { CommentInfo, PetitionInfo } from 'src/types/ElementInfo';
+import { CommentInfo, PetitionInfo, ResolutionInfo } from 'src/types/ElementInfo';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { IsStudentGuard } from 'src/auth/guards/isStudent.guard';
 import { CreatePetitionDto } from './dto/create-petition.dto';
@@ -25,21 +25,28 @@ import { PositiveIntPipe } from 'src/util/positive-int.pipe';
 import { PostCommentDto } from '../../comments/dto/post-comment.dto';
 import { CommentsService } from '../../comments/comments.service';
 import { PetitionComment } from '../../comments/comment.entity';
+import { PostsService } from '../posts.service';
+import * as _ from 'lodash';
+import { User } from '../../users/entities/user.entity';
 
 @Injectable()
 @Controller('petitions')
 export class PetitionsController
 {
+	getPetitionsInfoPageBySchool: (params: PetitionQueryParams, user: User) => Promise<Page<PetitionInfo>>;
+	
 	constructor(private petitionsService: PetitionsService,
-	            private commentsService: CommentsService)
+	            private commentsService: CommentsService,
+	            private postsService: PostsService)
 	{
+		this.getPetitionsInfoPageBySchool = _.partial(this.postsService.getPostsInfoPage, this.petitionsService);
 	}
 	
 	@UseGuards(JwtOptionalAuthGuard)
 	@Get()
 	async getPetitionsPageBySchool(@Request() req: AuthRequest, @Query() petitionQueryParams: PetitionQueryParams): Promise<Page<PetitionInfo>>
 	{
-		return await this.petitionsService.getPetitionsPageBySchool(petitionQueryParams, req.user);
+		return await this.getPetitionsInfoPageBySchool(petitionQueryParams, req.user);
 	}
 	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)

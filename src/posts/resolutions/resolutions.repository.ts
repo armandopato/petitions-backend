@@ -8,14 +8,15 @@ import { Page } from 'src/types/Page';
 import { ResolutionQueryParams } from './dto/resolution-query.params.dto';
 import { ResolutionOrderBy as OrderBy } from '../../types/OrderBy';
 import { getPage } from 'src/util/getPage';
+import { PageRepository } from '../../types/PageMap.interface';
 
 
 @EntityRepository(Resolution)
-export class ResolutionRepository extends Repository<Resolution>
+export class ResolutionRepository extends Repository<Resolution> implements PageRepository<Resolution, ResolutionQueryParams>
 {
     connection = getConnection();
 
-    async getResolutionsPage(params: ResolutionQueryParams): Promise<Page<Resolution>>
+    async getPage(params: ResolutionQueryParams): Promise<Page<Resolution>>
     {
         const { page, orderBy, year, school, show, search } = params;
         const query = this.connection.createQueryBuilder(Resolution, "resolution")

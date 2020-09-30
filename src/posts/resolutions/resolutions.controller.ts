@@ -14,18 +14,28 @@ import { IsStudentGuard } from '../../auth/guards/isStudent.guard';
 import { CommentsService } from '../../comments/comments.service';
 import { ResolutionComment } from '../../comments/comment.entity';
 import { PostCommentDto } from '../../comments/dto/post-comment.dto';
+import { PostsService } from '../posts.service';
+import { User } from '../../users/entities/user.entity';
+import * as _ from 'lodash';
+import { ResolutionRepository } from './resolutions.repository';
 
 @Controller('resolutions')
 export class ResolutionsController
 {
+	getResolutionsInfoPageBySchool: (params: ResolutionQueryParams, user: User) => Promise<Page<ResolutionInfo>>;
+	
 	constructor(private resolutionsService: ResolutionsService,
-	            private commentsService: CommentsService) {}
+	            private commentsService: CommentsService,
+	            private postsService: PostsService)
+	{
+		this.getResolutionsInfoPageBySchool = _.partial(this.postsService.getPostsInfoPage, this.resolutionsService);
+	}
 	
 	@UseGuards(JwtOptionalAuthGuard)
 	@Get()
 	async getResolutionsPageBySchool(@Request() req: AuthRequest, @Query() resolutionQueryParams: ResolutionQueryParams): Promise<Page<ResolutionInfo>>
 	{
-		return await this.resolutionsService.getResolutionsPageBySchool(resolutionQueryParams, req.user);
+		return await this.getResolutionsInfoPageBySchool(resolutionQueryParams, req.user);
 	}
 	
 	@UseGuards(JwtAuthGuard, IsSupportGuard)

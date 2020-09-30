@@ -20,13 +20,14 @@ import { CommentsRepository } from '../../comments/comments.repository';
 import { ResolutionComment } from '../../comments/comment.entity';
 import { PostsService } from '../posts.service';
 import * as _ from 'lodash';
+import { PageMap } from '../../types/PageMap.interface';
 
 const DAY = 1000 * 60 * 60 * 24;
 const RESOLUTION_WINDOW = DAY * 30;
 const MIN_VOTES = 50;
 
 @Injectable()
-export class ResolutionsService
+export class ResolutionsService implements PageMap<Resolution, ResolutionInfo, ResolutionQueryParams>
 {
 	constructor(private resolutionsRepository: ResolutionRepository,
 	            private commentsRepository: CommentsRepository,
@@ -37,23 +38,18 @@ export class ResolutionsService
 	{
 	}
 	
-	async getResolutionsPageBySchool(params: ResolutionQueryParams, user: User): Promise<Page<ResolutionInfo>>
+	get repository(): ResolutionRepository
 	{
-		function propertyRemover(info: ResolutionInfo): void
-		{
-			info.resolutionText = undefined;
-		}
-		
-		const page = await this.resolutionsRepository.getResolutionsPage(params);
-		const getInfoPage = _.partial(this.postsService.getPostsInfoPage, page, this.getResolutionInfo.bind(this), propertyRemover)
-		
-		if (user)
-		{
-			return await getInfoPage(info => this.addAuthInfo(info, user));
-		}
-		
-		return await getInfoPage(undefined);
+		return this.resolutionsRepository;
 	}
+	
+	propertyRemover(info: ResolutionInfo): void
+	{
+		info.resolutionText = undefined;
+	}
+	
+	infoMapper = this.getResolutionInfo.bind(this);
+	authInfoMapperGenerator = (user: User) => (info: ResolutionInfo): Promise<ResolutionInfo> => this.addAuthInfo(info, user);
 	
 	async getResolutionInfoById(resolutionId: number, user: User): Promise<ResolutionInfo>
 	{

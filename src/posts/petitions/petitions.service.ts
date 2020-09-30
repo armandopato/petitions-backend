@@ -14,12 +14,14 @@ import { PetitionStatus, ResolutionStatus } from '../../types/ElementStatus';
 import { CommentsRepository } from '../../comments/comments.repository';
 import * as _ from 'lodash';
 import { PostsService } from '../posts.service';
+import { PageMap } from '../../types/PageMap.interface';
+import { ResolutionRepository } from '../resolutions/resolutions.repository';
 
 
 const MIN_VOTES = 100;
 
 @Injectable()
-export class PetitionsService
+export class PetitionsService implements PageMap<Petition, PetitionInfo, PetitionQueryParams>
 {
     constructor(
                 private petitionRepository: PetitionRepository,
@@ -29,24 +31,19 @@ export class PetitionsService
                 @InjectRepository(PetitionComment)
                 private petitionCommentRepository: Repository<PetitionComment>
                 ) {}
-
-    async getPetitionsPageBySchool(params: PetitionQueryParams, user: User): Promise<Page<PetitionInfo>>
+    
+    get repository(): PetitionRepository
     {
-        function propertyRemover(petition: PetitionInfo): void
-        {
-            petition.description = undefined;
-        }
-        
-        const page = await this.petitionRepository.getPetitionsPage(params);
-        const getInfoPage = _.partial(this.postsService.getPostsInfoPage, page, this.getPetitionInfo.bind(this), propertyRemover)
-    
-        if (user)
-        {
-            return await getInfoPage(info => this.addAuthInfo(info, user));
-        }
-    
-        return await getInfoPage(undefined);
+        return this.petitionRepository;
     }
+    
+    propertyRemover(info: PetitionInfo): void
+    {
+        info.description = undefined;
+    }
+    
+    infoMapper = this.getPetitionInfo.bind(this);
+    authInfoMapperGenerator = (user: User) => (info: PetitionInfo): Promise<PetitionInfo> => this.addAuthInfo(info, user);
 
 
     async postPetition(user: StudentUser, createPetitionDto: CreatePetitionDto): Promise<number>

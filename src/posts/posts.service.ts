@@ -16,17 +16,24 @@ import { PetitionStatus } from '../types/ElementStatus';
 import { ResolutionRepository } from './resolutions/resolutions.repository';
 import { PetitionRepository } from './petitions/petitions.repository';
 import { Resolution } from './resolutions/resolution.entity';
+import { Repository } from 'typeorm';
+import { PageMap } from '../types/PageMap.interface';
 
 type PetitionOrResolution = Petition | Resolution;
 type PetitionOrResolutionInfo = PetitionInfo | ResolutionInfo;
+interface PageRepository<T, TParams> extends Repository<T>
+{
+	getPage(params: TParams): Promise<Page<T>>
+}
 
 @Injectable()
 export class PostsService
 {
-	async getPostsInfoPage<T, TInfo>(page: Page<T>,
-	                              infoMapper: (post: T) => Promise<TInfo>,
-	                              propertyRemover: (info: TInfo) => void,
-	                              authInfoMapper?: (info: TInfo) => Promise<TInfo>,
+	// generalize, use currying with entity like in comments
+	/*async getPostsInfoPage<T, TInfo>(page: Page<T>,
+	                                 infoMapper: (post: T) => Promise<TInfo>,
+	                                 propertyRemover: (info: TInfo) => void,
+	                                 authInfoMapper?: (info: TInfo) => Promise<TInfo>,
 	): Promise<Page<TInfo>>
 	{
 		const posts = page.pageElements;
@@ -41,7 +48,27 @@ export class PostsService
 		
 		return {
 			pageElements: postInfoArr,
-			totalPages: page.totalPages
+			totalPages: page.totalPages,
+		};
+	}*/
+	
+	async getPostsInfoPage<T, TInfo, TParams>(service: PageMap<T, TInfo, TParams>, params: TParams, user: User): Promise<Page<TInfo>>
+	{
+		const page = await service.repository.getPage(params);
+		
+		const posts = page.pageElements;
+		
+		let postInfoArr = await Promise.all(posts.map(service.infoMapper));
+		postInfoArr.forEach(service.propertyRemover);
+		
+		if (user)
+		{
+			postInfoArr = await Promise.all(postInfoArr.map(service.authInfoMapperGenerator(user)));
+		}
+		
+		return {
+			pageElements: postInfoArr,
+			totalPages: page.totalPages,
 		};
 	}
 	
