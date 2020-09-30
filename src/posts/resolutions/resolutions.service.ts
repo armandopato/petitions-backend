@@ -1,5 +1,5 @@
 import {
-	ConflictException,
+	ConflictException, forwardRef, Inject,
 	Injectable,
 	InternalServerErrorException,
 	NotFoundException,
@@ -12,23 +12,29 @@ import { PetitionRepository } from 'src/posts/petitions/petitions.repository';
 import { SchedulingService } from 'src/scheduling/scheduling.service';
 import { ResolutionInfo } from 'src/types/ElementInfo';
 import { PetitionStatus, ResolutionStatus } from 'src/types/ElementStatus';
-import { Page } from 'src/types/Page';
 import { PostTerminatedResolutionDto } from './dto/post-terminated-resolution.dto';
 import { ResolutionQueryParams } from './dto/resolution-query.params.dto';
 import { ResolutionRepository } from './resolutions.repository';
 import { CommentsRepository } from '../../comments/comments.repository';
 import { ResolutionComment } from '../../comments/comment.entity';
-import { PostsService } from '../posts.service';
+import { Post } from '../../types/Post.interface';
 import * as _ from 'lodash';
-import { PageMap } from '../../types/PageMap.interface';
+import { PostsService } from '../posts.service';
+import { Page } from '../../types/Page';
 
 const DAY = 1000 * 60 * 60 * 24;
 const RESOLUTION_WINDOW = DAY * 30;
 const MIN_VOTES = 50;
 
 @Injectable()
-export class ResolutionsService implements PageMap<Resolution, ResolutionInfo, ResolutionQueryParams>
+export class ResolutionsService implements Post<Resolution, ResolutionInfo, ResolutionQueryParams>
 {
+	infoMapper = this.getInfo.bind(this);
+	
+	getInfoById: (resolutionId: number, user: User) => Promise<ResolutionInfo>;
+	getInfoPage: (params: ResolutionQueryParams, user: User) => Promise<Page<ResolutionInfo>>;
+	saveOrUnsave: (resolutionId: number, user: User) => Promise<void>;
+	
 	constructor(private resolutionsRepository: ResolutionRepository,
 	            private commentsRepository: CommentsRepository,
 	            private petitionsRepository: PetitionRepository,
@@ -36,6 +42,9 @@ export class ResolutionsService implements PageMap<Resolution, ResolutionInfo, R
 	            private notificationsService: NotificationsService,
 	            private postsService: PostsService)
 	{
+		this.getInfoById = _.partial(this.postsService.getPostInfoById.bind(this.postsService), Resolution) as any;
+		this.getInfoPage = _.partial(this.postsService.getPostsInfoPage.bind(this.postsService), Resolution) as any;
+		this.saveOrUnsave = _.partial(this.postsService.saveOrUnsavePost.bind(this.postsService), Resolution);
 	}
 	
 	get repository(): ResolutionRepository
@@ -47,46 +56,8 @@ export class ResolutionsService implements PageMap<Resolution, ResolutionInfo, R
 	{
 		info.resolutionText = undefined;
 	}
-	
-	infoMapper = this.getResolutionInfo.bind(this);
+
 	authInfoMapperGenerator = (user: User) => (info: ResolutionInfo): Promise<ResolutionInfo> => this.addAuthInfo(info, user);
-	
-	async getResolutionInfoById(resolutionId: number, user: User): Promise<ResolutionInfo>
-	{
-		const resolution = await this.resolutionsRepository.findOne(resolutionId, { relations: ['petition'] });
-		if (!resolution) throw new NotFoundException();
-		
-		const info = await this.getResolutionInfo(resolution);
-		
-		if (user)
-		{
-			return await this.addAuthInfo(info, user);
-		}
-		
-		return info;
-	}
-	
-	async saveOrUnsaveResolution(resolutionId: number, user: User): Promise<void>
-	{
-		const didUserSave = await this.resolutionsRepository.didUserSave(resolutionId, user.id);
-		
-		try
-		{
-			if (didUserSave)
-			{
-				await this.resolutionsRepository.unsaveResolution(resolutionId, user.id);
-			}
-			else
-			{
-				await this.resolutionsRepository.saveResolution(resolutionId, user.id);
-			}
-		}
-		catch (err)
-		{
-			if (Number(err.code) === 23503) throw new NotFoundException();
-			else throw new InternalServerErrorException();
-		}
-	}
 	
 	async resolvePetition(postTerminatedResolutionDto: PostTerminatedResolutionDto, supportUser: SupportTeamUser): Promise<number>
 	{
@@ -171,7 +142,7 @@ export class ResolutionsService implements PageMap<Resolution, ResolutionInfo, R
 	
 	// CRUD
 	
-	async getResolutionInfo(resolution: Resolution): Promise<ResolutionInfo>
+	async getInfo(resolution: Resolution): Promise<ResolutionInfo>
 	{
 		const resolutionInfo: ResolutionInfo = {
 			id: resolution.id,

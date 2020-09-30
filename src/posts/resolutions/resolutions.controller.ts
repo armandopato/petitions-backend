@@ -14,28 +14,21 @@ import { IsStudentGuard } from '../../auth/guards/isStudent.guard';
 import { CommentsService } from '../../comments/comments.service';
 import { ResolutionComment } from '../../comments/comment.entity';
 import { PostCommentDto } from '../../comments/dto/post-comment.dto';
-import { PostsService } from '../posts.service';
-import { User } from '../../users/entities/user.entity';
-import * as _ from 'lodash';
-import { ResolutionRepository } from './resolutions.repository';
 
 @Controller('resolutions')
 export class ResolutionsController
 {
-	getResolutionsInfoPageBySchool: (params: ResolutionQueryParams, user: User) => Promise<Page<ResolutionInfo>>;
 	
 	constructor(private resolutionsService: ResolutionsService,
-	            private commentsService: CommentsService,
-	            private postsService: PostsService)
+	            private commentsService: CommentsService)
 	{
-		this.getResolutionsInfoPageBySchool = _.partial(this.postsService.getPostsInfoPage, this.resolutionsService);
 	}
 	
 	@UseGuards(JwtOptionalAuthGuard)
 	@Get()
 	async getResolutionsPageBySchool(@Request() req: AuthRequest, @Query() resolutionQueryParams: ResolutionQueryParams): Promise<Page<ResolutionInfo>>
 	{
-		return await this.getResolutionsInfoPageBySchool(resolutionQueryParams, req.user);
+		return await this.resolutionsService.getInfoPage(resolutionQueryParams, req.user);
 	}
 	
 	@UseGuards(JwtAuthGuard, IsSupportGuard)
@@ -43,7 +36,7 @@ export class ResolutionsController
 	async postTerminatedResolution(@Request() req: AuthSupportRequest, @Body() postTerminatedResolutionDto: PostTerminatedResolutionDto): Promise<{ resolutionId: number }>
 	{
 		return {
-			resolutionId: await this.resolutionsService.resolvePetition(postTerminatedResolutionDto, req.user)
+			resolutionId: await this.resolutionsService.resolvePetition(postTerminatedResolutionDto, req.user),
 		};
 	}
 	
@@ -51,7 +44,7 @@ export class ResolutionsController
 	@Get(':id')
 	async getResolutionById(@Request() req: AuthRequest, @Param('id', PositiveIntPipe) resolutionId: number): Promise<ResolutionInfo>
 	{
-		return await this.resolutionsService.getResolutionInfoById(resolutionId, req.user);
+		return await this.resolutionsService.getInfoById(resolutionId, req.user);
 	}
 	
 	@UseGuards(JwtOptionalAuthGuard, IsSupportGuard)
@@ -62,58 +55,58 @@ export class ResolutionsController
 	}
 	
 	@UseGuards(JwtAuthGuard)
-	@Patch(":id")
+	@Patch(':id')
 	async saveOrUnsaveResolution(@Request() req: AuthRequest, @Param('id', PositiveIntPipe) resolutionId: number): Promise<void>
 	{
-		return await this.resolutionsService.saveOrUnsaveResolution(resolutionId, req.user);
+		return await this.resolutionsService.saveOrUnsave(resolutionId, req.user);
 	}
 	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
-	@Post(":id")
+	@Post(':id')
 	async voteResolution(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) resolutionId: number): Promise<void>
 	{
 		return await this.resolutionsService.voteResolution(resolutionId, req.user);
 	}
 	
 	// COMMENTS
-
+	
 	@UseGuards(JwtOptionalAuthGuard)
-	@Get("/:id/comments")
-	async getCommentsPage(@Request() req: AuthRequest, @Param('id', PositiveIntPipe) resolutionId: number, @Query("page", PositiveIntPipe) page: number): Promise<Page<CommentInfo>>
+	@Get('/:id/comments')
+	async getCommentsPage(@Request() req: AuthRequest, @Param('id', PositiveIntPipe) resolutionId: number, @Query('page', PositiveIntPipe) page: number): Promise<Page<CommentInfo>>
 	{
 		return await this.commentsService.getCommentInfoPage(resolutionId, ResolutionComment, req.user, page);
 	}
-
+	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
-	@Post("/:id/comments")
+	@Post('/:id/comments')
 	async postComment(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) resolutionId: number, @Body() postCommentDto: PostCommentDto): Promise<void>
 	{
 		await this.commentsService.postComment(resolutionId, ResolutionComment, req.user, postCommentDto.comment);
 	}
-
+	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
-	@Get("/:id/mycomment")
+	@Get('/:id/mycomment')
 	async getMyComment(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) resolutionId: number): Promise<{ myComment: CommentInfo }>
 	{
 		return { myComment: await this.commentsService.getMyCommentInfo(resolutionId, ResolutionComment, req.user) };
 	}
-
+	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
-	@Put("/:id/mycomment")
+	@Put('/:id/mycomment')
 	async editComment(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) resolutionId: number, @Body() putCommentDto: PostCommentDto): Promise<void>
 	{
 		await this.commentsService.editMyComment(resolutionId, ResolutionComment, req.user, putCommentDto.comment);
 	}
-
+	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
-	@Delete("/:id/mycomment")
+	@Delete('/:id/mycomment')
 	async deleteComment(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) resolutionId: number): Promise<void>
 	{
 		await this.commentsService.deleteMyComment(resolutionId, ResolutionComment, req.user);
 	}
-
+	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
-	@Patch("/comments/:commentId")
+	@Patch('/comments/:commentId')
 	async likeOrDislikeComment(@Request() req: AuthStudentRequest, @Param('commentId', PositiveIntPipe) commentId: number): Promise<void>
 	{
 		await this.commentsService.likeOrDislikeComment(commentId, ResolutionComment, req.user);

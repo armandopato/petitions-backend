@@ -7,10 +7,19 @@ export interface PageRepository<T, TParams> extends Repository<T>
 	getPage(params: TParams): Promise<Page<T>>
 }
 
-export interface PageMap<T, TInfo, TParams>
+export interface Post<T, TInfo, TParams>
 {
-	propertyRemover(info: TInfo): void;
-	infoMapper(post: T): Promise<TInfo>;
-	authInfoMapperGenerator(user: User): ((info: TInfo) => Promise<TInfo>);
 	repository: PageRepository<T, TParams>;
+	
+	getInfoById(postId: number, user: User): Promise<TInfo>;
+	
+	getInfoPage(params: TParams, user: User): Promise<Page<TInfo>>;
+	
+	saveOrUnsave(postId: number, user: User): Promise<void>;
+	
+	propertyRemover(info: TInfo): void;
+	
+	infoMapper(post: T): Promise<TInfo>;
+	
+	authInfoMapperGenerator(user: User): ((info: TInfo) => Promise<TInfo>);
 }

@@ -109,28 +109,28 @@ export class UserService
 	async getSavedPetitions(user: User, page: number): Promise<Page<PetitionInfo>>
 	{
 		const { pageElements: petitions, totalPages } = await this.userRepository.getSavedPetitionsPage(user.id, page);
-		const petitionsInfoArr = await Promise.all(petitions.map(pet => this.petitionService.getPetitionInfo(pet)));
-		petitionsInfoArr.forEach(info => {
+		const petitionsInfoArr = await Promise.all(petitions.map(this.petitionService.infoMapper));
+		petitionsInfoArr.forEach((info: PetitionInfo) => {
 			info.description = undefined;
 		});
 		
 		return {
 			totalPages: totalPages,
-			pageElements: await Promise.all(petitionsInfoArr.map(info => this.petitionService.addAuthInfo(info, user)))
+			pageElements: await Promise.all(petitionsInfoArr.map(this.petitionService.authInfoMapperGenerator(user)))
 		};
 	}
 	
 	async getSavedResolutions(user: User, page: number): Promise<Page<ResolutionInfo>>
 	{
 		const { pageElements: resolutions, totalPages } = await this.userRepository.getSavedResolutionsPage(user.id, page);
-		const resolutionInfoArr = await Promise.all(resolutions.map(res => this.resolutionService.getResolutionInfo(res)));
-		resolutionInfoArr.forEach(info => {
+		const resolutionInfoArr = await Promise.all(resolutions.map(this.resolutionService.infoMapper));
+		resolutionInfoArr.forEach((info: ResolutionInfo) => {
 			info.resolutionText = undefined;
 		});
 		
 		return {
 			totalPages: totalPages,
-			pageElements: await Promise.all(resolutionInfoArr.map(info => this.resolutionService.addAuthInfo(info, user)))
+			pageElements: await Promise.all(resolutionInfoArr.map(this.resolutionService.authInfoMapperGenerator(user)))
 		};
 	}
 	

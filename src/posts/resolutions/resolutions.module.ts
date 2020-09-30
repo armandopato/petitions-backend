@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { ResolutionRepository } from './resolutions.repository';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ResolutionsService } from './resolutions.service';
@@ -15,7 +15,7 @@ import { PostsModule } from '../posts.module';
         SchedulingModule,
         NotificationsModule,
         CommentsModule,
-        PostsModule
+        forwardRef(() => PostsModule)
     ],
     providers: [ResolutionsService],
     exports: [ResolutionsService],

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PetitionRepository } from './petitions.repository';
 import { PetitionsController } from './petitions.controller';
@@ -13,7 +13,7 @@ import { PostsModule } from '../posts.module';
         TypeOrmModule.forFeature([PetitionRepository, PetitionComment]),
         ResolutionsModule,
         CommentsModule,
-        PostsModule
+        forwardRef(() => PostsModule)
     ],
     controllers: [PetitionsController],
     providers: [PetitionsService],

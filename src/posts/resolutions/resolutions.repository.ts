@@ -8,7 +8,7 @@ import { Page } from 'src/types/Page';
 import { ResolutionQueryParams } from './dto/resolution-query.params.dto';
 import { ResolutionOrderBy as OrderBy } from '../../types/OrderBy';
 import { getPage } from 'src/util/getPage';
-import { PageRepository } from '../../types/PageMap.interface';
+import { PageRepository } from '../../types/Post.interface';
 
 
 @EntityRepository(Resolution)
@@ -132,7 +132,7 @@ export class ResolutionRepository extends Repository<Resolution> implements Page
         return { id, title };
     }
 
-    async saveResolution(resolutionId: number, userId: number): Promise<void>
+    async savePost(resolutionId: number, userId: number): Promise<void>
     {
         await this.connection.createQueryBuilder()
             .relation(Resolution, "savedBy")
@@ -140,7 +140,7 @@ export class ResolutionRepository extends Repository<Resolution> implements Page
             .add(userId);
     }
     
-    async unsaveResolution(resolutionId: number, userId: number): Promise<void>
+    async unsavePost(resolutionId: number, userId: number): Promise<void>
     {
         await this.connection.createQueryBuilder()
             .relation(Resolution, "savedBy")

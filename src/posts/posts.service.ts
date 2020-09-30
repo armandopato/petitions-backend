@@ -1,64 +1,35 @@
-import {
-	ConflictException,
-	Injectable,
-	InternalServerErrorException,
-	NotFoundException,
-	UnauthorizedException,
-} from '@nestjs/common';
-import { PetitionQueryParams } from './petitions/dto/petition-query-params.dto';
-import { StudentUser, User } from '../users/entities/user.entity';
+import { forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { User } from '../users/entities/user.entity';
 import { Page } from '../types/Page';
+import { Post } from '../types/Post.interface';
+import { PetitionsService } from './petitions/petitions.service';
+import { ResolutionsService } from './resolutions/resolutions.service';
+import { ResolutionQueryParams } from './resolutions/dto/resolution-query.params.dto';
+import { PetitionQueryParams } from './petitions/dto/petition-query-params.dto';
 import { PetitionInfo, ResolutionInfo } from '../types/ElementInfo';
-import { CreatePetitionDto } from './petitions/dto/create-petition.dto';
 import { Petition } from './petitions/petition.entity';
-import { PetitionComment } from '../comments/comment.entity';
-import { PetitionStatus } from '../types/ElementStatus';
-import { ResolutionRepository } from './resolutions/resolutions.repository';
-import { PetitionRepository } from './petitions/petitions.repository';
 import { Resolution } from './resolutions/resolution.entity';
-import { Repository } from 'typeorm';
-import { PageMap } from '../types/PageMap.interface';
-
-type PetitionOrResolution = Petition | Resolution;
-type PetitionOrResolutionInfo = PetitionInfo | ResolutionInfo;
-interface PageRepository<T, TParams> extends Repository<T>
-{
-	getPage(params: TParams): Promise<Page<T>>
-}
+import { Entity } from '../comments/comments.repository';
 
 @Injectable()
 export class PostsService
 {
-	// generalize, use currying with entity like in comments
-	/*async getPostsInfoPage<T, TInfo>(page: Page<T>,
-	                                 infoMapper: (post: T) => Promise<TInfo>,
-	                                 propertyRemover: (info: TInfo) => void,
-	                                 authInfoMapper?: (info: TInfo) => Promise<TInfo>,
-	): Promise<Page<TInfo>>
+	constructor(
+				@Inject(forwardRef(() => PetitionsService))
+				private petitionsService: PetitionsService,
+	            @Inject(forwardRef(() => ResolutionsService))
+	            private resolutionsService: ResolutionsService)
 	{
-		const posts = page.pageElements;
-		
-		let postInfoArr = await Promise.all(posts.map(infoMapper));
-		postInfoArr.forEach(propertyRemover);
-		
-		if (authInfoMapper)
-		{
-			postInfoArr = await Promise.all(postInfoArr.map(authInfoMapper));
-		}
-		
-		return {
-			pageElements: postInfoArr,
-			totalPages: page.totalPages,
-		};
-	}*/
+	}
 	
-	async getPostsInfoPage<T, TInfo, TParams>(service: PageMap<T, TInfo, TParams>, params: TParams, user: User): Promise<Page<TInfo>>
+	async getPostsInfoPage<TInfo>(postType: Entity<Petition> | Entity<Resolution>, params: PetitionQueryParams | ResolutionQueryParams, user: User): Promise<Page<TInfo>>
 	{
-		const page = await service.repository.getPage(params);
+		const service = postType === Petition ? this.petitionsService : this.resolutionsService;
+		const page = await service.repository.getPage(params as any);
 		
-		const posts = page.pageElements;
+		const posts = page.pageElements as (Resolution | Petition)[];
 		
-		let postInfoArr = await Promise.all(posts.map(service.infoMapper));
+		let postInfoArr = await Promise.all(posts.map(service.infoMapper)) as any;
 		postInfoArr.forEach(service.propertyRemover);
 		
 		if (user)
@@ -72,32 +43,45 @@ export class PostsService
 		};
 	}
 	
-	/*async getPostInfoById(petitionId: number, user: User): Promise<PetitionInfo>
+	async getPostInfoById<TInfo>(postType: Entity<Petition> | Entity<Resolution>, postId: number, user: User): Promise<TInfo>
 	{
-		const petition = await this.petitionRepository.findOne(petitionId);
-		if (!petition) throw new NotFoundException();
+		let post, service;
+		if (postType === Petition)
+		{
+			service = this.petitionsService;
+			post = await service.repository.findOne(postId);
+		}
+		else
+		{
+			service = this.resolutionsService;
+			post = await service.repository.findOne(postId, { relations: ['petition'] });
+		}
+		if (!post) throw new NotFoundException();
+		
+		const info = await service.getInfo(post);
 		
 		if (user)
 		{
-			return await this.getAuthPetitionInfoWDesc(petition, user);
+			return await service.addAuthInfo(info, user);
 		}
 		
-		return await this.getPetitionInfoWDesc(petition);
+		return info;
 	}
 	
-	async saveOrUnsavePost(petitionId: number, user: User): Promise<void>
+	async saveOrUnsavePost(postType: Entity<Petition> | Entity<Resolution>, postId: number, user: User): Promise<void>
 	{
-		const didUserSave = await this.petitionRepository.didUserSave(petitionId, user.id);
+		const service = postType === Petition ? this.petitionsService : this.resolutionsService;
+		const didUserSave = await service.repository.didUserSave(postId, user.id);
 		
 		try
 		{
 			if (didUserSave)
 			{
-				await this.petitionRepository.unsavePetition(petitionId, user.id);
+				await service.repository.unsavePost(postId, user.id);
 			}
 			else
 			{
-				await this.petitionRepository.savePetition(petitionId, user.id);
+				await service.repository.savePost(postId, user.id)
 			}
 		}
 		catch (err)
@@ -106,7 +90,7 @@ export class PostsService
 			else throw new InternalServerErrorException();
 		}
 	}
-	
+	/*
 	// very generic
 	async votePost(petitionId: number, user: StudentUser): Promise<void>
 	{
@@ -126,6 +110,10 @@ export class PostsService
 		{
 			await this.resolutionsService.createAssociatedResolution(petitionId);
 		}
-	}*/
+	}
+	
+	add auth info
+	
+	*/
 	
 }

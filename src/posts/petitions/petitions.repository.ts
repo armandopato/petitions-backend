@@ -125,7 +125,7 @@ export class PetitionRepository extends Repository<Petition>
 			.add(userId);
 	}
 	
-	async savePetition(petitionId: number, userId: number): Promise<void>
+	async savePost(petitionId: number, userId: number): Promise<void>
 	{
 		await this.connection.createQueryBuilder()
 			.relation(Petition, 'savedBy')
@@ -133,7 +133,7 @@ export class PetitionRepository extends Repository<Petition>
 			.add(userId);
 	}
 	
-	async unsavePetition(petitionId: number, userId: number): Promise<void>
+	async unsavePost(petitionId: number, userId: number): Promise<void>
 	{
 		await this.connection.createQueryBuilder()
 			.relation(Petition, 'savedBy')

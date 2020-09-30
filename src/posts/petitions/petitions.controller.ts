@@ -1,23 +1,23 @@
 import {
-	Controller,
-	Get,
-	UseGuards,
-	Request,
-	Query,
-	Post,
 	Body,
-	Param,
+	Controller,
 	Delete,
-	Put,
-	Patch,
+	Get,
 	Injectable,
+	Param,
+	Patch,
+	Post,
+	Put,
+	Query,
+	Request,
+	UseGuards,
 } from '@nestjs/common';
 import { PetitionsService } from './petitions.service';
 import { JwtOptionalAuthGuard } from 'src/auth/guards/jwt-optional-auth.guard';
 import { AuthRequest, AuthStudentRequest } from 'src/types/AuthRequest';
 import { PetitionQueryParams } from './dto/petition-query-params.dto';
 import { Page } from 'src/types/Page';
-import { CommentInfo, PetitionInfo, ResolutionInfo } from 'src/types/ElementInfo';
+import { CommentInfo, PetitionInfo } from 'src/types/ElementInfo';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { IsStudentGuard } from 'src/auth/guards/isStudent.guard';
 import { CreatePetitionDto } from './dto/create-petition.dto';
@@ -25,8 +25,6 @@ import { PositiveIntPipe } from 'src/util/positive-int.pipe';
 import { PostCommentDto } from '../../comments/dto/post-comment.dto';
 import { CommentsService } from '../../comments/comments.service';
 import { PetitionComment } from '../../comments/comment.entity';
-import { PostsService } from '../posts.service';
-import * as _ from 'lodash';
 import { User } from '../../users/entities/user.entity';
 
 @Injectable()
@@ -36,17 +34,15 @@ export class PetitionsController
 	getPetitionsInfoPageBySchool: (params: PetitionQueryParams, user: User) => Promise<Page<PetitionInfo>>;
 	
 	constructor(private petitionsService: PetitionsService,
-	            private commentsService: CommentsService,
-	            private postsService: PostsService)
+	            private commentsService: CommentsService)
 	{
-		this.getPetitionsInfoPageBySchool = _.partial(this.postsService.getPostsInfoPage, this.petitionsService);
 	}
 	
 	@UseGuards(JwtOptionalAuthGuard)
 	@Get()
 	async getPetitionsPageBySchool(@Request() req: AuthRequest, @Query() petitionQueryParams: PetitionQueryParams): Promise<Page<PetitionInfo>>
 	{
-		return await this.getPetitionsInfoPageBySchool(petitionQueryParams, req.user);
+		return await this.petitionsService.getInfoPage(petitionQueryParams, req.user);
 	}
 	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
@@ -61,7 +57,7 @@ export class PetitionsController
 	@Get('/:id')
 	async getPetitionInfoById(@Request() req: AuthRequest, @Param('id', PositiveIntPipe) petitionId: number): Promise<PetitionInfo>
 	{
-		return await this.petitionsService.getPetitionInfoById(petitionId, req.user);
+		return await this.petitionsService.getInfoById(petitionId, req.user);
 	}
 	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
@@ -75,7 +71,7 @@ export class PetitionsController
 	@Patch('/:id')
 	async saveOrUnsavePetition(@Request() req: AuthRequest, @Param('id', PositiveIntPipe) petitionId: number): Promise<void>
 	{
-		await this.petitionsService.saveOrUnsavePetition(petitionId, req.user);
+		return await this.petitionsService.saveOrUnsave(petitionId, req.user);
 	}
 	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
