@@ -64,7 +64,7 @@ export class PetitionsController
 	@Post('/:id')
 	async votePetition(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) petitionId: number): Promise<void>
 	{
-		await this.petitionsService.votePetition(petitionId, req.user);
+		await this.petitionsService.vote(petitionId, req.user);
 	}
 	
 	@UseGuards(JwtAuthGuard)

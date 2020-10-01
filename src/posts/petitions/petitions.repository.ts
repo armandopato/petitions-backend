@@ -8,10 +8,11 @@ import { PetitionOrderBy as OrderBy } from 'src/types/OrderBy';
 import { CreatePetitionDto } from './dto/create-petition.dto';
 import { Resolution } from 'src/posts/resolutions/resolution.entity';
 import { PetitionStatus } from 'src/types/ElementStatus';
+import { PageRepository } from '../../types/PageRepository';
 
 
 @EntityRepository(Petition)
-export class PetitionRepository extends Repository<Petition>
+export class PetitionRepository extends Repository<Petition> implements PageRepository<Petition, PetitionQueryParams>
 {
 	private connection = getConnection();
 	
@@ -117,7 +118,7 @@ export class PetitionRepository extends Repository<Petition>
 	}
 	
 	
-	async votePetition(petitionId: number, userId: number): Promise<void>
+	async vote(petitionId: number, userId: number): Promise<void>
 	{
 		await this.connection.createQueryBuilder()
 			.relation(Petition, 'votedBy')

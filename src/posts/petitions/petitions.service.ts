@@ -1,10 +1,4 @@
-import {
-	ConflictException,
-	Injectable,
-	InternalServerErrorException,
-	NotFoundException,
-	UnauthorizedException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { StudentUser, User } from 'src/users/entities/user.entity';
 import { PetitionQueryParams } from './dto/petition-query-params.dto';
 import { PetitionInfo } from 'src/types/ElementInfo';
@@ -17,35 +11,24 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PetitionStatus } from '../../types/ElementStatus';
 import { CommentsRepository } from '../../comments/comments.repository';
-import { Post } from '../../types/Post.interface';
-import { Page } from '../../types/Page';
-import { PostsService } from '../posts.service';
-import * as _ from 'lodash';
-
+import { Post } from '../post.class';
 
 const MIN_VOTES = 100;
 
 @Injectable()
-export class PetitionsService implements Post<Petition, PetitionInfo, PetitionQueryParams>
+export class PetitionsService extends Post<Petition, PetitionInfo, PetitionQueryParams>
 {
 	infoMapper = this.getInfo.bind(this);
-	
-	getInfoById: (petitionId: number, user: User) => Promise<PetitionInfo>;
-	getInfoPage: (params: PetitionQueryParams, user: User) => Promise<Page<PetitionInfo>>;
-	saveOrUnsave: (petitionId: number, user: User) => Promise<void>;
-	
+
 	constructor(
 		private petitionRepository: PetitionRepository,
 		private resolutionsService: ResolutionsService,
 		private commentsRepository: CommentsRepository,
 		@InjectRepository(PetitionComment)
 		private petitionCommentRepository: Repository<PetitionComment>,
-		private postsService: PostsService,
 	)
 	{
-		this.getInfoById = _.partial(this.postsService.getPostInfoById.bind(this.postsService), Petition) as any;
-		this.getInfoPage = _.partial(this.postsService.getPostsInfoPage.bind(this.postsService), Petition) as any;
-		this.saveOrUnsave = _.partial(this.postsService.saveOrUnsavePost.bind(this.postsService), Petition);
+		super();
 	}
 	
 	get repository(): PetitionRepository
@@ -53,13 +36,17 @@ export class PetitionsService implements Post<Petition, PetitionInfo, PetitionQu
 		return this.petitionRepository;
 	}
 	
+	authInfoMapperGenerator = (user: User) => (info: PetitionInfo): Promise<PetitionInfo> => this.addAuthInfo(info, user);
+	
+	async loadOne(id: number): Promise<Petition>
+	{
+		return await this.repository.findOne(id);
+	}
+	
 	propertyRemover(info: PetitionInfo): void
 	{
 		info.description = undefined;
 	}
-	
-	authInfoMapperGenerator = (user: User) => (info: PetitionInfo): Promise<PetitionInfo> => this.addAuthInfo(info, user);
-	
 	
 	async postPetition(user: StudentUser, createPetitionDto: CreatePetitionDto): Promise<number>
 	{
@@ -76,23 +63,11 @@ export class PetitionsService implements Post<Petition, PetitionInfo, PetitionQu
 		return id;
 	}
 	
-	async votePetition(petitionId: number, user: StudentUser): Promise<void>
+	async triggerVoteLimitAction(petition: Petition): Promise<void>
 	{
-		const didUserVote = await this.petitionRepository.didUserVote(petitionId, user.id);
-		if (didUserVote) throw new ConflictException();
-		
-		try
+		if (await this.petitionRepository.countNumberOfVotes(petition.id) >= MIN_VOTES)
 		{
-			await this.petitionRepository.votePetition(petitionId, user.id);
-		}
-		catch (err)
-		{
-			if (Number(err.code) === 23503) throw new NotFoundException();
-			else throw new InternalServerErrorException();
-		}
-		if (await this.petitionRepository.countNumberOfVotes(petitionId) >= MIN_VOTES)
-		{
-			await this.resolutionsService.createAssociatedResolution(petitionId);
+			await this.resolutionsService.createAssociatedResolution(petition.id);
 		}
 	}
 	
@@ -132,16 +107,6 @@ export class PetitionsService implements Post<Petition, PetitionInfo, PetitionQu
 			}
 			info.resolutionId = petition.resolution.id;
 		}
-		return info;
-	}
-	
-	
-	// CRUD
-	
-	async addAuthInfo(info: PetitionInfo, user: User): Promise<PetitionInfo>
-	{
-		info.didSave = await this.petitionRepository.didUserSave(info.id, user.id);
-		info.didVote = await this.petitionRepository.didUserVote(info.id, user.id);
 		return info;
 	}
 	

@@ -1,12 +1,12 @@
 import {
-	ConflictException, forwardRef, Inject,
+	ConflictException,
+	ForbiddenException,
 	Injectable,
-	InternalServerErrorException,
 	NotFoundException,
 	UnauthorizedException,
 } from '@nestjs/common';
 import { Resolution } from 'src/posts/resolutions/resolution.entity';
-import { StudentUser, SupportTeamUser, User } from 'src/users/entities/user.entity';
+import { SupportTeamUser, User } from 'src/users/entities/user.entity';
 import { NotificationsService } from 'src/notifications/notifications.service';
 import { PetitionRepository } from 'src/posts/petitions/petitions.repository';
 import { SchedulingService } from 'src/scheduling/scheduling.service';
@@ -17,34 +17,24 @@ import { ResolutionQueryParams } from './dto/resolution-query.params.dto';
 import { ResolutionRepository } from './resolutions.repository';
 import { CommentsRepository } from '../../comments/comments.repository';
 import { ResolutionComment } from '../../comments/comment.entity';
-import { Post } from '../../types/Post.interface';
-import * as _ from 'lodash';
-import { PostsService } from '../posts.service';
-import { Page } from '../../types/Page';
+import { Post } from '../post.class';
 
 const DAY = 1000 * 60 * 60 * 24;
 const RESOLUTION_WINDOW = DAY * 30;
 const MIN_VOTES = 50;
 
 @Injectable()
-export class ResolutionsService implements Post<Resolution, ResolutionInfo, ResolutionQueryParams>
+export class ResolutionsService extends Post<Resolution, ResolutionInfo, ResolutionQueryParams>
 {
 	infoMapper = this.getInfo.bind(this);
-	
-	getInfoById: (resolutionId: number, user: User) => Promise<ResolutionInfo>;
-	getInfoPage: (params: ResolutionQueryParams, user: User) => Promise<Page<ResolutionInfo>>;
-	saveOrUnsave: (resolutionId: number, user: User) => Promise<void>;
-	
+
 	constructor(private resolutionsRepository: ResolutionRepository,
 	            private commentsRepository: CommentsRepository,
 	            private petitionsRepository: PetitionRepository,
 	            private schedulingService: SchedulingService,
-	            private notificationsService: NotificationsService,
-	            private postsService: PostsService)
+	            private notificationsService: NotificationsService)
 	{
-		this.getInfoById = _.partial(this.postsService.getPostInfoById.bind(this.postsService), Resolution) as any;
-		this.getInfoPage = _.partial(this.postsService.getPostsInfoPage.bind(this.postsService), Resolution) as any;
-		this.saveOrUnsave = _.partial(this.postsService.saveOrUnsavePost.bind(this.postsService), Resolution);
+		super();
 	}
 	
 	get repository(): ResolutionRepository
@@ -52,12 +42,17 @@ export class ResolutionsService implements Post<Resolution, ResolutionInfo, Reso
 		return this.resolutionsRepository;
 	}
 	
+	authInfoMapperGenerator = (user: User) => (info: ResolutionInfo): Promise<ResolutionInfo> => this.addAuthInfo(info, user);
+	
+	async loadOne(id: number): Promise<Resolution>
+	{
+		return await this.repository.findOne(id, { relations: ['petition'] });
+	}
+	
 	propertyRemover(info: ResolutionInfo): void
 	{
 		info.resolutionText = undefined;
 	}
-
-	authInfoMapperGenerator = (user: User) => (info: ResolutionInfo): Promise<ResolutionInfo> => this.addAuthInfo(info, user);
 	
 	async resolvePetition(postTerminatedResolutionDto: PostTerminatedResolutionDto, supportUser: SupportTeamUser): Promise<number>
 	{
@@ -67,7 +62,6 @@ export class ResolutionsService implements Post<Resolution, ResolutionInfo, Reso
 		await this.terminateResolution(newResolution, supportUser, resolutionText);
 		return newResolution.id;
 	}
-	
 	
 	async terminateResolution(resolutionOrId: number | Resolution, supportUser: SupportTeamUser, resolutionText: string): Promise<void>
 	{
@@ -109,19 +103,14 @@ export class ResolutionsService implements Post<Resolution, ResolutionInfo, Reso
 		return newResolution;
 	}
 	
-	
-	async voteResolution(resolutionId: number, user: StudentUser): Promise<void>
+	checkVoteConstraint(resolution: Resolution): void
 	{
-		const resolution = await this.resolutionsRepository.findOne(resolutionId, { relations: ['petition'] });
-		if (!resolution) throw new NotFoundException();
-		if (this.resolutionsRepository.getResolutionStatus(resolution) !== ResolutionStatus.TERMINATED) throw new UnauthorizedException();
-		
-		const didUserVote = await this.resolutionsRepository.didUserVote(resolutionId, user.id);
-		if (didUserVote) throw new ConflictException();
-		
-		await this.resolutionsRepository.voteResolution(resolutionId, user.id);
-		
-		if (await this.resolutionsRepository.countNumberOfRejectionVotes(resolutionId) >= MIN_VOTES)
+		if (this.resolutionsRepository.getResolutionStatus(resolution) !== ResolutionStatus.TERMINATED) throw new ForbiddenException();
+	}
+	
+	async triggerVoteLimitAction(resolution: Resolution): Promise<void>
+	{
+		if (await this.resolutionsRepository.countNumberOfRejectionVotes(resolution.id) >= MIN_VOTES)
 		{
 			await this.returnToProgress(resolution);
 		}
@@ -139,8 +128,6 @@ export class ResolutionsService implements Post<Resolution, ResolutionInfo, Reso
 		this.schedulingService.scheduleResolutionDeadline(resolution);
 		await this.notificationsService.triggerNotifications(resolution);
 	}
-	
-	// CRUD
 	
 	async getInfo(resolution: Resolution): Promise<ResolutionInfo>
 	{
@@ -165,15 +152,5 @@ export class ResolutionsService implements Post<Resolution, ResolutionInfo, Reso
 		}
 		
 		return resolutionInfo;
-	}
-	
-	async addAuthInfo(info: ResolutionInfo, user: User): Promise<ResolutionInfo>
-	{
-		if (info.status === ResolutionStatus.TERMINATED)
-		{
-			info.didVote = await this.resolutionsRepository.didUserVote(info.id, user.id);
-		}
-		info.didSave = await this.resolutionsRepository.didUserSave(info.id, user.id);
-		return info;
 	}
 }

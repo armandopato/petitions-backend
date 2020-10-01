@@ -65,7 +65,7 @@ export class ResolutionsController
 	@Post(':id')
 	async voteResolution(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) resolutionId: number): Promise<void>
 	{
-		return await this.resolutionsService.voteResolution(resolutionId, req.user);
+		return await this.resolutionsService.vote(resolutionId, req.user);
 	}
 	
 	// COMMENTS
