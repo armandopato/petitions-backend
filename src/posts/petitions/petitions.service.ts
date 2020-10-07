@@ -1,31 +1,24 @@
 import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { StudentUser, User } from 'src/users/entities/user.entity';
+import { StudentUser } from 'src/users/entities/user.entity';
 import { PetitionQueryParams } from './dto/petition-query-params.dto';
 import { PetitionInfo } from 'src/types/ElementInfo';
 import { PetitionRepository } from './petitions.repository';
 import { Petition } from 'src/posts/petitions/petition.entity';
 import { CreatePetitionDto } from './dto/create-petition.dto';
 import { ResolutionsService } from 'src/posts/resolutions/resolutions.service';
-import { PetitionComment } from 'src/comments/comment.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { PetitionStatus } from '../../types/ElementStatus';
-import { CommentsRepository } from '../../comments/comments.repository';
 import { Post } from '../post.class';
+import { PetitionCommentService } from './petition-comment/petition-comment.service';
 
 const MIN_VOTES = 100;
 
 @Injectable()
 export class PetitionsService extends Post<Petition, PetitionInfo, PetitionQueryParams>
 {
-	infoMapper = this.getInfo.bind(this);
-
 	constructor(
 		private petitionRepository: PetitionRepository,
 		private resolutionsService: ResolutionsService,
-		private commentsRepository: CommentsRepository,
-		@InjectRepository(PetitionComment)
-		private petitionCommentRepository: Repository<PetitionComment>,
+		private commentsService: PetitionCommentService,
 	)
 	{
 		super();
@@ -35,8 +28,6 @@ export class PetitionsService extends Post<Petition, PetitionInfo, PetitionQuery
 	{
 		return this.petitionRepository;
 	}
-	
-	authInfoMapperGenerator = (user: User) => (info: PetitionInfo): Promise<PetitionInfo> => this.addAuthInfo(info, user);
 	
 	async loadOne(id: number): Promise<Petition>
 	{
@@ -86,7 +77,7 @@ export class PetitionsService extends Post<Petition, PetitionInfo, PetitionQuery
 	async getInfo(petition: Petition): Promise<PetitionInfo>
 	{
 		const numVotes = await this.petitionRepository.countNumberOfVotes(petition.id);
-		const numComments = await this.commentsRepository.countNumberOfComments(petition.id, PetitionComment);
+		const numComments = await this.commentsService.countNumberOfComments(petition.id);
 		const status = await this.petitionRepository.getPetitionStatus(petition.id);
 		
 		const info: PetitionInfo = {

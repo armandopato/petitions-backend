@@ -6,16 +6,16 @@ import { ResolutionsController } from './resolutions.controller';
 import { PetitionRepository } from 'src/posts/petitions/petitions.repository';
 import { SchedulingModule } from 'src/scheduling/scheduling.module';
 import { NotificationsModule } from 'src/notifications/notifications.module';
-import { CommentsModule } from '../../comments/comments.module';
+import { ResolutionCommentService } from './resolution-comment/resolution-comment.service';
+import { ResolutionCommentRepository } from './resolution-comment/resolution-comment.repository';
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([ResolutionRepository, PetitionRepository]),
+		TypeOrmModule.forFeature([ResolutionRepository, PetitionRepository, ResolutionCommentRepository]),
 		SchedulingModule,
-		NotificationsModule,
-		CommentsModule,
+		NotificationsModule
 	],
-	providers: [ResolutionsService],
+	providers: [ResolutionsService, ResolutionCommentService],
 	exports: [ResolutionsService],
 	controllers: [ResolutionsController],
 })

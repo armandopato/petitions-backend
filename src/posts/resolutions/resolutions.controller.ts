@@ -11,16 +11,15 @@ import { ResolutionQueryParams } from './dto/resolution-query.params.dto';
 import { ResolutionsService } from './resolutions.service';
 import { ResolutionTextDto } from './dto/terminate-resolution.dto';
 import { IsStudentGuard } from '../../auth/guards/isStudent.guard';
-import { CommentsService } from '../../comments/comments.service';
-import { ResolutionComment } from '../../comments/comment.entity';
 import { PostCommentDto } from '../../comments/dto/post-comment.dto';
+import { ResolutionCommentService } from './resolution-comment/resolution-comment.service';
 
 @Controller('resolutions')
 export class ResolutionsController
 {
 	
 	constructor(private resolutionsService: ResolutionsService,
-	            private commentsService: CommentsService)
+	            private commentsService: ResolutionCommentService)
 	{
 	}
 	
@@ -74,41 +73,41 @@ export class ResolutionsController
 	@Get('/:id/comments')
 	async getCommentsPage(@Request() req: AuthRequest, @Param('id', PositiveIntPipe) resolutionId: number, @Query('page', PositiveIntPipe) page: number): Promise<Page<CommentInfo>>
 	{
-		return await this.commentsService.getCommentInfoPage(resolutionId, ResolutionComment, req.user, page);
+		return await this.commentsService.getCommentInfoPage(resolutionId, req.user, page);
 	}
 	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
 	@Post('/:id/comments')
 	async postComment(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) resolutionId: number, @Body() postCommentDto: PostCommentDto): Promise<void>
 	{
-		await this.commentsService.postComment(resolutionId, ResolutionComment, req.user, postCommentDto.comment);
+		await this.commentsService.postComment(resolutionId, req.user, postCommentDto.comment);
 	}
 	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
 	@Get('/:id/mycomment')
 	async getMyComment(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) resolutionId: number): Promise<{ myComment: CommentInfo }>
 	{
-		return { myComment: await this.commentsService.getMyCommentInfo(resolutionId, ResolutionComment, req.user) };
+		return { myComment: await this.commentsService.getMyCommentInfo(resolutionId, req.user) };
 	}
 	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
 	@Put('/:id/mycomment')
 	async editComment(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) resolutionId: number, @Body() putCommentDto: PostCommentDto): Promise<void>
 	{
-		await this.commentsService.editMyComment(resolutionId, ResolutionComment, req.user, putCommentDto.comment);
+		await this.commentsService.editMyComment(resolutionId, req.user, putCommentDto.comment);
 	}
 	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
 	@Delete('/:id/mycomment')
 	async deleteComment(@Request() req: AuthStudentRequest, @Param('id', PositiveIntPipe) resolutionId: number): Promise<void>
 	{
-		await this.commentsService.deleteMyComment(resolutionId, ResolutionComment, req.user);
+		await this.commentsService.deleteMyComment(resolutionId, req.user);
 	}
 	
 	@UseGuards(JwtAuthGuard, IsStudentGuard)
 	@Patch('/comments/:commentId')
 	async likeOrDislikeComment(@Request() req: AuthStudentRequest, @Param('commentId', PositiveIntPipe) commentId: number): Promise<void>
 	{
-		await this.commentsService.likeOrDislikeComment(commentId, ResolutionComment, req.user);
+		await this.commentsService.likeOrDislikeComment(commentId, req.user);
 	}
 }

@@ -6,7 +6,7 @@ import {
 	UnauthorizedException,
 } from '@nestjs/common';
 import { Resolution } from 'src/posts/resolutions/resolution.entity';
-import { SupportTeamUser, User } from 'src/users/entities/user.entity';
+import { SupportTeamUser } from 'src/users/entities/user.entity';
 import { NotificationsService } from 'src/notifications/notifications.service';
 import { PetitionRepository } from 'src/posts/petitions/petitions.repository';
 import { SchedulingService } from 'src/scheduling/scheduling.service';
@@ -15,9 +15,8 @@ import { PetitionStatus, ResolutionStatus } from 'src/types/ElementStatus';
 import { PostTerminatedResolutionDto } from './dto/post-terminated-resolution.dto';
 import { ResolutionQueryParams } from './dto/resolution-query.params.dto';
 import { ResolutionRepository } from './resolutions.repository';
-import { CommentsRepository } from '../../comments/comments.repository';
-import { ResolutionComment } from '../../comments/comment.entity';
 import { Post } from '../post.class';
+import { ResolutionCommentService } from './resolution-comment/resolution-comment.service';
 
 const DAY = 1000 * 60 * 60 * 24;
 const RESOLUTION_WINDOW = DAY * 30;
@@ -26,10 +25,8 @@ const MIN_VOTES = 50;
 @Injectable()
 export class ResolutionsService extends Post<Resolution, ResolutionInfo, ResolutionQueryParams>
 {
-	infoMapper = this.getInfo.bind(this);
-
 	constructor(private resolutionsRepository: ResolutionRepository,
-	            private commentsRepository: CommentsRepository,
+	            private commentsService: ResolutionCommentService,
 	            private petitionsRepository: PetitionRepository,
 	            private schedulingService: SchedulingService,
 	            private notificationsService: NotificationsService)
@@ -41,8 +38,6 @@ export class ResolutionsService extends Post<Resolution, ResolutionInfo, Resolut
 	{
 		return this.resolutionsRepository;
 	}
-	
-	authInfoMapperGenerator = (user: User) => (info: ResolutionInfo): Promise<ResolutionInfo> => this.addAuthInfo(info, user);
 	
 	async loadOne(id: number): Promise<Resolution>
 	{
@@ -103,6 +98,11 @@ export class ResolutionsService extends Post<Resolution, ResolutionInfo, Resolut
 		return newResolution;
 	}
 	
+	isVoteInfoAvailable(info: ResolutionInfo): boolean
+	{
+		return info.status === ResolutionStatus.TERMINATED;
+	}
+	
 	checkVoteConstraint(resolution: Resolution): void
 	{
 		if (this.resolutionsRepository.getResolutionStatus(resolution) !== ResolutionStatus.TERMINATED) throw new ForbiddenException();
@@ -143,7 +143,7 @@ export class ResolutionsService extends Post<Resolution, ResolutionInfo, Resolut
 		{
 			resolutionInfo.numRejectionVotes = await this.resolutionsRepository.countNumberOfRejectionVotes(resolution.id);
 			resolutionInfo.resolutionDate = resolution.resolutionDate;
-			resolutionInfo.numComments = await this.commentsRepository.countNumberOfComments(resolution.id, ResolutionComment);
+			resolutionInfo.numComments = await this.commentsService.countNumberOfComments(resolution.id);
 		}
 		else
 		{

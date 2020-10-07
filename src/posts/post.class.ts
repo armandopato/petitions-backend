@@ -6,7 +6,7 @@ import { UserInfo } from '../types/UserInfo';
 
 export abstract class Post<T, TInfo extends UserInfo, TParams>
 {
-	repository: PageRepository<T, TParams>;
+	abstract repository: PageRepository<T, TParams>;
 	
 	async getInfoById(postId: number, user: User): Promise<TInfo>
 	{
@@ -33,7 +33,7 @@ export abstract class Post<T, TInfo extends UserInfo, TParams>
 	{
 		const posts = page.pageElements;
 		
-		let postInfoArr = await Promise.all(posts.map(this.infoMapper));
+		let postInfoArr = await Promise.all(posts.map(post => this.getInfo(post)));
 		postInfoArr.forEach(this.propertyRemover);
 		
 		if (user)
@@ -96,7 +96,10 @@ export abstract class Post<T, TInfo extends UserInfo, TParams>
 		return info;
 	}
 	
-	abstract authInfoMapperGenerator(user: User): ((info: TInfo) => Promise<TInfo>);
+	authInfoMapperGenerator(user: User): (info: TInfo) => Promise<TInfo>
+	{
+		return (info: TInfo): Promise<TInfo> => this.addAuthInfo(info, user);
+	}
 	
 	isVoteInfoAvailable?(info: TInfo): boolean;
 	
@@ -109,6 +112,4 @@ export abstract class Post<T, TInfo extends UserInfo, TParams>
 	abstract async getInfo(post: T): Promise<TInfo>;
 	
 	abstract propertyRemover(info: TInfo): void;
-	
-	abstract infoMapper(post: T): Promise<TInfo>;
 }

@@ -17,6 +17,8 @@ export abstract class GenericComment
 
     @ManyToOne(() => StudentUser)
     by: StudentUser;
+    
+    abstract element;
 }
 
 @Entity()
