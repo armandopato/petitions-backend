@@ -5,6 +5,7 @@ import * as cookieParser from 'cookie-parser';
 import { SchedulingService } from './scheduling/scheduling.service';
 import * as helmet from 'helmet';
 import * as rateLimit from 'express-rate-limit';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap()
 {
@@ -25,7 +26,8 @@ async function bootstrap()
 		}),
 	);
 	await app.get(SchedulingService).initialResolutionDeadlineScheduling();
-	await app.listen(3000);
+	const PORT = await app.get(ConfigService).get<string>("PORT");
+	await app.listen(PORT);
 }
 
 bootstrap();

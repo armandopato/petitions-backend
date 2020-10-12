@@ -1,52 +1,58 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { MailDataRequired, setApiKey, send as sendMail } from '@sendgrid/mail';
+import * as mailgun from 'mailgun-js';
+import Mailgun from 'mailgun-js';
+import SendTemplateData = Mailgun.messages.SendTemplateData;
 
 @Injectable()
-export class MailService {
-
-    private sender: string;
-    private confirmationTemplateID: string;
-    private resetTemplateID: string;
-
-    constructor(private configService: ConfigService)
-    {
-        this.sender = this.configService.get<string>("SENDER");
-        this.confirmationTemplateID = this.configService.get<string>("CONFIRMATION_TEMPLATE_ID");
-        this.resetTemplateID = this.configService.get<string>("RESET_TEMPLATE_ID");
-        const apiKey = this.configService.get<string>("API_KEY");
-        setApiKey(apiKey);
-    }
-    
-    async sendTokenEmail(email: string, token: string, templateID: string): Promise<void>
-    {
-        const msg: MailDataRequired = {
-            to: email,
-            from: this.sender,
-            templateId: templateID,
-            dynamicTemplateData: {
-                token: token
-            }
-        };
-        
-        try
-        {
-            await sendMail(msg);
-        }
-        catch(err)
-        {
-            throw new InternalServerErrorException("Couldn't send confirmation email");
-        }
-    }
-
-    async sendConfirmationEmail(email: string, token: string): Promise<void>
-    {
-        await this.sendTokenEmail(email, token, this.confirmationTemplateID);
-    }
-
-
-    async sendResetEmail(email: string, token: string): Promise<void>
-    {
-        await this.sendTokenEmail(email, token, this.resetTemplateID);
-    }
+export class MailService
+{
+	private readonly sender: string;
+	private readonly mg: mailgun.Mailgun;
+	private readonly domain: string;
+	
+	constructor(private configService: ConfigService)
+	{
+		this.sender = this.configService.get<string>('SENDER');
+		const apiKey = this.configService.get<string>('API_KEY');
+		this.domain = this.configService.get<string>('DOMAIN');
+		this.mg = mailgun({ apiKey, domain: this.domain });
+	}
+	
+	async sendTokenEmail(data: SendTemplateData): Promise<void>
+	{
+		try
+		{
+			await this.mg.messages().send(data);
+		}
+		catch (err)
+		{
+			throw new InternalServerErrorException('Couldn\'t send confirmation email');
+		}
+	}
+	
+	async sendConfirmationEmail(email: string, token: string): Promise<void>
+	{
+		const data: SendTemplateData = {
+			from: `Peticiones UNAM <emailconfirmation@${this.domain}>`,
+			to: email,
+			subject: 'Confirma tu correo',
+			template: 'emailconfirmation',
+			'h:X-Mailgun-Variables': JSON.stringify({ token }),
+		};
+		await this.sendTokenEmail(data);
+	}
+	
+	
+	async sendResetEmail(email: string, token: string): Promise<void>
+	{
+		const data: SendTemplateData = {
+			from: `Peticiones UNAM <passwordreset@${this.domain}>`,
+			to: email,
+			subject: 'Recupera tu contraseña',
+			template: 'passwordreset',
+			'h:X-Mailgun-Variables': JSON.stringify({ token }),
+		};
+		await this.sendTokenEmail(data);
+	}
 }
