@@ -16,11 +16,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 			imports: [ConfigModule],
 			useFactory: async (configService: ConfigService) => ({
 				type: configService.get("DB_TYPE") as any,
-				host: configService.get<string>("DB_HOST"),
-				port: configService.get<number>("DB_PORT"),
-				username: configService.get<string>("DB_USERNAME"),
-				password: configService.get<string>("DB_PASSWORD"),
-				database: configService.get<string>("DB_NAME"),
+				url: configService.get<string>("DATABASE_URL"),
 				entities: [configService.get<string>("DB_ENTITIES_PATH")],
 				synchronize: configService.get<string>("DB_SYNC") == 'true',
 				logging: configService.get<string>("DB_LOGGING") == 'true',
