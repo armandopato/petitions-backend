@@ -7,7 +7,7 @@ import { hash } from 'bcrypt';
 import { Petition } from 'src/posts/petitions/petition.entity';
 import { Resolution } from 'src/posts/resolutions/resolution.entity';
 import { getPage } from 'src/util/getPage';
-import { Page } from 'src/types/Page';
+import { Page } from 'src/util/Page';
 
 
 @EntityRepository(User)

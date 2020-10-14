@@ -1,5 +1,5 @@
-import { SchoolType } from "src/types/School";
-import { IsBoolean, IsEnum } from "class-validator";
+import { SchoolType } from 'src/users/School';
+import { IsBoolean, IsEnum } from 'class-validator';
 
 export class UserSettingsAndSchoolDto
 {
@@ -9,7 +9,7 @@ export class UserSettingsAndSchoolDto
     school: {
         campus: SchoolType;
         lastChange: Date;
-    }
+    };
 }
 
 export class ChangeUserSettingsDto

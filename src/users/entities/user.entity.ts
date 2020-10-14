@@ -1,12 +1,24 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToOne, OneToMany, TableInheritance, ChildEntity, ManyToMany, JoinTable, JoinColumn } from "typeorm";
-import { School } from "./school.entity";
-import { Settings } from "./settings.entity";
-import { Role } from "src/types/Role";
-import { Petition } from "src/posts/petitions/petition.entity";
-import { Resolution } from "src/posts/resolutions/resolution.entity";
-import { Length } from "src/types/Length";
-import { PetitionComment, ResolutionComment } from "../../comments/comment.entity";
-import { UserToNotification } from "./user-to-notification.entity";
+import {
+    ChildEntity,
+    Column,
+    CreateDateColumn,
+    Entity,
+    JoinColumn,
+    JoinTable,
+    ManyToMany,
+    OneToMany,
+    OneToOne,
+    PrimaryGeneratedColumn,
+    TableInheritance,
+} from 'typeorm';
+import { School } from './school.entity';
+import { Settings } from './settings.entity';
+import { Role } from 'src/users/Role';
+import { Petition } from 'src/posts/petitions/petition.entity';
+import { Resolution } from 'src/posts/resolutions/resolution.entity';
+import { Length } from 'src/util/Length';
+import { PetitionComment, ResolutionComment } from '../../comments/comment.entity';
+import { UserToNotification } from './user-to-notification.entity';
 
 @Entity()
 @TableInheritance({ column: { type: 'enum', enum: Role, name: 'role' } })
@@ -14,7 +26,7 @@ export class User
 {
     @PrimaryGeneratedColumn()
     id: number;
-
+    
     @CreateDateColumn()
     createdDate: Date;
 

@@ -1,30 +1,30 @@
-import { ConflictException, NotFoundException } from "@nestjs/common";
-import { UserNotification } from "src/notifications/notification.entity";
-import { UserToNotification } from "src/users/entities/user-to-notification.entity";
-import { User } from "src/users/entities/user.entity";
-import { ResolutionStatus } from "src/types/ElementStatus";
-import { Page } from "src/types/Page";
-import { getPage } from "src/util/getPage";
-import { EntityRepository, getConnection, Repository } from "typeorm";
-import { QueryDeepPartialEntity } from "typeorm/query-builder/QueryPartialEntity";
+import { ConflictException, NotFoundException } from '@nestjs/common';
+import { UserNotification } from 'src/notifications/notification.entity';
+import { UserToNotification } from 'src/users/entities/user-to-notification.entity';
+import { User } from 'src/users/entities/user.entity';
+import { ResolutionStatus } from 'src/posts/ElementStatus';
+import { Page } from 'src/util/Page';
+import { getPage } from 'src/util/getPage';
+import { EntityRepository, getConnection, Repository } from 'typeorm';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
 @EntityRepository(UserNotification)
 export class NotificationsRepository extends Repository<UserNotification>
 {
     private connection = getConnection();
-
+    
     async deleteUserNotifications(userId: number): Promise<void>
     {
-        const query = this.connection.createQueryBuilder(UserToNotification, "rel")
-                                                .innerJoinAndSelect("rel.notification", "notification")
-                                                .where("rel.user = :id", { id: userId });
-
+        const query = this.connection.createQueryBuilder(UserToNotification, 'rel')
+            .innerJoinAndSelect('rel.notification', 'notification')
+            .where('rel.user = :id', { id: userId });
+        
         const [notificationRels, numNotifications] = await query.getManyAndCount();
         if (numNotifications === 0) throw new NotFoundException();
-
+        
         await query.delete()
-                    .where("user = :id")
-                    .execute();
+            .where('user = :id')
+            .execute();
         
         const notificationIds = notificationRels.map(notificationRel => notificationRel.notification.id);
         this.cleanNotifications(notificationIds);

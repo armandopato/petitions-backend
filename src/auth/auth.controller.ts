@@ -1,10 +1,20 @@
-import { Controller, Post, Put, UseGuards, Request, Response, Body, UnauthorizedException, Patch } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Patch,
+    Post,
+    Put,
+    Request,
+    Response,
+    UnauthorizedException,
+    UseGuards,
+} from '@nestjs/common';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { AuthService } from './auth.service';
-import { AuthRequest } from 'src/types/AuthRequest';
+import { AuthRequest } from 'src/auth/AuthRequest.interface';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { ChangePasswordDto } from './dto/change-password.dto';
-import { Response as ExpressResponse, CookieOptions } from 'express';
+import { CookieOptions, Response as ExpressResponse } from 'express';
 import { User } from 'src/users/entities/user.entity';
 import { RefreshGuard } from './guards/refresh.guard';
 import { EmailDto } from './dto/user-credentials.dto';
@@ -22,11 +32,8 @@ export class AuthController {
         const {user} = req;
         if (!user.active)
         {
-            console.log(`${user.email} has not confirmed their email yet. (INVALID LOGIN)`);
             throw new UnauthorizedException();
         }
-
-        console.log(`${req.user.email} (LOGIN)`);
         await this.sendAuthTokens(res, user);
     }
 
@@ -34,7 +41,6 @@ export class AuthController {
     @Put()
     async refreshToken(@Request() req: AuthRequest, @Response() res: ExpressResponse): Promise<void>
     {
-        console.log(`${req.user.email} (REFRESH)`);
         await this.sendAuthTokens(res, req.user);
     }
 
@@ -64,17 +70,11 @@ export class AuthController {
         const {user} = req;
         if (user.active)
         {
-            console.log(`${user.email} (EMAIL ALREADY CONFIRMED)`)
             throw new UnauthorizedException();
         }
-        
         await this.authService.confirmEmail(user, confirmationToken);
         await this.sendAuthTokens(res, user);
     }
-
-
-
-
 
     async sendAuthTokens(res: ExpressResponse, user: User): Promise<void>
     {
@@ -90,6 +90,5 @@ export class AuthController {
 
         res.cookie("refresh_token", refresh_token, cookieOptions);
         res.json({ access_token });
-        console.log(`${user.email} (TOKENS)`);
     }
 }

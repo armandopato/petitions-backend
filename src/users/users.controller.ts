@@ -1,31 +1,32 @@
-import { Controller, Post, Body, Get, Delete, Patch, UseGuards, Put, Query, Param } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { UserService } from './users.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { IsAdminGuard } from '../auth/guards/isAdmin.guard';
 import { ModifyUserDto, ModifyUserRoleDto } from './dto/modify-user.dto';
-import { AuthRequest } from 'src/types/AuthRequest';
-import { Request } from '@nestjs/common';
+import { AuthRequest } from 'src/auth/AuthRequest.interface';
 import { MeGuard } from '../auth/guards/me.guard';
-import { ChangeUserSettingsDto, UserSettingsAndSchoolDto, ChangeSchoolDto } from './dto/user-settings.dto';
+import { ChangeSchoolDto, ChangeUserSettingsDto, UserSettingsAndSchoolDto } from './dto/user-settings.dto';
 import { PositiveIntPipe } from 'src/util/positive-int.pipe';
-import { PetitionInfo, ResolutionInfo } from 'src/types/ElementInfo';
-import { UserNotificationInfo } from 'src/types/UserNotificationInfo';
-import { Page } from 'src/types/Page';
+import { PetitionInfo, ResolutionInfo } from 'src/posts/ElementInfo';
+import { UserNotificationInfo } from 'src/notifications/UserNotificationInfo';
+import { Page } from 'src/util/Page';
 import { NotificationsService } from 'src/notifications/notifications.service';
 
 @Controller('users')
 export class UserController
 {
     constructor(private userService: UserService,
-                private notificationsService: NotificationsService) {}
-
+                private notificationsService: NotificationsService)
+    {
+    }
+    
     @Post()
     async signUp(@Body() createUserDto: CreateUserDto): Promise<void>
     {
         await this.userService.createUser(createUserDto);
     }
-
+    
     @UseGuards(JwtAuthGuard, MeGuard)
     @Put()
     async modifyUser(@Body() modifyUserDto: ModifyUserDto): Promise<void>

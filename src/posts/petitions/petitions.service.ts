@@ -1,12 +1,12 @@
 import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { StudentUser } from 'src/users/entities/user.entity';
 import { PetitionQueryParams } from './dto/petition-query-params.dto';
-import { PetitionInfo } from 'src/types/ElementInfo';
+import { PetitionInfo } from 'src/posts/ElementInfo';
 import { PetitionRepository } from './petitions.repository';
 import { Petition } from 'src/posts/petitions/petition.entity';
 import { CreatePetitionDto } from './dto/create-petition.dto';
 import { ResolutionsService } from 'src/posts/resolutions/resolutions.service';
-import { PetitionStatus } from '../../types/ElementStatus';
+import { PetitionStatus } from '../ElementStatus';
 import { Post } from '../post.class';
 import { PetitionCommentService } from './petition-comment/petition-comment.service';
 

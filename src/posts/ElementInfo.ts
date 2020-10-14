@@ -1,4 +1,4 @@
-import { PetitionStatus, ResolutionStatus } from "./ElementStatus";
+import { PetitionStatus, ResolutionStatus } from './ElementStatus';
 
 export class PetitionInfo
 {

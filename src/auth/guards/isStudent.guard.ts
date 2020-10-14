@@ -1,6 +1,6 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { AuthRequest } from 'src/types/AuthRequest';
-import { Role } from 'src/types/Role';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { AuthRequest } from 'src/auth/AuthRequest.interface';
+import { Role } from 'src/users/Role';
 
 @Injectable()
 export class IsStudentGuard implements CanActivate

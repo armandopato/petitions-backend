@@ -1,26 +1,29 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { User } from 'src/users/entities/user.entity';
 import { compare, hash } from 'bcrypt';
 import { UserCredentials } from './dto/user-credentials.dto';
 import { validateOrReject } from 'class-validator';
 import { JwtService } from '@nestjs/jwt';
-import { AuthTokens } from 'src/types/AuthTokens';
-import { Payload } from 'src/types/Payload';
+import { AuthTokens } from 'src/auth/AuthTokens';
+import { Payload } from 'src/auth/Payload';
 import { ChangePasswordDto } from './dto/change-password.dto';
-import { Token } from 'src/types/Token';
+import { Token } from 'src/auth/Token';
 import { MailService } from './mail.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { UserRepository } from 'src/users/users.repository';
 
 @Injectable()
-export class AuthService {
-
+export class AuthService
+{
+    
     constructor(
         private userRepository: UserRepository,
         private jwtService: JwtService,
-        private mailService: MailService
-    ) { }
-
+        private mailService: MailService,
+    )
+    {
+    }
+    
     async validateUser(email: string, password: string): Promise<User>
     {
         const userCredentials = new UserCredentials();
@@ -73,11 +76,9 @@ export class AuthService {
             const { sub, type }: Payload = await this.jwtService.verifyAsync(confirmationToken);
             if (type !== Token.CONFIRMATION) throw new Error();
             await this.userRepository.update(sub, { active: true });
-            console.log(`${user.email} (EMAIL CONFIRMED)`);
         }
         catch(err)
         {
-            console.log(`${user.email} (INVALID CONFIRMATION TOKEN)`);
             throw new UnauthorizedException();
         }
     }
@@ -92,7 +93,6 @@ export class AuthService {
 
         newPassword = await hash(newPassword, 10);
         await this.userRepository.update(user.id, { password: newPassword });
-        console.log(`${user.email} (PASSWORD CHANGED)`);
     }
 
     async sendPasswordResetToken(email: string): Promise<{ expiresAt: Date }>
@@ -128,8 +128,6 @@ export class AuthService {
 
             newPassword = await hash(newPassword, 10);
             await this.userRepository.update(payload.sub, { password: newPassword });
-
-            console.log(`${payload.sub} (PASSWORD RESET)`);
         }
         catch
         {

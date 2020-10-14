@@ -1,5 +1,5 @@
-import { IsString, Length } from "class-validator";
-import { Length as LengthConstants } from '../../types/Length';
+import { IsString, Length } from 'class-validator';
+import { Length as LengthConstants } from '../../util/Length';
 
 export class PostCommentDto
 {

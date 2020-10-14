@@ -1,4 +1,4 @@
-import { ResolutionStatus } from "./ElementStatus";
+import { ResolutionStatus } from '../posts/ElementStatus';
 
 export class UserNotificationInfo
 {

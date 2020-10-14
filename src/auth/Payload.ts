@@ -1,6 +1,6 @@
-import { SchoolType } from "./School";
-import { Token } from "./Token";
-import { Role } from "./Role";
+import { SchoolType } from '../users/School';
+import { Token } from './Token';
+import { Role } from '../users/Role';
 
 export class Payload
 {

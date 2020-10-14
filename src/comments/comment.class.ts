@@ -1,8 +1,8 @@
 import { CommentRepository } from './comment.repository';
 import { GenericComment } from './comment.entity';
 import { StudentUser, User } from '../users/entities/user.entity';
-import { Page } from '../types/Page';
-import { CommentInfo } from '../types/ElementInfo';
+import { Page } from '../util/Page';
+import { CommentInfo } from '../posts/ElementInfo';
 import { ConflictException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 
 export abstract class AbstractCommentsService<CommentType extends GenericComment>

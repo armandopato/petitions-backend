@@ -1,6 +1,6 @@
-import { Role } from "src/types/Role";
-import { IsBoolean, IsEnum, IsEmail, IsString } from "class-validator";
-import { IsEmailDomainValid } from "../validation/IsEmailDomainValid";
+import { Role } from 'src/users/Role';
+import { IsBoolean, IsEmail, IsEnum, IsString } from 'class-validator';
+import { IsEmailDomainValid } from '../validation/IsEmailDomainValid';
 
 export class ModifyUserDto
 {
@@ -8,7 +8,7 @@ export class ModifyUserDto
     @IsEmail()
     @IsString()
     email: string;
-
+    
     @IsBoolean()
     admin: boolean;
 

@@ -1,7 +1,7 @@
-import { SchoolType } from "src/types/School";
-import { IsInt, IsPositive, IsEnum, IsOptional, Min, IsString, Length } from "class-validator";
+import { SchoolType } from 'src/users/School';
+import { IsEnum, IsInt, IsOptional, IsPositive, IsString, Length, Min } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { Length as LengthConstants } from './Length';
+import { Length as LengthConstants } from '../util/Length';
 
 export class GenericQueryParams<ElementOrderBy, ElementStatus>
 {

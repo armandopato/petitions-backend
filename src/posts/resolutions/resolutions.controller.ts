@@ -2,9 +2,9 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Request,
 import { IsSupportGuard } from 'src/auth/guards/isSupport.guard';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { JwtOptionalAuthGuard } from 'src/auth/guards/jwt-optional-auth.guard';
-import { AuthRequest, AuthStudentRequest, AuthSupportRequest } from 'src/types/AuthRequest';
-import { CommentInfo, ResolutionInfo } from 'src/types/ElementInfo';
-import { Page } from 'src/types/Page';
+import { AuthRequest, AuthStudentRequest, AuthSupportRequest } from 'src/auth/AuthRequest.interface';
+import { CommentInfo, ResolutionInfo } from 'src/posts/ElementInfo';
+import { Page } from 'src/util/Page';
 import { PositiveIntPipe } from 'src/util/positive-int.pipe';
 import { PostTerminatedResolutionDto } from './dto/post-terminated-resolution.dto';
 import { ResolutionQueryParams } from './dto/resolution-query.params.dto';

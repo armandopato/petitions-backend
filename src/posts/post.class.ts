@@ -1,8 +1,8 @@
 import { StudentUser, User } from '../users/entities/user.entity';
-import { Page } from '../types/Page';
-import { PageRepository } from '../types/PageRepository';
+import { Page } from '../util/Page';
+import { PageRepository } from '../util/PageRepository';
 import { ConflictException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { UserInfo } from '../types/UserInfo';
+import { UserInfo } from '../users/UserInfo';
 
 export abstract class Post<T, TInfo extends UserInfo, TParams>
 {

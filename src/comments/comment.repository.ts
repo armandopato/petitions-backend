@@ -1,5 +1,5 @@
 import { getConnection, Repository } from 'typeorm';
-import { Page } from 'src/types/Page';
+import { Page } from 'src/util/Page';
 import { getPage } from 'src/util/getPage';
 import { GenericComment } from './comment.entity';
 import { User } from '../users/entities/user.entity';

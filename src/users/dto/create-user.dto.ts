@@ -1,7 +1,7 @@
-import { SchoolType } from "src/types/School";
-import { IsString, IsEnum, IsEmail, Length } from "class-validator";
-import { IsEmailDomainValid } from "../validation/IsEmailDomainValid";
-import { IsPasswordValid } from "../validation/IsPasswordValid";
+import { SchoolType } from 'src/users/School';
+import { IsEmail, IsEnum, IsString, Length } from 'class-validator';
+import { IsEmailDomainValid } from '../validation/IsEmailDomainValid';
+import { IsPasswordValid } from '../validation/IsPasswordValid';
 
 export class CreateUserDto
 {
@@ -9,7 +9,7 @@ export class CreateUserDto
     @IsEmail()
     @IsString()
     email: string;
-
+    
     @IsPasswordValid()
     @Length(8, 15)
     @IsString()

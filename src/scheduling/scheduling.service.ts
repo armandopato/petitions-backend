@@ -4,7 +4,7 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { Resolution } from 'src/posts/resolutions/resolution.entity';
 import { NotificationsService } from 'src/notifications/notifications.service';
 import { ResolutionRepository } from '../posts/resolutions/resolutions.repository';
-import { ResolutionStatus } from '../types/ElementStatus';
+import { ResolutionStatus } from '../posts/ElementStatus';
 
 
 @Injectable()

@@ -2,7 +2,7 @@ import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nest
 import { AbstractCommentsService } from '../../../comments/comment.class';
 import { ResolutionComment } from '../../../comments/comment.entity';
 import { ResolutionRepository } from '../resolutions.repository';
-import { ResolutionStatus } from '../../../types/ElementStatus';
+import { ResolutionStatus } from '../../ElementStatus';
 import { ResolutionCommentRepository } from './resolution-comment.repository';
 
 @Injectable()

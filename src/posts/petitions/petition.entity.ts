@@ -1,16 +1,26 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToOne, ManyToOne, ManyToMany, JoinTable, OneToMany } from "typeorm";
-import { Resolution } from "src/posts/resolutions/resolution.entity";
-import { StudentUser, User } from "src/users/entities/user.entity";
-import { PetitionComment } from "../../comments/comment.entity";
-import { SchoolType } from "src/types/School";
-import { Length } from "src/types/Length";
+import {
+    Column,
+    CreateDateColumn,
+    Entity,
+    JoinTable,
+    ManyToMany,
+    ManyToOne,
+    OneToMany,
+    OneToOne,
+    PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Resolution } from 'src/posts/resolutions/resolution.entity';
+import { StudentUser, User } from 'src/users/entities/user.entity';
+import { PetitionComment } from '../../comments/comment.entity';
+import { SchoolType } from 'src/users/School';
+import { Length } from 'src/util/Length';
 
 @Entity()
 export class Petition
 {
     @PrimaryGeneratedColumn()
     id: number;
-
+    
     @CreateDateColumn()
     createdDate: Date;
 

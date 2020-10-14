@@ -3,25 +3,27 @@ import { UserNotification } from 'src/notifications/notification.entity';
 import { Resolution } from 'src/posts/resolutions/resolution.entity';
 import { User } from 'src/users/entities/user.entity';
 import { ResolutionRepository } from 'src/posts/resolutions/resolutions.repository';
-import { Page } from 'src/types/Page';
-import { UserNotificationInfo } from 'src/types/UserNotificationInfo';
+import { Page } from 'src/util/Page';
+import { UserNotificationInfo } from 'src/notifications/UserNotificationInfo';
 import { NotificationsRepository } from './notifications.repository';
 
 @Injectable()
 export class NotificationsService
 {
     constructor(private notificationsRepository: NotificationsRepository,
-                private resolutionsRepository: ResolutionRepository) {}
-
+                private resolutionsRepository: ResolutionRepository)
+    {
+    }
+    
     async getUserNotifications(user: User, page: number): Promise<Page<UserNotificationInfo>>
     {
         const { totalPages, pageElements: notificationRelations } = await this.notificationsRepository.getUserNotificationRelationPage(user.id, page);
         const notificationsInfo: UserNotificationInfo[] = [];
-
+        
         for (const notificationRel of notificationRelations)
         {
             const { id, title } = await this.resolutionsRepository.getIdAndTitleByNotificationId(notificationRel.notification.id);
-
+            
             notificationsInfo.push({
                 id: notificationRel.notification.id,
                 seen: notificationRel.seen,

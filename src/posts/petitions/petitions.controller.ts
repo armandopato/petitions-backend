@@ -14,10 +14,10 @@ import {
 } from '@nestjs/common';
 import { PetitionsService } from './petitions.service';
 import { JwtOptionalAuthGuard } from 'src/auth/guards/jwt-optional-auth.guard';
-import { AuthRequest, AuthStudentRequest } from 'src/types/AuthRequest';
+import { AuthRequest, AuthStudentRequest } from 'src/auth/AuthRequest.interface';
 import { PetitionQueryParams } from './dto/petition-query-params.dto';
-import { Page } from 'src/types/Page';
-import { CommentInfo, PetitionInfo } from 'src/types/ElementInfo';
+import { Page } from 'src/util/Page';
+import { CommentInfo, PetitionInfo } from 'src/posts/ElementInfo';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { IsStudentGuard } from 'src/auth/guards/isStudent.guard';
 import { CreatePetitionDto } from './dto/create-petition.dto';

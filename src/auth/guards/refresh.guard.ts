@@ -1,8 +1,8 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
-import { Payload } from 'src/types/Payload';
-import { Token } from 'src/types/Token';
+import { Payload } from 'src/auth/Payload';
+import { Token } from 'src/auth/Token';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -10,14 +10,16 @@ import { Repository } from 'typeorm';
 @Injectable()
 export class RefreshGuard implements CanActivate
 {
-    constructor (@InjectRepository(User) private userRepository: Repository<User>,
-                 private jwtService: JwtService) { }
-
+    constructor(@InjectRepository(User) private userRepository: Repository<User>,
+                private jwtService: JwtService)
+    {
+    }
+    
     async canActivate(context: ExecutionContext): Promise<boolean>
     {
         const req = context.switchToHttp().getRequest<Request>();
         const token = req.cookies.refresh_token as string;
-
+        
         if (!token) throw new UnauthorizedException();
         try
         {

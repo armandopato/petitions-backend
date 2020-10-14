@@ -1,8 +1,19 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToOne, JoinColumn, ManyToOne, ManyToMany, JoinTable, OneToMany } from "typeorm";
-import { Petition } from "src/posts/petitions/petition.entity";
-import { SupportTeamUser, StudentUser, User } from "src/users/entities/user.entity";
-import { ResolutionComment } from "../../comments/comment.entity";
-import { Length } from "src/types/Length";
+import {
+    Column,
+    CreateDateColumn,
+    Entity,
+    JoinColumn,
+    JoinTable,
+    ManyToMany,
+    ManyToOne,
+    OneToMany,
+    OneToOne,
+    PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Petition } from 'src/posts/petitions/petition.entity';
+import { StudentUser, SupportTeamUser, User } from 'src/users/entities/user.entity';
+import { ResolutionComment } from '../../comments/comment.entity';
+import { Length } from 'src/util/Length';
 
 
 @Entity()
@@ -10,7 +21,7 @@ export class Resolution
 {
     @PrimaryGeneratedColumn()
     id: number;
-
+    
     @CreateDateColumn()
     startDate: Date;
 
