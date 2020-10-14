@@ -1,27 +1,28 @@
 import { Module } from '@nestjs/common';
-import { UserController } from './users.controller';
+import { UsersController } from './users.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserService } from './users.service';
-import { StudentUserRepository, SupportTeamUserRepository, UserRepository } from './users.repository';
+import { UsersService } from './users.service';
+import { StudentUsersRepository, UsersRepository } from './users.repository';
 import { AuthModule } from 'src/auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtConfigService } from 'src/auth/config/jwt.config.service';
-import { Settings } from 'src/users/entities/settings.entity';
 import { PetitionsModule } from 'src/posts/petitions/petitions.module';
 import { NotificationsModule } from 'src/notifications/notifications.module';
 import { ResolutionsModule } from '../posts/resolutions/resolutions.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([StudentUserRepository, SupportTeamUserRepository, UserRepository, Settings]),
-            AuthModule,
-            NotificationsModule,
-            PetitionsModule,
-            ResolutionsModule,
-            JwtModule.registerAsync({
-              imports: [AuthModule],
-              useExisting: JwtConfigService
-            })],
-  controllers: [UserController],
-  providers: [UserService]
+    imports: [TypeOrmModule.forFeature([StudentUsersRepository, UsersRepository]),
+        AuthModule,
+        NotificationsModule,
+        PetitionsModule,
+        ResolutionsModule,
+        JwtModule.registerAsync({
+            imports: [AuthModule],
+            useExisting: JwtConfigService,
+        })],
+    controllers: [UsersController],
+    providers: [UsersService],
 })
-export class UserModule {}
+export class UsersModule
+{
+}

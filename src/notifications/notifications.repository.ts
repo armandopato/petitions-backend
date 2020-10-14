@@ -16,7 +16,7 @@ export class NotificationsRepository extends Repository<UserNotification>
     async deleteUserNotifications(userId: number): Promise<void>
     {
         const query = this.connection.createQueryBuilder(UserToNotification, 'rel')
-            .innerJoinAndSelect('rel.notification', 'notification')
+            .innerJoinAndSelect('rel.notifications', 'notification')
             .where('rel.user = :id', { id: userId });
         
         const [notificationRels, numNotifications] = await query.getManyAndCount();
@@ -33,23 +33,23 @@ export class NotificationsRepository extends Repository<UserNotification>
 
     async deleteUserNotificationById(userId: number, notificationId: number): Promise<void>
     {
-        const query = this.connection.createQueryBuilder(UserToNotification, "rel")
-                                                .where("rel.user = :id", { id: userId })
-                                                .andWhere("rel.notification = :notifId", { notifId: notificationId });
+        const query = this.connection.createQueryBuilder(UserToNotification, 'rel')
+            .where('rel.user = :id', { id: userId })
+            .andWhere('rel.notifications = :notifId', { notifId: notificationId });
                         
         const notification = await query.getCount();
         if (!notification) throw new NotFoundException();
-
-        await query.delete().where("notification = :notifId").execute();
+    
+        await query.delete().where('notifications = :notifId').execute();
         
         this.cleanNotification(notificationId);
     }
 
     async getUserNotificationRelationPage(userId: number, page: number): Promise<Page<UserToNotification>>
     {
-        const query = this.connection.createQueryBuilder(UserToNotification, "rel")
-                                                .innerJoinAndSelect("rel.notification", "notification")
-                                                .innerJoinAndSelect("notification.resolution", "res")
+        const query = this.connection.createQueryBuilder(UserToNotification, 'rel')
+            .innerJoinAndSelect('rel.notifications', 'notification')
+            .innerJoinAndSelect('notifications.resolution', 'res')
                                                 .where("rel.user = :id", { id: userId })
                                                 .orderBy("rel.id", "DESC");
         
@@ -58,10 +58,10 @@ export class NotificationsRepository extends Repository<UserNotification>
 
     async getNumberOfUnreadNotifications(userId: number): Promise<number>
     {
-        return await this.connection.createQueryBuilder(UserToNotification, "notification")
-                        .addSelect("notification.userId", "userid")
-                        .where("userid = :id", { id: userId })
-                        .where("notification.seen = false")
+        return await this.connection.createQueryBuilder(UserToNotification, 'notification')
+            .addSelect('notifications.userId', 'userid')
+            .where('userid = :id', { id: userId })
+            .where('notifications.seen = false')
                         .getCount();
     }
 
@@ -72,21 +72,21 @@ export class NotificationsRepository extends Repository<UserNotification>
             await this.cleanNotification(id);
         }
     }
-
-    private async cleanNotification(notificationId: number): Promise<void>
+    
+    async markAsSeen(userId: number, notificationId: number): Promise<void>
     {
-        const queryBuilder = this.connection.createQueryBuilder(UserNotification, "notification");
-
-        const numOfAssociatedUsers = await queryBuilder.innerJoin("notification.userToNotifications", "relation")
-                                    .where("notification.id = :id", { id: notificationId })
-                                    .getCount();
+        const query = this.connection.createQueryBuilder(UserToNotification, 'rel')
+            .where('rel.user = :id', { id: userId })
+            .andWhere('rel.notifications = :notifId', { notifId: notificationId });
         
-        if (numOfAssociatedUsers === 0)
-        {
-            await queryBuilder.delete()
-                                .where("id = :notificationId", { notificationId: notificationId })
-                                .execute();
-        }
+        const notificationRelation = await query.getOne();
+        if (!notificationRelation) throw new NotFoundException();
+        if (notificationRelation.seen) throw new ConflictException();
+        
+        await query.update({ seen: true })
+            .where('user = :id')
+            .andWhere('notifications = :notifId')
+            .execute();
     }
 
     async createNotificationRelations(notification: UserNotification): Promise<void>
@@ -123,20 +123,20 @@ export class NotificationsRepository extends Repository<UserNotification>
         await this.connection.createQueryBuilder(UserToNotification, "rel")
                             .insert().values(notificationRelations).execute();
     }
-
-    async markAsSeen(userId: number, notificationId: number): Promise<void>
+    
+    private async cleanNotification(notificationId: number): Promise<void>
     {
-        const query = this.connection.createQueryBuilder(UserToNotification, "rel")
-                                                .where("rel.user = :id", { id: userId })
-                                                .andWhere("rel.notification = :notifId", { notifId: notificationId });
-                        
-        const notificationRelation = await query.getOne();
-        if (!notificationRelation) throw new NotFoundException();
-        if (notificationRelation.seen) throw new ConflictException();
-
-        await query.update({ seen: true })
-                    .where("user = :id")
-                    .andWhere("notification = :notifId")
-                    .execute();
+        const queryBuilder = this.connection.createQueryBuilder(UserNotification, 'notification');
+        
+        const numOfAssociatedUsers = await queryBuilder.innerJoin('notifications.userToNotifications', 'relation')
+            .where('notifications.id = :id', { id: notificationId })
+            .getCount();
+        
+        if (numOfAssociatedUsers === 0)
+        {
+            await queryBuilder.delete()
+                .where('id = :notificationId', { notificationId: notificationId })
+                .execute();
+        }
     }
 }

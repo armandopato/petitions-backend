@@ -12,17 +12,17 @@ import { PageRepository } from '../../util/PageRepository';
 
 
 @EntityRepository(Resolution)
-export class ResolutionRepository extends Repository<Resolution> implements PageRepository<Resolution, ResolutionQueryParams>
+export class ResolutionsRepository extends Repository<Resolution> implements PageRepository<Resolution, ResolutionQueryParams>
 {
     connection = getConnection();
-
+    
     async getPage(params: ResolutionQueryParams): Promise<Page<Resolution>>
     {
         const { page, orderBy, year, school, show, search } = params;
-        const query = this.connection.createQueryBuilder(Resolution, "resolution")
-                                    .innerJoinAndSelect("resolution.petition", "petition")
-                                    .where("petition.campus = :school", { school })
-                                    .andWhere("date_part('year', resolution.startDate) = :year", { year });
+        const query = this.connection.createQueryBuilder(Resolution, 'resolution')
+            .innerJoinAndSelect('resolution.petition', 'petition')
+            .where('petition.campus = :school', { school })
+            .andWhere('date_part(\'year\', resolution.startDate) = :year', { year });
         
         if (show)
         {
@@ -122,10 +122,10 @@ export class ResolutionRepository extends Repository<Resolution> implements Page
 
     async getIdAndTitleByNotificationId(notificationId: number): Promise<{id: number, title: string}>
     {
-        const { resolutionId: id } = await this.connection.createQueryBuilder(UserNotification, "notification")
-                                                .innerJoinAndSelect("notification.resolution", "resolution")
-                                                .select("resolution.id", "resolutionId")
-                                                .where("notification.id = :id", { id: notificationId })
+        const { resolutionId: id } = await this.connection.createQueryBuilder(UserNotification, 'notification')
+            .innerJoinAndSelect('notifications.resolution', 'resolution')
+            .select('resolution.id', 'resolutionId')
+            .where('notifications.id = :id', { id: notificationId })
                                                 .getRawOne();
         
         const title = await this.getTitle(id);

@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
-import { UserService } from './users.service';
+import { UsersService } from './users.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { IsAdminGuard } from '../auth/guards/isAdmin.guard';
 import { ModifyUserDto, ModifyUserRoleDto } from './dto/modify-user.dto';
@@ -14,9 +14,9 @@ import { Page } from 'src/util/Page';
 import { NotificationsService } from 'src/notifications/notifications.service';
 
 @Controller('users')
-export class UserController
+export class UsersController
 {
-    constructor(private userService: UserService,
+    constructor(private usersService: UsersService,
                 private notificationsService: NotificationsService)
     {
     }
@@ -24,39 +24,39 @@ export class UserController
     @Post()
     async signUp(@Body() createUserDto: CreateUserDto): Promise<void>
     {
-        await this.userService.createUser(createUserDto);
+        await this.usersService.createUser(createUserDto);
     }
     
     @UseGuards(JwtAuthGuard, MeGuard)
     @Put()
     async modifyUser(@Body() modifyUserDto: ModifyUserDto): Promise<void>
     {
-        return await this.userService.updateUserPrivileges(modifyUserDto);
+        return await this.usersService.updateUserPrivileges(modifyUserDto);
     }
 
     @UseGuards(JwtAuthGuard, IsAdminGuard)
     @Patch()
     async modifyUserRole(@Body() modifyUserRoleDto: ModifyUserRoleDto, @Request() req: AuthRequest): Promise<void>
     {
-        return await this.userService.updateUserRole(modifyUserRoleDto, req.user);
+        return await this.usersService.updateUserRole(modifyUserRoleDto, req.user);
     }
 
     @UseGuards(JwtAuthGuard)
     @Get("saved/petitions")
     async getSavedPetitions(@Request() req: AuthRequest, @Query("page", PositiveIntPipe) page: number): Promise<Page<PetitionInfo>>
     {
-        return await this.userService.getSavedPetitions(req.user, page);
+        return await this.usersService.getSavedPetitions(req.user, page);
     }
 
     @UseGuards(JwtAuthGuard)
     @Get("saved/resolutions")
     async getSavedResolutions(@Request() req: AuthRequest, @Query("page", PositiveIntPipe) page: number): Promise<Page<ResolutionInfo>>
     {
-        return await this.userService.getSavedResolutions(req.user, page);
+        return await this.usersService.getSavedResolutions(req.user, page);
     }
-
+    
     @UseGuards(JwtAuthGuard)
-    @Get("notifications")
+    @Get('notification')
     async getNotifications(@Request() req: AuthRequest, @Query("page", PositiveIntPipe) page: number): Promise<Page<UserNotificationInfo>>
     {
         return await this.notificationsService.getUserNotifications(req.user, page);
@@ -69,9 +69,9 @@ export class UserController
         const unread = await this.notificationsService.getNumberOfUnreadNotifications(req.user);
         return { unread };
     }
-
+    
     @UseGuards(JwtAuthGuard)
-    @Delete("notifications")
+    @Delete('notification')
     async deleteNotifications(@Request() req: AuthRequest): Promise<void>
     {
         await this.notificationsService.deleteUserNotifications(req.user);
@@ -95,20 +95,20 @@ export class UserController
     @Get("settings")
     getUserSettingsAndSchool(@Request() req: AuthRequest): UserSettingsAndSchoolDto
     {
-        return this.userService.getUserSettingsAndSchool(req.user);
+        return this.usersService.getUserSettingsAndSchool(req.user);
     }
 
     @UseGuards(JwtAuthGuard)
     @Patch("settings")
     async modifyUserSettings(@Request() req: AuthRequest, @Body() changeUserSettingsDto: ChangeUserSettingsDto): Promise<void>
     {
-        await this.userService.modifyUserSettings(req.user, changeUserSettingsDto);
+        await this.usersService.modifyUserSettings(req.user, changeUserSettingsDto);
     }
 
     @UseGuards(JwtAuthGuard)
     @Patch("school")
     async modifySchool(@Request() req: AuthRequest, @Body() changeSchoolDto: ChangeSchoolDto): Promise<void>
     {
-        await this.userService.modifySchool(req.user, changeSchoolDto.newCampus);
+        await this.usersService.modifySchool(req.user, changeSchoolDto.newCampus);
     }
 }

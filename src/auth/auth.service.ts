@@ -10,14 +10,13 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { Token } from 'src/auth/Token';
 import { MailService } from './mail.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import { UserRepository } from 'src/users/users.repository';
+import { UsersRepository } from 'src/users/users.repository';
 
 @Injectable()
 export class AuthService
 {
-    
     constructor(
-        private userRepository: UserRepository,
+        private usersRepository: UsersRepository,
         private jwtService: JwtService,
         private mailService: MailService,
     )
@@ -38,8 +37,8 @@ export class AuthService
         {
             throw new UnauthorizedException();
         }
-
-        const user = await this.userRepository.findOne({ email: email });
+    
+        const user = await this.usersRepository.findOne({ email: email });
         if (!user) return null;
 
         const match = await compare(password, user.password);
@@ -75,7 +74,7 @@ export class AuthService
         {
             const { sub, type }: Payload = await this.jwtService.verifyAsync(confirmationToken);
             if (type !== Token.CONFIRMATION) throw new Error();
-            await this.userRepository.update(sub, { active: true });
+            await this.usersRepository.update(sub, { active: true });
         }
         catch(err)
         {
@@ -90,14 +89,14 @@ export class AuthService
 
         const match = await compare(password, user.password);
         if (!match) throw new UnauthorizedException();
-
+    
         newPassword = await hash(newPassword, 10);
-        await this.userRepository.update(user.id, { password: newPassword });
+        await this.usersRepository.update(user.id, { password: newPassword });
     }
 
     async sendPasswordResetToken(email: string): Promise<{ expiresAt: Date }>
     {
-        const user = await this.userRepository.findOne({ email: email });
+        const user = await this.usersRepository.findOne({ email: email });
         if (!user) throw new BadRequestException();
 
         const payload: Payload = {
@@ -125,9 +124,9 @@ export class AuthService
         {
             const payload: Payload = await this.jwtService.verifyAsync(token);
             if (payload.type !== Token.RESET) throw new Error();
-
+    
             newPassword = await hash(newPassword, 10);
-            await this.userRepository.update(payload.sub, { password: newPassword });
+            await this.usersRepository.update(payload.sub, { password: newPassword });
         }
         catch
         {

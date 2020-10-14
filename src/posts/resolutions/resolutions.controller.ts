@@ -12,14 +12,14 @@ import { ResolutionsService } from './resolutions.service';
 import { ResolutionTextDto } from './dto/terminate-resolution.dto';
 import { IsStudentGuard } from '../../auth/guards/isStudent.guard';
 import { PostCommentDto } from '../../comments/dto/post-comment.dto';
-import { ResolutionCommentService } from './resolution-comment/resolution-comment.service';
+import { ResolutionCommentsService } from './comments/resolution-comments.service';
 
 @Controller('resolutions')
 export class ResolutionsController
 {
 	
 	constructor(private resolutionsService: ResolutionsService,
-	            private commentsService: ResolutionCommentService)
+	            private commentsService: ResolutionCommentsService)
 	{
 	}
 	

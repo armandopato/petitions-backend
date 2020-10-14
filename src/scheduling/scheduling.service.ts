@@ -3,7 +3,7 @@ import { CronJob } from 'cron';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { Resolution } from 'src/posts/resolutions/resolution.entity';
 import { NotificationsService } from 'src/notifications/notifications.service';
-import { ResolutionRepository } from '../posts/resolutions/resolutions.repository';
+import { ResolutionsRepository } from '../posts/resolutions/resolutions.repository';
 import { ResolutionStatus } from '../posts/ElementStatus';
 
 
@@ -12,7 +12,7 @@ export class SchedulingService
 {
 	constructor(private scheduler: SchedulerRegistry,
 	            private notificationsService: NotificationsService,
-	            private resolutionsRepository: ResolutionRepository
+	            private resolutionsRepository: ResolutionsRepository,
 	)
 	{
 	}

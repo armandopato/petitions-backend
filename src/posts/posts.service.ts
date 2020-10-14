@@ -4,7 +4,7 @@ import { PageRepository } from '../util/PageRepository';
 import { ConflictException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { UserInfo } from '../users/UserInfo';
 
-export abstract class Post<T, TInfo extends UserInfo, TParams>
+export abstract class PostsService<T, TInfo extends UserInfo, TParams>
 {
 	abstract repository: PageRepository<T, TParams>;
 	

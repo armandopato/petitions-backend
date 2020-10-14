@@ -8,33 +8,33 @@ import {
 import { Resolution } from 'src/posts/resolutions/resolution.entity';
 import { SupportTeamUser } from 'src/users/entities/user.entity';
 import { NotificationsService } from 'src/notifications/notifications.service';
-import { PetitionRepository } from 'src/posts/petitions/petitions.repository';
+import { PetitionsRepository } from 'src/posts/petitions/petitions.repository';
 import { SchedulingService } from 'src/scheduling/scheduling.service';
 import { ResolutionInfo } from 'src/posts/ElementInfo';
 import { PetitionStatus, ResolutionStatus } from 'src/posts/ElementStatus';
 import { PostTerminatedResolutionDto } from './dto/post-terminated-resolution.dto';
 import { ResolutionQueryParams } from './dto/resolution-query.params.dto';
-import { ResolutionRepository } from './resolutions.repository';
-import { Post } from '../post.class';
-import { ResolutionCommentService } from './resolution-comment/resolution-comment.service';
+import { ResolutionsRepository } from './resolutions.repository';
+import { PostsService } from '../posts.service';
+import { ResolutionCommentsService } from './comments/resolution-comments.service';
 
 const DAY = 1000 * 60 * 60 * 24;
 const RESOLUTION_WINDOW = DAY * 30;
 const MIN_VOTES = 50;
 
 @Injectable()
-export class ResolutionsService extends Post<Resolution, ResolutionInfo, ResolutionQueryParams>
+export class ResolutionsService extends PostsService<Resolution, ResolutionInfo, ResolutionQueryParams>
 {
-	constructor(private resolutionsRepository: ResolutionRepository,
-	            private commentsService: ResolutionCommentService,
-	            private petitionsRepository: PetitionRepository,
+	constructor(private resolutionsRepository: ResolutionsRepository,
+	            private commentsService: ResolutionCommentsService,
+	            private petitionsRepository: PetitionsRepository,
 	            private schedulingService: SchedulingService,
 	            private notificationsService: NotificationsService)
 	{
 		super();
 	}
 	
-	get repository(): ResolutionRepository
+	get repository(): ResolutionsRepository
 	{
 		return this.resolutionsRepository;
 	}

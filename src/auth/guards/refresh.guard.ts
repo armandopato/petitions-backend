@@ -3,14 +3,12 @@ import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { Payload } from 'src/auth/Payload';
 import { Token } from 'src/auth/Token';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/users/entities/user.entity';
-import { Repository } from 'typeorm';
+import { UsersRepository } from '../../users/users.repository';
 
 @Injectable()
 export class RefreshGuard implements CanActivate
 {
-    constructor(@InjectRepository(User) private userRepository: Repository<User>,
+    constructor(private usersRepository: UsersRepository,
                 private jwtService: JwtService)
     {
     }
@@ -25,8 +23,8 @@ export class RefreshGuard implements CanActivate
         {
             const tokenPayload: Payload = await this.jwtService.verifyAsync(token);
             if (tokenPayload.type !== Token.REFRESH) throw new Error();
-
-            const user = await this.userRepository.findOne(tokenPayload.sub);
+    
+            const user = await this.usersRepository.findOne(tokenPayload.sub);
             if (!user) throw new Error();
             
             req.user = user;

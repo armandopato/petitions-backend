@@ -1,9 +1,9 @@
 import { EntityRepository } from 'typeorm';
 import { ResolutionComment } from '../../../comments/comment.entity';
-import { CommentRepository } from '../../../comments/comment.repository';
+import { CommentsRepository } from '../../../comments/comments.repository';
 
 @EntityRepository(ResolutionComment)
-export class ResolutionCommentRepository extends CommentRepository<ResolutionComment>
+export class ResolutionCommentsRepository extends CommentsRepository<ResolutionComment>
 {
 	constructor()
 	{

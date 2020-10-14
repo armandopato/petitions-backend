@@ -1,15 +1,15 @@
 import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { AbstractCommentsService } from '../../../comments/comment.class';
+import { CommentsService } from '../../../comments/comments.service';
 import { ResolutionComment } from '../../../comments/comment.entity';
-import { ResolutionRepository } from '../resolutions.repository';
+import { ResolutionsRepository } from '../resolutions.repository';
 import { ResolutionStatus } from '../../ElementStatus';
-import { ResolutionCommentRepository } from './resolution-comment.repository';
+import { ResolutionCommentsRepository } from './resolution-comments.repository';
 
 @Injectable()
-export class ResolutionCommentService extends AbstractCommentsService<ResolutionComment>
+export class ResolutionCommentsService extends CommentsService<ResolutionComment>
 {
-	constructor(@Inject(ResolutionCommentRepository) resolutionCommentRepository: ResolutionCommentRepository,
-	            private resolutionsRepository: ResolutionRepository)
+	constructor(@Inject(ResolutionCommentsRepository) resolutionCommentRepository: ResolutionCommentsRepository,
+	            private resolutionsRepository: ResolutionsRepository)
 	{
 		super(resolutionCommentRepository);
 	}

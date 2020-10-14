@@ -1,5 +1,5 @@
 import { EntityRepository, getConnection, Repository } from 'typeorm';
-import { StudentUser, SupportTeamUser, User } from 'src/users/entities/user.entity';
+import { StudentUser, User } from 'src/users/entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { School } from 'src/users/entities/school.entity';
 import { Settings } from 'src/users/entities/settings.entity';
@@ -11,61 +11,62 @@ import { Page } from 'src/util/Page';
 
 
 @EntityRepository(User)
-export class UserRepository extends Repository<User>
+export class UsersRepository extends Repository<User>
 {
-	connection = getConnection();
-	
-	// pending: add id to relation to sort according to saving date
-	async getSavedPetitionsPage(userId: number, page: number): Promise<Page<Petition>>
-	{
-		const query = this.connection.createQueryBuilder(Petition, 'petition')
-			.innerJoinAndSelect('petition.savedBy', 'user')
-			.where('user.id = :id', { id: userId })
-			.orderBy('petition.id', 'DESC');
-		
-		return await getPage(query, page);
-	}
-	
-	async getSavedResolutionsPage(userId: number, page: number): Promise<Page<Resolution>>
-	{
-		const query = this.connection.createQueryBuilder(Resolution, 'resolution')
-			.innerJoinAndSelect('resolution.savedBy', 'user')
-			.innerJoinAndSelect('resolution.petition', 'petition')
-			.where('user.id = :id', { id: userId })
-			.orderBy('resolution.id', 'DESC');
-		
-		return await getPage(query, page);
-	}
+    connection = getConnection();
+    
+    // pending: add id to relation to sort according to saving date
+    async getSavedPetitionsPage(userId: number, page: number): Promise<Page<Petition>>
+    {
+        const query = this.connection.createQueryBuilder(Petition, 'petition')
+            .innerJoinAndSelect('petition.savedBy', 'user')
+            .where('user.id = :id', { id: userId })
+            .orderBy('petition.id', 'DESC');
+        
+        return await getPage(query, page);
+    }
+    
+    async getSavedResolutionsPage(userId: number, page: number): Promise<Page<Resolution>>
+    {
+        const query = this.connection.createQueryBuilder(Resolution, 'resolution')
+            .innerJoinAndSelect('resolution.savedBy', 'user')
+            .innerJoinAndSelect('resolution.petition', 'petition')
+            .where('user.id = :id', { id: userId })
+            .orderBy('resolution.id', 'DESC');
+        
+        return await getPage(query, page);
+    }
 }
 
 @EntityRepository(StudentUser)
-export class StudentUserRepository extends Repository<StudentUser>
+export class StudentUsersRepository extends Repository<StudentUser>
 {
-	async createUser(createUserDto: CreateUserDto): Promise<number>
-	{
-		const { email, password, school } = createUserDto;
-		
-		const newSchool = new School();
-		newSchool.campus = school;
-		
-		const newSettings = new Settings();
-		
-		let newUser = new StudentUser();
-		newUser.email = email;
-		newUser.school = newSchool;
-		newUser.settings = newSettings;
-		newUser.password = await hash(password, 10);
-		
-		newUser = await this.save(newUser);
-		console.log(`${newUser.email} (NEW USER)`);
-		
-		return newUser.id;
-	}
+    async createUser(createUserDto: CreateUserDto): Promise<number>
+    {
+        const { email, password, school } = createUserDto;
+        
+        const newSchool = new School();
+        newSchool.campus = school;
+        
+        const newSettings = new Settings();
+        
+        let newUser = new StudentUser();
+        newUser.email = email;
+        newUser.school = newSchool;
+        newUser.settings = newSettings;
+        newUser.password = await hash(password, 10);
+        
+        newUser = await this.save(newUser);
+        console.log(`${newUser.email} (NEW USER)`);
+        
+        return newUser.id;
+    }
 }
 
 
+/*
 @EntityRepository(SupportTeamUser)
-export class SupportTeamUserRepository extends Repository<SupportTeamUser>
+export class SupportTeamUsersRepository extends Repository<SupportTeamUser>
 {
 
-}
+}*/

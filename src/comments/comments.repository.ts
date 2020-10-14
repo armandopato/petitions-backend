@@ -6,7 +6,7 @@ import { User } from '../users/entities/user.entity';
 
 export type Entity<T> = { new(): T };
 
-export abstract class CommentRepository<CommentType extends GenericComment> extends Repository<CommentType>
+export abstract class CommentsRepository<CommentType extends GenericComment> extends Repository<CommentType>
 {
 	connection = getConnection();
 	
@@ -18,7 +18,7 @@ export abstract class CommentRepository<CommentType extends GenericComment> exte
 	async countNumberOfComments(elementId: number): Promise<number>
 	{
 		return await this.connection.createQueryBuilder(this.commentEntity, 'comment')
-			.innerJoinAndSelect('comment.element', 'element')
+			.innerJoinAndSelect('comments.element', 'element')
 			.where('element.id = :id', { id: elementId })
 			.getCount();
 	}
@@ -26,13 +26,13 @@ export abstract class CommentRepository<CommentType extends GenericComment> exte
 	async getCommentsPage(elementId: number, page: number, user?: User): Promise<Page<CommentType>>
 	{
 		const query = this.connection.createQueryBuilder(this.commentEntity, 'comment')
-			.innerJoin('comment.element', 'element')
+			.innerJoin('comments.element', 'element')
 			.where('element.id = :id', { id: elementId })
-			.orderBy('comment.id', 'DESC');
+			.orderBy('comments.id', 'DESC');
 		
 		if (user)
 		{
-			query.andWhere('comment.by != :userid', { userid: user.id })
+			query.andWhere('comments.by != :userid', { userid: user.id });
 		}
 		
 		return await getPage(query, page);
@@ -41,8 +41,8 @@ export abstract class CommentRepository<CommentType extends GenericComment> exte
 	async getUserComment(elementId: number, userId: number): Promise<CommentType>
 	{
 		return await this.connection.createQueryBuilder(this.commentEntity, 'comment')
-			.innerJoin('comment.element', 'element')
-			.innerJoin('comment.by', 'user')
+			.innerJoin('comments.element', 'element')
+			.innerJoin('comments.by', 'user')
 			.where('element.id = :id', { id: elementId })
 			.andWhere('user.id = :userId', { userId: userId })
 			.getOne();
@@ -51,17 +51,17 @@ export abstract class CommentRepository<CommentType extends GenericComment> exte
 	async getNumberOfCommentLikes(commentId: number): Promise<number>
 	{
 		return await this.connection.createQueryBuilder(this.commentEntity, 'comment')
-			.innerJoin('comment.likedBy', 'user')
-			.where('comment.id = :id', { id: commentId })
+			.innerJoin('comments.likedBy', 'user')
+			.where('comments.id = :id', { id: commentId })
 			.getCount();
 	}
 	
 	async didUserLikeComment(commentId: number, userId: number): Promise<boolean>
 	{
 		const like = await this.connection.createQueryBuilder(this.commentEntity, 'comment')
-			.innerJoin('comment.likedBy', 'user')
+			.innerJoin('comments.likedBy', 'user')
 			.where('user.id = :userId', { userId: userId })
-			.andWhere('comment.id = :id', { id: commentId })
+			.andWhere('comments.id = :id', { id: commentId })
 			.getCount();
 		return like === 1;
 	}

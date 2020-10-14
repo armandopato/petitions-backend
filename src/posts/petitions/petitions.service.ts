@@ -2,31 +2,31 @@ import { ConflictException, Injectable, NotFoundException, UnauthorizedException
 import { StudentUser } from 'src/users/entities/user.entity';
 import { PetitionQueryParams } from './dto/petition-query-params.dto';
 import { PetitionInfo } from 'src/posts/ElementInfo';
-import { PetitionRepository } from './petitions.repository';
+import { PetitionsRepository } from './petitions.repository';
 import { Petition } from 'src/posts/petitions/petition.entity';
 import { CreatePetitionDto } from './dto/create-petition.dto';
 import { ResolutionsService } from 'src/posts/resolutions/resolutions.service';
 import { PetitionStatus } from '../ElementStatus';
-import { Post } from '../post.class';
-import { PetitionCommentService } from './petition-comment/petition-comment.service';
+import { PostsService } from '../posts.service';
+import { PetitionCommentsService } from './comments/petition-comments.service';
 
 const MIN_VOTES = 100;
 
 @Injectable()
-export class PetitionsService extends Post<Petition, PetitionInfo, PetitionQueryParams>
+export class PetitionsService extends PostsService<Petition, PetitionInfo, PetitionQueryParams>
 {
 	constructor(
-		private petitionRepository: PetitionRepository,
+		private petitionsRepository: PetitionsRepository,
 		private resolutionsService: ResolutionsService,
-		private commentsService: PetitionCommentService,
+		private commentsService: PetitionCommentsService,
 	)
 	{
 		super();
 	}
 	
-	get repository(): PetitionRepository
+	get repository(): PetitionsRepository
 	{
-		return this.petitionRepository;
+		return this.petitionsRepository;
 	}
 	
 	async loadOne(id: number): Promise<Petition>
@@ -49,14 +49,14 @@ export class PetitionsService extends Post<Petition, PetitionInfo, PetitionQuery
 		newPetition.description = description;
 		newPetition.by = user;
 		
-		const { id } = await this.petitionRepository.save(newPetition);
+		const { id } = await this.petitionsRepository.save(newPetition);
 		
 		return id;
 	}
 	
 	async triggerVoteLimitAction(petition: Petition): Promise<void>
 	{
-		if (await this.petitionRepository.countNumberOfVotes(petition.id) >= MIN_VOTES)
+		if (await this.petitionsRepository.countNumberOfVotes(petition.id) >= MIN_VOTES)
 		{
 			await this.resolutionsService.createAssociatedResolution(petition.id);
 		}
@@ -65,20 +65,20 @@ export class PetitionsService extends Post<Petition, PetitionInfo, PetitionQuery
 	async deletePetition(petitionId: number, user: StudentUser): Promise<void>
 	{
 		await this.checkPetitionMutationValidity(petitionId, user.id);
-		await this.petitionRepository.deletePetitionAndSavedRelations(petitionId);
+		await this.petitionsRepository.deletePetitionAndSavedRelations(petitionId);
 	}
 	
 	async editPetition(petitionId: number, user: StudentUser, editPetitionDto: CreatePetitionDto): Promise<void>
 	{
 		const petition = await this.checkPetitionMutationValidity(petitionId, user.id);
-		await this.petitionRepository.editPetition(petition, editPetitionDto);
+		await this.petitionsRepository.editPetition(petition, editPetitionDto);
 	}
 	
 	async getInfo(petition: Petition): Promise<PetitionInfo>
 	{
-		const numVotes = await this.petitionRepository.countNumberOfVotes(petition.id);
+		const numVotes = await this.petitionsRepository.countNumberOfVotes(petition.id);
 		const numComments = await this.commentsService.countNumberOfComments(petition.id);
-		const status = await this.petitionRepository.getPetitionStatus(petition.id);
+		const status = await this.petitionsRepository.getPetitionStatus(petition.id);
 		
 		const info: PetitionInfo = {
 			id: petition.id,
@@ -94,7 +94,7 @@ export class PetitionsService extends Post<Petition, PetitionInfo, PetitionQuery
 		{
 			if (!petition.resolution)
 			{
-				petition = await this.petitionRepository.findOne(petition.id, { relations: ['resolution'] });
+				petition = await this.petitionsRepository.findOne(petition.id, { relations: ['resolution'] });
 			}
 			info.resolutionId = petition.resolution.id;
 		}
@@ -103,11 +103,11 @@ export class PetitionsService extends Post<Petition, PetitionInfo, PetitionQuery
 	
 	private async checkPetitionMutationValidity(petitionId: number, userId: number): Promise<Petition>
 	{
-		const petition = await this.petitionRepository.findOne(petitionId, { relations: ['resolution', 'by'] });
+		const petition = await this.petitionsRepository.findOne(petitionId, { relations: ['resolution', 'by'] });
 		
 		if (!petition) throw new NotFoundException();
 		if (petition.by.id !== userId) throw new UnauthorizedException();
-		if (petition.resolution || await this.petitionRepository.countNumberOfVotes(petitionId) > 0) throw new ConflictException();
+		if (petition.resolution || await this.petitionsRepository.countNumberOfVotes(petitionId) > 0) throw new ConflictException();
 		
 		return petition;
 	}

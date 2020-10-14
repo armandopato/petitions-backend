@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { UserNotification } from 'src/notifications/notification.entity';
 import { Resolution } from 'src/posts/resolutions/resolution.entity';
 import { User } from 'src/users/entities/user.entity';
-import { ResolutionRepository } from 'src/posts/resolutions/resolutions.repository';
+import { ResolutionsRepository } from 'src/posts/resolutions/resolutions.repository';
 import { Page } from 'src/util/Page';
 import { UserNotificationInfo } from 'src/notifications/UserNotificationInfo';
 import { NotificationsRepository } from './notifications.repository';
@@ -11,7 +11,7 @@ import { NotificationsRepository } from './notifications.repository';
 export class NotificationsService
 {
     constructor(private notificationsRepository: NotificationsRepository,
-                private resolutionsRepository: ResolutionRepository)
+                private resolutionsRepository: ResolutionsRepository)
     {
     }
     

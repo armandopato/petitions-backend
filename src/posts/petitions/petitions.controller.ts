@@ -24,7 +24,7 @@ import { CreatePetitionDto } from './dto/create-petition.dto';
 import { PositiveIntPipe } from 'src/util/positive-int.pipe';
 import { PostCommentDto } from '../../comments/dto/post-comment.dto';
 import { User } from '../../users/entities/user.entity';
-import { PetitionCommentService } from './petition-comment/petition-comment.service';
+import { PetitionCommentsService } from './comments/petition-comments.service';
 
 @Injectable()
 @Controller('petitions')
@@ -33,7 +33,7 @@ export class PetitionsController
 	getPetitionsInfoPageBySchool: (params: PetitionQueryParams, user: User) => Promise<Page<PetitionInfo>>;
 	
 	constructor(private petitionsService: PetitionsService,
-	            private commentsService: PetitionCommentService)
+	            private commentsService: PetitionCommentsService)
 	{
 	}
 	

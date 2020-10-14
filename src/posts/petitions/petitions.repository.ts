@@ -12,7 +12,7 @@ import { PageRepository } from '../../util/PageRepository';
 
 
 @EntityRepository(Petition)
-export class PetitionRepository extends Repository<Petition> implements PageRepository<Petition, PetitionQueryParams>
+export class PetitionsRepository extends Repository<Petition> implements PageRepository<Petition, PetitionQueryParams>
 {
 	private connection = getConnection();
 	
