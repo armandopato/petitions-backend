@@ -10,27 +10,27 @@ import { SchedulingModule } from './scheduling/scheduling.module';
 import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
-	imports: [
-		ConfigModule.forRoot({ isGlobal: true }),
-		TypeOrmModule.forRootAsync({
-			imports: [ConfigModule],
-			useFactory: async (configService: ConfigService) => ({
-				type: configService.get("DB_TYPE") as any,
-				url: configService.get<string>('DATABASE_URL'),
-				entities: [configService.get<string>('DB_ENTITIES_PATH')],
-				synchronize: configService.get<string>('DB_SYNC') == 'true',
-				logging: configService.get<string>('DB_LOGGING') == 'true',
-			}),
-			inject: [ConfigService],
-		}),
-		AuthModule,
-		PetitionsModule,
-		ResolutionsModule,
-		UsersModule,
-		SchedulingModule,
-		NotificationsModule,
-	],
-	controllers: [AppController],
+    imports: [
+        ConfigModule.forRoot({ isGlobal: true }),
+        TypeOrmModule.forRootAsync({
+            imports: [ConfigModule],
+            useFactory: async (configService: ConfigService) => ({
+                type: configService.get('DB_TYPE') as any,
+                url: configService.get<string>('DATABASE_URL'),
+                entities: [configService.get<string>('DB_ENTITIES_PATH')],
+                synchronize: configService.get<string>('DB_SYNC') == 'true',
+                logging: configService.get<string>('DB_LOGGING') == 'true',
+            }),
+            inject: [ConfigService],
+        }),
+        AuthModule,
+        PetitionsModule,
+        ResolutionsModule,
+        UsersModule,
+        SchedulingModule,
+        NotificationsModule,
+    ],
+    controllers: [AppController],
 })
 export class AppModule
 {

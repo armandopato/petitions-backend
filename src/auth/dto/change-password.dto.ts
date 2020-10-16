@@ -1,16 +1,17 @@
-import { IsPasswordValid } from "src/users/validation/IsPasswordValid";
-import { Length, IsString } from "class-validator";
+import { IsPasswordValid } from 'src/users/validation/IsPasswordValid';
+import { IsString, Length } from 'class-validator';
+import { Length as LengthConstants } from '../../util/Length';
 
 
 export class ChangePasswordDto
 {
     @IsPasswordValid()
-    @Length(8, 15)
+    @Length(LengthConstants.MIN_PASSWORD, LengthConstants.MAX_PASSWORD)
     @IsString()
     password: string;
-
+    
     @IsPasswordValid()
-    @Length(8, 15)
+    @Length(LengthConstants.MIN_PASSWORD, LengthConstants.MAX_PASSWORD)
     @IsString()
     newPassword: string;
 }

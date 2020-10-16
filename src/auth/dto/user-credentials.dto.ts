@@ -1,6 +1,7 @@
-import { IsEmailDomainValid } from "src/users/validation/IsEmailDomainValid";
-import { IsEmail, IsString, Length } from "class-validator";
-import { IsPasswordValid } from "src/users/validation/IsPasswordValid";
+import { IsEmailDomainValid } from 'src/users/validation/IsEmailDomainValid';
+import { IsEmail, IsString, Length } from 'class-validator';
+import { IsPasswordValid } from 'src/users/validation/IsPasswordValid';
+import { Length as LengthConstants } from '../../util/Length';
 
 export class EmailDto
 {
@@ -13,7 +14,7 @@ export class EmailDto
 export class UserCredentials extends EmailDto
 {
     @IsPasswordValid()
-    @Length(8, 15)
+    @Length(LengthConstants.MIN_PASSWORD, LengthConstants.MAX_PASSWORD)
     @IsString()
     password: string;
 }

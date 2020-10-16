@@ -5,6 +5,7 @@ export enum Length
     PETITION_TITLE = 300,
     PETITION_DESC = 500,
     COMMENT = 300,
-    MIN_EMAIL = 9,
-    MAX_SEARCH = 100
+    MAX_SEARCH = 100,
+    MIN_PASSWORD = 8,
+    MAX_PASSWORD = 15
 }

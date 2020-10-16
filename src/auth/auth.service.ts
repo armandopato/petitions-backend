@@ -11,16 +11,28 @@ import { Token } from 'src/auth/Token';
 import { MailService } from './mail.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { UsersRepository } from 'src/users/users.repository';
+import { ConfigService } from '@nestjs/config';
+import { getMinutesMilliseconds } from '../util/getMinutesMilliseconds';
 
 @Injectable()
 export class AuthService
 {
+    private readonly ACCESS_EXPIRATION: string;
+    private readonly REFRESH_EXPIRATION: string;
+    private readonly RESET_EXPIRATION: string;
+    private readonly RESET_EXPIRATION_MILLISECONDS: number;
+    
     constructor(
         private usersRepository: UsersRepository,
         private jwtService: JwtService,
         private mailService: MailService,
+        private configService: ConfigService,
     )
     {
+        this.ACCESS_EXPIRATION = this.configService.get<string>('ACCESS_EXPIRATION');
+        this.REFRESH_EXPIRATION = this.configService.get<string>('REFRESH_EXPIRATION');
+        this.RESET_EXPIRATION = this.configService.get<string>('RESET_EXPIRATION');
+        this.RESET_EXPIRATION_MILLISECONDS = getMinutesMilliseconds(this.RESET_EXPIRATION);
     }
     
     async validateUser(email: string, password: string): Promise<User>
@@ -55,16 +67,16 @@ export class AuthService
             role: user.role,
             isAdmin: user.hasAdminPrivileges,
             isMod: user.hasModeratorPrivileges,
-            type: Token.ACCESS
+            type: Token.ACCESS,
         };
-        const refreshPayload: Payload = { ...accessPayload, type: Token.REFRESH};
-        
-        const access_token = await this.jwtService.signAsync(accessPayload, { expiresIn: "15m" });
-        const refresh_token = await this.jwtService.signAsync(refreshPayload, { expiresIn: "14d" });
-
+        const refreshPayload: Payload = { ...accessPayload, type: Token.REFRESH };
+    
+        const access_token = await this.jwtService.signAsync(accessPayload, { expiresIn: this.ACCESS_EXPIRATION });
+        const refresh_token = await this.jwtService.signAsync(refreshPayload, { expiresIn: this.REFRESH_EXPIRATION });
+    
         return {
             access_token,
-            refresh_token
+            refresh_token,
         };
     }
 
@@ -98,20 +110,20 @@ export class AuthService
     {
         const user = await this.usersRepository.findOne({ email: email });
         if (!user) throw new BadRequestException();
-
+    
         const payload: Payload = {
             sub: user.id,
             school: user.school.campus,
             role: user.role,
             isAdmin: user.hasAdminPrivileges,
             isMod: user.hasModeratorPrivileges,
-            type: Token.RESET
+            type: Token.RESET,
         };
-
-        const expiresAtObj = { expiresAt: new Date(Date.now() + (5 * 60 * 1000)) };
-        const token = await this.jwtService.signAsync(payload, { expiresIn: "5m" });
+    
+        const expiresAtObj = { expiresAt: new Date(Date.now() + this.RESET_EXPIRATION_MILLISECONDS) };
+        const token = await this.jwtService.signAsync(payload, { expiresIn: this.RESET_EXPIRATION });
         await this.mailService.sendResetEmail(email, token);
-
+    
         return expiresAtObj;
     }
 
