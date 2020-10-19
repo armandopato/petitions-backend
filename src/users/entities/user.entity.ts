@@ -33,7 +33,7 @@ export class User
     @Column({ type: "varchar", length: Length.EMAIL, unique: true })
     email: string;
 
-    @Column({ type: "varchar", length: 60 })
+    @Column({ type: 'varchar', length: Length.HASH_LENGTH })
     password: string;
 
     @Column({ default: false })

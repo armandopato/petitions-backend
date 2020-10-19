@@ -2,6 +2,7 @@ import { SchoolType } from 'src/users/School';
 import { IsEnum, IsInt, IsOptional, IsPositive, IsString, Length, Min } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { Length as LengthConstants } from '../util/Length';
+import { FIRST_VALID_YEAR } from '../util/Constants';
 
 export class GenericQueryParams<ElementOrderBy, ElementStatus>
 {
@@ -10,7 +11,7 @@ export class GenericQueryParams<ElementOrderBy, ElementStatus>
     @Transform(val => Number(val))
     page: number;
     
-    @Min(2020)
+    @Min(FIRST_VALID_YEAR)
     @IsInt()
     @Transform(val => Number(val))
     year: number;

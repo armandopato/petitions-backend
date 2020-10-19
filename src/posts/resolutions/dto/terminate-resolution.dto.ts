@@ -3,7 +3,7 @@ import { Length as LengthConstants } from '../../../util/Length';
 
 export class ResolutionTextDto
 {
-    @Length(1, LengthConstants.RESOLUTION_TEXT)
+    @Length(LengthConstants.MIN_RESOLUTION_TEXT, LengthConstants.MAX_RESOLUTION_TEXT)
     @IsString()
     resolutionText: string;
 }

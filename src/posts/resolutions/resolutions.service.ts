@@ -17,10 +17,8 @@ import { ResolutionQueryParams } from './dto/resolution-query.params.dto';
 import { ResolutionsRepository } from './resolutions.repository';
 import { PostsService } from '../posts.service';
 import { ResolutionCommentsService } from './comments/resolution-comments.service';
+import { MIN_RESOLUTION_VOTES, RESOLUTION_WINDOW_MILLISECONDS } from '../../util/Constants';
 
-const DAY = 1000 * 60 * 60 * 24;
-const RESOLUTION_WINDOW = DAY * 30;
-const MIN_VOTES = 50;
 
 @Injectable()
 export class ResolutionsService extends PostsService<Resolution, ResolutionInfo, ResolutionQueryParams>
@@ -82,7 +80,7 @@ export class ResolutionsService extends PostsService<Resolution, ResolutionInfo,
 		if (await this.petitionsRepository.getPetitionStatus(petitionId) !== PetitionStatus.NO_RESOLUTION) throw new ConflictException();
 		if (supportUser && associatedPetition.campus !== supportUser.school.campus) throw new UnauthorizedException();
 		
-		const deadline = new Date(Date.now() + RESOLUTION_WINDOW);
+		const deadline = new Date(Date.now() + RESOLUTION_WINDOW_MILLISECONDS);
 		
 		let newResolution = new Resolution();
 		newResolution.deadline = deadline;
@@ -110,7 +108,7 @@ export class ResolutionsService extends PostsService<Resolution, ResolutionInfo,
 	
 	async triggerVoteLimitAction(resolution: Resolution): Promise<void>
 	{
-		if (await this.resolutionsRepository.countNumberOfRejectionVotes(resolution.id) >= MIN_VOTES)
+		if (await this.resolutionsRepository.countNumberOfRejectionVotes(resolution.id) >= MIN_RESOLUTION_VOTES)
 		{
 			await this.returnToProgress(resolution);
 		}
@@ -120,7 +118,7 @@ export class ResolutionsService extends PostsService<Resolution, ResolutionInfo,
 	{
 		await this.resolutionsRepository.deleteRejectionVotes(resolution.id);
 		
-		const deadline = new Date(Date.now() + RESOLUTION_WINDOW);
+		const deadline = new Date(Date.now() + RESOLUTION_WINDOW_MILLISECONDS);
 		resolution.resolutionDate = null;
 		resolution.deadline = deadline;
 		resolution = await this.resolutionsRepository.save(resolution);

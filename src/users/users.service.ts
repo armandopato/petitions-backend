@@ -16,13 +16,13 @@ import { SchoolType } from 'src/users/School';
 import { Page } from 'src/util/Page';
 import { PetitionsService } from '../posts/petitions/petitions.service';
 import { ResolutionsService } from '../posts/resolutions/resolutions.service';
-
-const SCHOOL_CHANGE_DAYS = 30;
+import { SCHOOL_CHANGE_MILLISECONDS, UNIQUE_VIOLATION_ERRCODE } from '../util/Constants';
 
 @Injectable()
 export class UsersService
 {
-    protectedMail: string;
+    private readonly protectedMail: string;
+    private readonly CONFIRMATION_EXPIRATION: string;
     
     constructor(
         private studentUsersRepository: StudentUsersRepository,
@@ -35,6 +35,7 @@ export class UsersService
     )
     {
         this.protectedMail = this.configService.get<string>('MY_MAIL');
+        this.CONFIRMATION_EXPIRATION = this.configService.get<string>('CONFIRMATION_EXPIRATION');
     }
     
     async createUser(createUserDto: CreateUserDto): Promise<void>
@@ -47,7 +48,7 @@ export class UsersService
         }
         catch (err)
         {
-            if (Number(err.code) === 23505) throw new ConflictException('User already exists');
+            if (Number(err.code) === UNIQUE_VIOLATION_ERRCODE) throw new ConflictException('User already exists');
             else throw new BadRequestException('Error while creating user');
         }
         
@@ -61,7 +62,7 @@ export class UsersService
         };
         
         // Don't implement here
-        const token = await this.jwtService.signAsync(payload, { expiresIn: '100y' });
+        const token = await this.jwtService.signAsync(payload, { expiresIn: this.CONFIRMATION_EXPIRATION });
         await this.mailService.sendConfirmationEmail(createUserDto.email, token);
     }
     
@@ -141,9 +142,9 @@ export class UsersService
         {
             throw new UnauthorizedException('Your role or privilege doesn\'t allow switching schools');
         }
-        
+    
         const updatedDate = user.school.updatedDate;
-        const limitDate = new Date(updatedDate.getTime() + 1000 * 60 * 60 * 24 * SCHOOL_CHANGE_DAYS);
+        const limitDate = new Date(updatedDate.getTime() + SCHOOL_CHANGE_MILLISECONDS);
         const nowDate = new Date(Date.now());
         
         if (nowDate < limitDate) throw new UnauthorizedException('You\'re not allowed yet to switch your school');

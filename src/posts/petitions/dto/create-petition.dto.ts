@@ -3,11 +3,11 @@ import { Length as LengthConstants } from '../../../util/Length';
 
 export class CreatePetitionDto
 {
-    @Length(1, LengthConstants.PETITION_TITLE)
+    @Length(LengthConstants.MIN_PETITION_TITLE, LengthConstants.MAX_PETITION_TITLE)
     @IsString()
     title: string;
     
-    @Length(1, LengthConstants.PETITION_DESC)
+    @Length(LengthConstants.MIN_PETITION_DESC, LengthConstants.MAX_PETITION_DESC)
     @IsString()
     description: string;
 }

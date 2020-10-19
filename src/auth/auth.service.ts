@@ -13,6 +13,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { UsersRepository } from 'src/users/users.repository';
 import { ConfigService } from '@nestjs/config';
 import { getMinutesMilliseconds } from '../util/getMinutesMilliseconds';
+import { SALT_ROUNDS } from '../util/Constants';
 
 @Injectable()
 export class AuthService
@@ -102,7 +103,7 @@ export class AuthService
         const match = await compare(password, user.password);
         if (!match) throw new UnauthorizedException();
     
-        newPassword = await hash(newPassword, 10);
+        newPassword = await hash(newPassword, SALT_ROUNDS);
         await this.usersRepository.update(user.id, { password: newPassword });
     }
 
@@ -137,7 +138,7 @@ export class AuthService
             const payload: Payload = await this.jwtService.verifyAsync(token);
             if (payload.type !== Token.RESET) throw new Error();
     
-            newPassword = await hash(newPassword, 10);
+            newPassword = await hash(newPassword, SALT_ROUNDS);
             await this.usersRepository.update(payload.sub, { password: newPassword });
         }
         catch

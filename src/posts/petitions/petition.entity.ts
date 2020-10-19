@@ -30,10 +30,10 @@ export class Petition
     })
     campus: SchoolType;
 
-    @Column({ type: "varchar", length: Length.PETITION_TITLE })
+    @Column({ type: 'varchar', length: Length.MAX_PETITION_TITLE })
     title: string;
-
-    @Column({ type: "varchar", length: Length.PETITION_DESC })
+    
+    @Column({ type: 'varchar', length: Length.MAX_PETITION_DESC })
     description: string;
 
     @OneToOne(() => Resolution, resolution => resolution.petition)

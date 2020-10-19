@@ -4,6 +4,7 @@ import { StudentUser, User } from '../users/entities/user.entity';
 import { Page } from '../util/Page';
 import { CommentInfo } from '../posts/ElementInfo';
 import { ConflictException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { FOREIGN_KEY_VIOLATION_ERRCODE } from '../util/Constants';
 
 export abstract class CommentsService<CommentType extends GenericComment>
 {
@@ -59,7 +60,7 @@ export abstract class CommentsService<CommentType extends GenericComment>
 		}
 		catch (err)
 		{
-			if (err.code === '23503') throw new NotFoundException('Post does not exist');
+			if (Number(err.code) === FOREIGN_KEY_VIOLATION_ERRCODE) throw new NotFoundException('Post does not exist');
 			else throw new InternalServerErrorException();
 		}
 	}
@@ -97,7 +98,7 @@ export abstract class CommentsService<CommentType extends GenericComment>
 		}
 		catch (err)
 		{
-			if (Number(err.code) === 23503) throw new NotFoundException();
+			if (Number(err.code) === FOREIGN_KEY_VIOLATION_ERRCODE) throw new NotFoundException();
 			else throw new InternalServerErrorException();
 		}
 	}

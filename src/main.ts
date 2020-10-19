@@ -6,6 +6,7 @@ import { SchedulingService } from './scheduling/scheduling.service';
 import * as helmet from 'helmet';
 import * as rateLimit from 'express-rate-limit';
 import { ConfigService } from '@nestjs/config';
+import { MINUTE_MILLISECONDS } from './util/Constants';
 
 async function bootstrap()
 {
@@ -21,7 +22,7 @@ async function bootstrap()
 	app.use(helmet());
 	app.use(
 		rateLimit({
-			windowMs: 15 * 60 * 1000, // 15 minutes
+			windowMs: 15 * MINUTE_MILLISECONDS,
 			max: 100, // limit each IP to 100 requests per windowMs
 		}),
 	);

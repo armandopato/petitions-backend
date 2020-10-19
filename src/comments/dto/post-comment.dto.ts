@@ -3,7 +3,7 @@ import { Length as LengthConstants } from '../../util/Length';
 
 export class PostCommentDto
 {
-    @Length(1, LengthConstants.COMMENT)
+    @Length(LengthConstants.MIN_COMMENT, LengthConstants.MAX_COMMENT)
     @IsString()
     comment: string;
 }

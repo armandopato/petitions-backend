@@ -12,7 +12,7 @@ export abstract class GenericComment
     @CreateDateColumn()
     createdDate: Date;
     
-    @Column({ type: 'varchar', length: Length.COMMENT })
+    @Column({ type: 'varchar', length: Length.MAX_COMMENT })
     text: string;
     
     @ManyToOne(() => StudentUser)

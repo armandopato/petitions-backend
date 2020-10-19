@@ -31,7 +31,7 @@ export class Resolution
     @Column({ nullable: true })
     resolutionDate?: Date;
 
-    @Column({ type: "varchar", length: Length.RESOLUTION_TEXT, nullable: true })
+    @Column({ type: 'varchar', length: Length.MAX_RESOLUTION_TEXT, nullable: true })
     resolutionText?: string;
 
     @OneToOne(() => Petition, petition => petition.resolution)

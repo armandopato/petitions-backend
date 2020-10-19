@@ -3,6 +3,7 @@ import { Page } from '../util/Page';
 import { PageRepository } from '../util/PageRepository';
 import { ConflictException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { UserInfo } from '../users/UserInfo';
+import { FOREIGN_KEY_VIOLATION_ERRCODE } from '../util/Constants';
 
 export abstract class PostsService<T, TInfo extends UserInfo, TParams>
 {
@@ -64,7 +65,7 @@ export abstract class PostsService<T, TInfo extends UserInfo, TParams>
 		}
 		catch (err)
 		{
-			if (Number(err.code) === 23503) throw new NotFoundException();
+			if (Number(err.code) === FOREIGN_KEY_VIOLATION_ERRCODE) throw new NotFoundException();
 			else throw new InternalServerErrorException();
 		}
 	}

@@ -7,7 +7,7 @@ export class PostTerminatedResolutionDto
     @IsInt()
     petitionId: number;
     
-    @Length(1, LengthConstants.RESOLUTION_TEXT)
+    @Length(LengthConstants.MIN_RESOLUTION_TEXT, LengthConstants.MAX_RESOLUTION_TEXT)
     @IsString()
     resolutionText: string;
 }

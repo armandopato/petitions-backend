@@ -9,8 +9,7 @@ import { ResolutionsService } from 'src/posts/resolutions/resolutions.service';
 import { PetitionStatus } from '../ElementStatus';
 import { PostsService } from '../posts.service';
 import { PetitionCommentsService } from './comments/petition-comments.service';
-
-const MIN_VOTES = 100;
+import { MIN_PETITION_VOTES } from '../../util/Constants';
 
 @Injectable()
 export class PetitionsService extends PostsService<Petition, PetitionInfo, PetitionQueryParams>
@@ -56,7 +55,7 @@ export class PetitionsService extends PostsService<Petition, PetitionInfo, Petit
 	
 	async triggerVoteLimitAction(petition: Petition): Promise<void>
 	{
-		if (await this.petitionsRepository.countNumberOfVotes(petition.id) >= MIN_VOTES)
+		if (await this.petitionsRepository.countNumberOfVotes(petition.id) >= MIN_PETITION_VOTES)
 		{
 			await this.resolutionsService.createAssociatedResolution(petition.id);
 		}

@@ -8,6 +8,7 @@ import { Petition } from 'src/posts/petitions/petition.entity';
 import { Resolution } from 'src/posts/resolutions/resolution.entity';
 import { getPage } from 'src/util/getPage';
 import { Page } from 'src/util/Page';
+import { SALT_ROUNDS } from '../util/Constants';
 
 
 @EntityRepository(User)
@@ -54,10 +55,9 @@ export class StudentUsersRepository extends Repository<StudentUser>
         newUser.email = email;
         newUser.school = newSchool;
         newUser.settings = newSettings;
-        newUser.password = await hash(password, 10);
+        newUser.password = await hash(password, SALT_ROUNDS);
         
         newUser = await this.save(newUser);
-        console.log(`${newUser.email} (NEW USER)`);
         
         return newUser.id;
     }
