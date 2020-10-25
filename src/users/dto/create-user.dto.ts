@@ -1,8 +1,8 @@
-import { SchoolType } from 'src/users/School';
+import { SchoolName } from 'src/users/enums/school-name.enum';
 import { IsEmail, IsEnum, IsString, Length } from 'class-validator';
-import { IsEmailDomainValid } from '../validation/IsEmailDomainValid';
-import { IsPasswordValid } from '../validation/IsPasswordValid';
-import { Length as LengthConstants } from '../../util/Length';
+import { IsEmailDomainValid } from '../validation/is-email-domain-valid.decorator';
+import { IsPasswordValid } from '../validation/is-password-valid.decorator';
+import { Length as LengthConstants } from '../../util/length.enum';
 
 export class CreateUserDto
 {
@@ -15,7 +15,7 @@ export class CreateUserDto
     @Length(LengthConstants.MIN_PASSWORD, LengthConstants.MAX_PASSWORD)
     @IsString()
     password: string;
-
-    @IsEnum(SchoolType)
-    school: SchoolType;
+    
+    @IsEnum(SchoolName)
+    school: SchoolName;
 }

@@ -10,14 +10,15 @@ import { SupportTeamUser } from 'src/users/entities/user.entity';
 import { NotificationsService } from 'src/notifications/notifications.service';
 import { PetitionsRepository } from 'src/posts/petitions/petitions.repository';
 import { SchedulingService } from 'src/scheduling/scheduling.service';
-import { ResolutionInfo } from 'src/posts/ElementInfo';
-import { PetitionStatus, ResolutionStatus } from 'src/posts/ElementStatus';
 import { PostTerminatedResolutionDto } from './dto/post-terminated-resolution.dto';
 import { ResolutionQueryParams } from './dto/resolution-query.params.dto';
 import { ResolutionsRepository } from './resolutions.repository';
 import { PostsService } from '../posts.service';
 import { ResolutionCommentsService } from './comments/resolution-comments.service';
-import { MIN_RESOLUTION_VOTES, RESOLUTION_WINDOW_MILLISECONDS } from '../../util/Constants';
+import { MIN_RESOLUTION_VOTES, RESOLUTION_WINDOW_MILLISECONDS } from '../../util/constants';
+import { ResolutionInfo } from './interfaces/resolution-info.interface';
+import { PetitionStatus } from '../petitions/enums/petition-status.enum';
+import { ResolutionStatus } from './enums/resolution-status.enum';
 
 
 @Injectable()

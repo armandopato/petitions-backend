@@ -1,6 +1,6 @@
 import { getConnection, Repository } from 'typeorm';
-import { Page } from 'src/util/Page';
-import { getPage } from 'src/util/getPage';
+import { Page } from 'src/util/page/page.interface';
+import { getPage } from 'src/util/page/get-page';
 import { GenericComment } from './comment.entity';
 import { User } from '../users/entities/user.entity';
 

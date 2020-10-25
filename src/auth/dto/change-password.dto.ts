@@ -1,6 +1,6 @@
-import { IsPasswordValid } from 'src/users/validation/IsPasswordValid';
+import { IsPasswordValid } from 'src/users/validation/is-password-valid.decorator';
 import { IsString, Length } from 'class-validator';
-import { Length as LengthConstants } from '../../util/Length';
+import { Length as LengthConstants } from '../../util/length.enum';
 
 
 export class ChangePasswordDto

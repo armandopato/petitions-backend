@@ -6,7 +6,7 @@ import { SchedulingService } from './scheduling/scheduling.service';
 import * as helmet from 'helmet';
 import * as rateLimit from 'express-rate-limit';
 import { ConfigService } from '@nestjs/config';
-import { MINUTE_MILLISECONDS } from './util/Constants';
+import { MINUTE_MILLISECONDS } from './util/constants';
 
 async function bootstrap()
 {

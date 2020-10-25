@@ -3,20 +3,21 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { StudentUsersRepository, UsersRepository } from './users.repository';
 import { MailService } from 'src/auth/mail.service';
 import { JwtService } from '@nestjs/jwt';
-import { Payload } from 'src/auth/Payload';
-import { Token } from 'src/auth/Token';
+import { Payload } from 'src/auth/interfaces/payload.interface';
+import { Token } from 'src/auth/enums/token.enum';
 import { ModifyUserDto, ModifyUserRoleDto } from './dto/modify-user.dto';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { User } from 'src/users/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
-import { Role } from 'src/users/Role';
-import { PetitionInfo, ResolutionInfo } from 'src/posts/ElementInfo';
+import { Role } from 'src/users/enums/role.enum';
 import { ChangeUserSettingsDto, UserSettingsAndSchoolDto } from './dto/user-settings.dto';
-import { SchoolType } from 'src/users/School';
-import { Page } from 'src/util/Page';
+import { SchoolName } from 'src/users/enums/school-name.enum';
+import { Page } from 'src/util/page/page.interface';
 import { PetitionsService } from '../posts/petitions/petitions.service';
 import { ResolutionsService } from '../posts/resolutions/resolutions.service';
-import { SCHOOL_CHANGE_MILLISECONDS, UNIQUE_VIOLATION_ERRCODE } from '../util/Constants';
+import { SCHOOL_CHANGE_MILLISECONDS, UNIQUE_VIOLATION_ERRCODE } from '../util/constants';
+import { PetitionInfo } from '../posts/petitions/interfaces/petition-info.interface';
+import { ResolutionInfo } from '../posts/resolutions/interfaces/resolution-info.interface';
 
 @Injectable()
 export class UsersService
@@ -136,13 +137,13 @@ export class UsersService
         await this.usersRepository.save(user);
     }
     
-    async modifySchool(user: User, newCampus: SchoolType): Promise<void>
+    async modifySchool(user: User, newCampus: SchoolName): Promise<void>
     {
         if (user.hasAdminPrivileges || user.hasModeratorPrivileges || user.role === Role.SupportTeam)
         {
             throw new UnauthorizedException('Your role or privilege doesn\'t allow switching schools');
         }
-    
+        
         const updatedDate = user.school.updatedDate;
         const limitDate = new Date(updatedDate.getTime() + SCHOOL_CHANGE_MILLISECONDS);
         const nowDate = new Date(Date.now());

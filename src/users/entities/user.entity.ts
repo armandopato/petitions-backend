@@ -13,10 +13,10 @@ import {
 } from 'typeorm';
 import { School } from './school.entity';
 import { Settings } from './settings.entity';
-import { Role } from 'src/users/Role';
+import { Role } from 'src/users/enums/role.enum';
 import { Petition } from 'src/posts/petitions/petition.entity';
 import { Resolution } from 'src/posts/resolutions/resolution.entity';
-import { Length } from 'src/util/Length';
+import { Length } from 'src/util/length.enum';
 import { PetitionComment, ResolutionComment } from '../../comments/comment.entity';
 import { UserToNotification } from './user-to-notification.entity';
 

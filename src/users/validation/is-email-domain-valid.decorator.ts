@@ -1,4 +1,9 @@
-import { ValidatorConstraint, ValidatorConstraintInterface, registerDecorator, ValidationOptions } from "class-validator";
+import {
+    registerDecorator,
+    ValidationOptions,
+    ValidatorConstraint,
+    ValidatorConstraintInterface,
+} from 'class-validator';
 
 @ValidatorConstraint()
 export class IsEmailDomainValidConstraint implements ValidatorConstraintInterface

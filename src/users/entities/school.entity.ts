@@ -1,5 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { SchoolType } from 'src/users/School';
+import { SchoolName } from 'src/users/enums/school-name.enum';
 
 @Entity()
 export class School
@@ -9,10 +9,10 @@ export class School
     
     @UpdateDateColumn()
     updatedDate: Date;
-
+    
     @Column({
-        type: "enum",
-        enum: SchoolType
+        type: 'enum',
+        enum: SchoolName,
     })
-    campus: SchoolType;
+    campus: SchoolName;
 }

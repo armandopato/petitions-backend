@@ -2,7 +2,7 @@ import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, ManyToOne, Pri
 import { StudentUser } from 'src/users/entities/user.entity';
 import { Petition } from '../posts/petitions/petition.entity';
 import { Resolution } from '../posts/resolutions/resolution.entity';
-import { Length } from 'src/util/Length';
+import { Length } from 'src/util/length.enum';
 
 export abstract class GenericComment
 {

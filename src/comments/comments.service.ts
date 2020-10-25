@@ -1,10 +1,10 @@
 import { CommentsRepository } from './comments.repository';
 import { GenericComment } from './comment.entity';
 import { StudentUser, User } from '../users/entities/user.entity';
-import { Page } from '../util/Page';
-import { CommentInfo } from '../posts/ElementInfo';
+import { Page } from '../util/page/page.interface';
 import { ConflictException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { FOREIGN_KEY_VIOLATION_ERRCODE } from '../util/Constants';
+import { FOREIGN_KEY_VIOLATION_ERRCODE } from '../util/constants';
+import { CommentInfo } from './interfaces/comment-info.interface';
 
 export abstract class CommentsService<CommentType extends GenericComment>
 {

@@ -1,4 +1,4 @@
-import { ResolutionStatus } from '../posts/ElementStatus';
+import { ResolutionStatus } from '../../posts/resolutions/enums/resolution-status.enum';
 
 export class UserNotificationInfo
 {

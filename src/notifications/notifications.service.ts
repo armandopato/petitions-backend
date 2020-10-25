@@ -3,8 +3,8 @@ import { UserNotification } from 'src/notifications/notification.entity';
 import { Resolution } from 'src/posts/resolutions/resolution.entity';
 import { User } from 'src/users/entities/user.entity';
 import { ResolutionsRepository } from 'src/posts/resolutions/resolutions.repository';
-import { Page } from 'src/util/Page';
-import { UserNotificationInfo } from 'src/notifications/UserNotificationInfo';
+import { Page } from 'src/util/page/page.interface';
+import { UserNotificationInfo } from 'src/notifications/interfaces/notification-info.interface';
 import { NotificationsRepository } from './notifications.repository';
 
 @Injectable()

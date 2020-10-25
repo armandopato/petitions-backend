@@ -4,16 +4,16 @@ import { compare, hash } from 'bcrypt';
 import { UserCredentials } from './dto/user-credentials.dto';
 import { validateOrReject } from 'class-validator';
 import { JwtService } from '@nestjs/jwt';
-import { AuthTokens } from 'src/auth/AuthTokens';
-import { Payload } from 'src/auth/Payload';
+import { AuthTokens } from 'src/auth/interfaces/auth-tokens.interface';
+import { Payload } from 'src/auth/interfaces/payload.interface';
 import { ChangePasswordDto } from './dto/change-password.dto';
-import { Token } from 'src/auth/Token';
+import { Token } from 'src/auth/enums/token.enum';
 import { MailService } from './mail.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { UsersRepository } from 'src/users/users.repository';
 import { ConfigService } from '@nestjs/config';
-import { getMinutesMilliseconds } from '../util/getMinutesMilliseconds';
-import { SALT_ROUNDS } from '../util/Constants';
+import { SALT_ROUNDS } from '../util/constants';
+import { getMinutesMilliseconds } from '../util/jwt-time-to-ms';
 
 @Injectable()
 export class AuthService

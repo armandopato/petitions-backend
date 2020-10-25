@@ -6,9 +6,9 @@ import { Settings } from 'src/users/entities/settings.entity';
 import { hash } from 'bcrypt';
 import { Petition } from 'src/posts/petitions/petition.entity';
 import { Resolution } from 'src/posts/resolutions/resolution.entity';
-import { getPage } from 'src/util/getPage';
-import { Page } from 'src/util/Page';
-import { SALT_ROUNDS } from '../util/Constants';
+import { getPage } from 'src/util/page/get-page';
+import { Page } from 'src/util/page/page.interface';
+import { SALT_ROUNDS } from '../util/constants';
 
 
 @EntityRepository(User)

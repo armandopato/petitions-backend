@@ -1,7 +1,7 @@
 import { SelectQueryBuilder } from 'typeorm';
-import { Page } from 'src/util/Page';
+import { Page } from './page.interface';
 import { NotFoundException } from '@nestjs/common';
-import { PAGE_SIZE } from './Constants';
+import { PAGE_SIZE } from '../constants';
 
 
 export async function getPage<T>(query: SelectQueryBuilder<T>, page: number): Promise<Page<T>>

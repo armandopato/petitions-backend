@@ -2,11 +2,11 @@ import { ConflictException, NotFoundException } from '@nestjs/common';
 import { UserNotification } from 'src/notifications/notification.entity';
 import { UserToNotification } from 'src/users/entities/user-to-notification.entity';
 import { User } from 'src/users/entities/user.entity';
-import { ResolutionStatus } from 'src/posts/ElementStatus';
-import { Page } from 'src/util/Page';
-import { getPage } from 'src/util/getPage';
+import { Page } from 'src/util/page/page.interface';
+import { getPage } from 'src/util/page/get-page';
 import { EntityRepository, getConnection, Repository } from 'typeorm';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
+import { ResolutionStatus } from '../posts/resolutions/enums/resolution-status.enum';
 
 @EntityRepository(UserNotification)
 export class NotificationsRepository extends Repository<UserNotification>

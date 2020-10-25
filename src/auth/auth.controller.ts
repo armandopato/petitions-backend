@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { AuthService } from './auth.service';
-import { AuthRequest } from 'src/auth/AuthRequest.interface';
+import { AuthRequest } from 'src/auth/interfaces/auth-request.interface';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { CookieOptions, Response as ExpressResponse } from 'express';
@@ -20,7 +20,7 @@ import { RefreshGuard } from './guards/refresh.guard';
 import { EmailDto } from './dto/user-credentials.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ConfigService } from '@nestjs/config';
-import { getDaysMilliseconds } from '../util/getDaysMilliseconds';
+import { getDaysMilliseconds } from '../util/jwt-time-to-ms';
 
 @Controller('auth')
 export class AuthController
@@ -39,7 +39,7 @@ export class AuthController
     
     @UseGuards(LocalAuthGuard)
     @Post()
-    async login(@Request() req: AuthRequest, @Response() res: ExpressResponse): Promise<void>
+    async login(@Request() req: AuthRequest<User>, @Response() res: ExpressResponse): Promise<void>
     {
         const { user } = req;
         if (!user.active)
@@ -51,7 +51,7 @@ export class AuthController
     
     @UseGuards(RefreshGuard)
     @Put()
-    async refreshToken(@Request() req: AuthRequest, @Response() res: ExpressResponse): Promise<void>
+    async refreshToken(@Request() req: AuthRequest<User>, @Response() res: ExpressResponse): Promise<void>
     {
         await this.sendAuthTokens(res, req.user);
     }
@@ -70,14 +70,14 @@ export class AuthController
     
     @UseGuards(JwtAuthGuard)
     @Patch('password')
-    async changePassword(@Request() req: AuthRequest, @Body() changePasswordDto: ChangePasswordDto): Promise<void>
+    async changePassword(@Request() req: AuthRequest<User>, @Body() changePasswordDto: ChangePasswordDto): Promise<void>
     {
         await this.authService.changePassword(req.user, changePasswordDto);
     }
     
     @UseGuards(LocalAuthGuard)
     @Post('email')
-    async confirmEmailAndSignIn(@Request() req: AuthRequest, @Response() res: ExpressResponse, @Body('token') confirmationToken: string): Promise<void>
+    async confirmEmailAndSignIn(@Request() req: AuthRequest<User>, @Response() res: ExpressResponse, @Body('token') confirmationToken: string): Promise<void>
     {
         const { user } = req;
         if (user.active)

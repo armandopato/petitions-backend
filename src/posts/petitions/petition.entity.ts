@@ -12,8 +12,8 @@ import {
 import { Resolution } from 'src/posts/resolutions/resolution.entity';
 import { StudentUser, User } from 'src/users/entities/user.entity';
 import { PetitionComment } from '../../comments/comment.entity';
-import { SchoolType } from 'src/users/School';
-import { Length } from 'src/util/Length';
+import { SchoolName } from 'src/users/enums/school-name.enum';
+import { Length } from 'src/util/length.enum';
 
 @Entity()
 export class Petition
@@ -23,12 +23,12 @@ export class Petition
     
     @CreateDateColumn()
     createdDate: Date;
-
+    
     @Column({
-        type: "enum",
-        enum: SchoolType
+        type: 'enum',
+        enum: SchoolName,
     })
-    campus: SchoolType;
+    campus: SchoolName;
 
     @Column({ type: 'varchar', length: Length.MAX_PETITION_TITLE })
     title: string;

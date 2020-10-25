@@ -1,9 +1,9 @@
-import { PetitionStatus } from 'src/posts/ElementStatus';
-import { PetitionOrderBy } from 'src/util/OrderBy';
-import { GenericQueryParams } from 'src/posts/ElementQueryParams';
+import { PostQueryParams } from 'src/posts/dto/post-query-params.dto';
 import { IsEnum, IsOptional } from 'class-validator';
+import { PetitionStatus } from '../enums/petition-status.enum';
+import { PetitionOrderBy } from '../enums/petition-order-by.enum';
 
-export class PetitionQueryParams extends GenericQueryParams<PetitionOrderBy, PetitionStatus>
+export class PetitionQueryParams extends PostQueryParams<PetitionOrderBy, PetitionStatus>
 {
     @IsEnum(PetitionOrderBy)
     orderBy: PetitionOrderBy;

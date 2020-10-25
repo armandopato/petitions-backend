@@ -1,4 +1,4 @@
-import { SchoolType } from 'src/users/School';
+import { SchoolName } from 'src/users/enums/school-name.enum';
 import { IsBoolean, IsEnum } from 'class-validator';
 
 export class UserSettingsAndSchoolDto
@@ -7,7 +7,7 @@ export class UserSettingsAndSchoolDto
     terminated: boolean;
     overdue: boolean;
     school: {
-        campus: SchoolType;
+        campus: SchoolName;
         lastChange: Date;
     };
 }
@@ -26,6 +26,6 @@ export class ChangeUserSettingsDto
 
 export class ChangeSchoolDto
 {
-    @IsEnum(SchoolType)
-    newCampus: SchoolType;
+    @IsEnum(SchoolName)
+    newCampus: SchoolName;
 }

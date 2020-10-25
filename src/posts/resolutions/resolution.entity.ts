@@ -13,7 +13,7 @@ import {
 import { Petition } from 'src/posts/petitions/petition.entity';
 import { StudentUser, SupportTeamUser, User } from 'src/users/entities/user.entity';
 import { ResolutionComment } from '../../comments/comment.entity';
-import { Length } from 'src/util/Length';
+import { Length } from 'src/util/length.enum';
 
 
 @Entity()

@@ -1,14 +1,14 @@
 import { EntityRepository, getConnection, Repository } from 'typeorm';
 import { Petition } from 'src/posts/petitions/petition.entity';
 import { StudentUser, User } from 'src/users/entities/user.entity';
-import { Page } from 'src/util/Page';
+import { Page } from 'src/util/page/page.interface';
 import { PetitionQueryParams } from './dto/petition-query-params.dto';
-import { getPage } from 'src/util/getPage';
-import { PetitionOrderBy as OrderBy } from 'src/util/OrderBy';
+import { getPage } from 'src/util/page/get-page';
 import { CreatePetitionDto } from './dto/create-petition.dto';
 import { Resolution } from 'src/posts/resolutions/resolution.entity';
-import { PetitionStatus } from 'src/posts/ElementStatus';
-import { PageRepository } from '../../util/PageRepository';
+import { PageRepository } from '../../util/page/page-repository.interface';
+import { PetitionStatus } from './enums/petition-status.enum';
+import { PetitionOrderBy as OrderBy } from './enums/petition-order-by.enum';
 
 
 @EntityRepository(Petition)

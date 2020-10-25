@@ -1,5 +1,5 @@
 import { Repository } from 'typeorm';
-import { Page } from './Page';
+import { Page } from './page.interface';
 
 export interface PageRepository<T, TParams> extends Repository<T>
 {

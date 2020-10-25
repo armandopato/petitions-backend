@@ -1,6 +1,6 @@
-import { Role } from 'src/users/Role';
+import { Role } from 'src/users/enums/role.enum';
 import { IsBoolean, IsEmail, IsEnum, IsString } from 'class-validator';
-import { IsEmailDomainValid } from '../validation/IsEmailDomainValid';
+import { IsEmailDomainValid } from '../validation/is-email-domain-valid.decorator';
 
 export class ModifyUserDto
 {

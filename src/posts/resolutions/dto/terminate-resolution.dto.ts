@@ -1,5 +1,5 @@
 import { IsString, Length } from 'class-validator';
-import { Length as LengthConstants } from '../../../util/Length';
+import { Length as LengthConstants } from '../../../util/length.enum';
 
 export class ResolutionTextDto
 {

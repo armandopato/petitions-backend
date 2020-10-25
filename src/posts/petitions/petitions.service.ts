@@ -1,15 +1,15 @@
 import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { StudentUser } from 'src/users/entities/user.entity';
 import { PetitionQueryParams } from './dto/petition-query-params.dto';
-import { PetitionInfo } from 'src/posts/ElementInfo';
 import { PetitionsRepository } from './petitions.repository';
 import { Petition } from 'src/posts/petitions/petition.entity';
 import { CreatePetitionDto } from './dto/create-petition.dto';
 import { ResolutionsService } from 'src/posts/resolutions/resolutions.service';
-import { PetitionStatus } from '../ElementStatus';
 import { PostsService } from '../posts.service';
 import { PetitionCommentsService } from './comments/petition-comments.service';
-import { MIN_PETITION_VOTES } from '../../util/Constants';
+import { MIN_PETITION_VOTES } from '../../util/constants';
+import { PetitionInfo } from './interfaces/petition-info.interface';
+import { PetitionStatus } from './enums/petition-status.enum';
 
 @Injectable()
 export class PetitionsService extends PostsService<Petition, PetitionInfo, PetitionQueryParams>

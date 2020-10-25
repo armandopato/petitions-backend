@@ -2,8 +2,8 @@ import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nest
 import { CommentsService } from '../../../comments/comments.service';
 import { ResolutionComment } from '../../../comments/comment.entity';
 import { ResolutionsRepository } from '../resolutions.repository';
-import { ResolutionStatus } from '../../ElementStatus';
 import { ResolutionCommentsRepository } from './resolution-comments.repository';
+import { ResolutionStatus } from '../enums/resolution-status.enum';
 
 @Injectable()
 export class ResolutionCommentsService extends CommentsService<ResolutionComment>

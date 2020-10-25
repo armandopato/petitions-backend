@@ -1,9 +1,9 @@
 import { StudentUser, User } from '../users/entities/user.entity';
-import { Page } from '../util/Page';
-import { PageRepository } from '../util/PageRepository';
+import { Page } from '../util/page/page.interface';
+import { PageRepository } from '../util/page/page-repository.interface';
 import { ConflictException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { UserInfo } from '../users/UserInfo';
-import { FOREIGN_KEY_VIOLATION_ERRCODE } from '../util/Constants';
+import { UserInfo } from '../users/interfaces/user-info.interface';
+import { FOREIGN_KEY_VIOLATION_ERRCODE } from '../util/constants';
 
 export abstract class PostsService<T, TInfo extends UserInfo, TParams>
 {

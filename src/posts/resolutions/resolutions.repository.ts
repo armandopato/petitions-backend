@@ -1,14 +1,14 @@
 import { EntityRepository, getConnection, Repository } from 'typeorm';
 import { Resolution } from 'src/posts/resolutions/resolution.entity';
-import { ResolutionStatus } from 'src/posts/ElementStatus';
 import { StudentUser, User } from 'src/users/entities/user.entity';
 import { Petition } from 'src/posts/petitions/petition.entity';
 import { UserNotification } from 'src/notifications/notification.entity';
-import { Page } from 'src/util/Page';
+import { Page } from 'src/util/page/page.interface';
 import { ResolutionQueryParams } from './dto/resolution-query.params.dto';
-import { ResolutionOrderBy as OrderBy } from '../../util/OrderBy';
-import { getPage } from 'src/util/getPage';
-import { PageRepository } from '../../util/PageRepository';
+import { getPage } from 'src/util/page/get-page';
+import { PageRepository } from '../../util/page/page-repository.interface';
+import { ResolutionStatus } from './enums/resolution-status.enum';
+import { ResolutionOrderBy as OrderBy } from './enums/resolution-order-by.enum';
 
 
 @EntityRepository(Resolution)
