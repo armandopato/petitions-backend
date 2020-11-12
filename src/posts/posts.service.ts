@@ -89,12 +89,13 @@ export abstract class PostsService<T, TInfo extends UserInfo, TParams>
 	
 	async addAuthInfo(info: TInfo, user: User): Promise<TInfo>
 	{
-		if (!this.isVoteInfoAvailable || this.isVoteInfoAvailable(info))
+		const authInfo = { ...info };
+		if (!this.isVoteInfoAvailable || this.isVoteInfoAvailable(authInfo))
 		{
-			info.didVote = await this.repository.didUserVote(info.id, user.id);
+			authInfo.didVote = await this.repository.didUserVote(authInfo.id, user.id);
 		}
-		info.didSave = await this.repository.didUserSave(info.id, user.id);
-		return info;
+		authInfo.didSave = await this.repository.didUserSave(authInfo.id, user.id);
+		return authInfo;
 	}
 	
 	authInfoMapperGenerator(user: User): (info: TInfo) => Promise<TInfo>

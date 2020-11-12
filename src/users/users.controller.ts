@@ -14,7 +14,9 @@ import { NotificationsService } from 'src/notifications/notifications.service';
 import { User } from './entities/user.entity';
 import { PetitionInfo } from '../posts/petitions/interfaces/petition-info.interface';
 import { ResolutionInfo } from '../posts/resolutions/interfaces/resolution-info.interface';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Users')
 @Controller('users')
 export class UsersController
 {

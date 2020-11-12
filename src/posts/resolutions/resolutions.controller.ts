@@ -15,7 +15,9 @@ import { ResolutionCommentsService } from './comments/resolution-comments.servic
 import { StudentUser, SupportTeamUser, User } from '../../users/entities/user.entity';
 import { ResolutionInfo } from './interfaces/resolution-info.interface';
 import { CommentInfo } from '../../comments/interfaces/comment-info.interface';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Resolutions')
 @Controller('resolutions')
 export class ResolutionsController
 {

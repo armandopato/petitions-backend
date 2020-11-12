@@ -21,7 +21,10 @@ import { EmailDto } from './dto/user-credentials.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ConfigService } from '@nestjs/config';
 import { getDaysMilliseconds } from '../util/jwt-time-to-ms';
+import { ApiTags } from '@nestjs/swagger';
 
+
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController
 {

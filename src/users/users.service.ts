@@ -130,11 +130,12 @@ export class UsersService
     async modifyUserSettings(user: User, changeUserSettingsDto: ChangeUserSettingsDto): Promise<void>
     {
         const { newRes, terminated, overdue } = changeUserSettingsDto;
-        user.settings.notifyNewResolutions = newRes;
-        user.settings.notifyTerminatedResolutions = terminated;
-        user.settings.notifyOverdueResolutions = overdue;
-        
-        await this.usersRepository.save(user);
+        const userCopy = { ...user };
+        userCopy.settings.notifyNewResolutions = newRes;
+        userCopy.settings.notifyTerminatedResolutions = terminated;
+        userCopy.settings.notifyOverdueResolutions = overdue;
+    
+        await this.usersRepository.save(userCopy);
     }
     
     async modifySchool(user: User, newCampus: SchoolName): Promise<void>
@@ -143,15 +144,16 @@ export class UsersService
         {
             throw new UnauthorizedException('Your role or privilege doesn\'t allow switching schools');
         }
-        
+    
         const updatedDate = user.school.updatedDate;
         const limitDate = new Date(updatedDate.getTime() + SCHOOL_CHANGE_MILLISECONDS);
         const nowDate = new Date(Date.now());
-        
+    
         if (nowDate < limitDate) throw new UnauthorizedException('You\'re not allowed yet to switch your school');
         if (newCampus === user.school.campus) throw new BadRequestException();
-        
-        user.school.campus = newCampus;
-        await this.usersRepository.save(user);
+    
+        const userCopy = { ...user };
+        userCopy.school.campus = newCampus;
+        await this.usersRepository.save(userCopy);
     }
 }

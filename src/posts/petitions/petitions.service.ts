@@ -91,11 +91,12 @@ export class PetitionsService extends PostsService<Petition, PetitionInfo, Petit
 		
 		if (status !== PetitionStatus.NO_RESOLUTION)
 		{
+			let petitionCopy = petition;
 			if (!petition.resolution)
 			{
-				petition = await this.petitionsRepository.findOne(petition.id, { relations: ['resolution'] });
+				petitionCopy = await this.petitionsRepository.findOne(petition.id, { relations: ['resolution'] });
 			}
-			info.resolutionId = petition.resolution.id;
+			info.resolutionId = petitionCopy.resolution.id;
 		}
 		return info;
 	}

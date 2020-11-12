@@ -120,7 +120,8 @@ export abstract class CommentsService<CommentType extends GenericComment>
 	
 	async addAuthInfo(user: User, commentInfo: CommentInfo): Promise<CommentInfo>
 	{
-		commentInfo.didLike = await this.commentsRepository.didUserLikeComment(commentInfo.id, user.id);
-		return commentInfo;
+		const commentWithAuthInfo = { ...commentInfo };
+		commentWithAuthInfo.didLike = await this.commentsRepository.didUserLikeComment(commentInfo.id, user.id);
+		return commentWithAuthInfo;
 	}
 }

@@ -7,6 +7,7 @@ import * as helmet from 'helmet';
 import * as rateLimit from 'express-rate-limit';
 import { ConfigService } from '@nestjs/config';
 import { MINUTE_MILLISECONDS } from './util/constants';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap()
 {
@@ -26,8 +27,16 @@ async function bootstrap()
 			max: 100, // limit each IP to 100 requests per windowMs
 		}),
 	);
+	const options = new DocumentBuilder()
+		.setTitle('UNAM Petitions platform')
+		.setDescription('REST API for UNAM petitions platform')
+		.setVersion('1.0')
+		.build();
+	const document = SwaggerModule.createDocument(app, options);
+	SwaggerModule.setup('api', app, document);
+	
 	await app.get(SchedulingService).initialResolutionDeadlineScheduling();
-	const PORT = await app.get(ConfigService).get<string>("PORT");
+	const PORT = await app.get(ConfigService).get<string>('PORT');
 	await app.listen(PORT);
 }
 

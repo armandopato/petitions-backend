@@ -59,7 +59,7 @@ export class ResolutionsService extends PostsService<Resolution, ResolutionInfo,
 	
 	async terminateResolution(resolutionOrId: number | Resolution, supportUser: SupportTeamUser, resolutionText: string): Promise<void>
 	{
-		const resolution = typeof resolutionOrId === 'number' ? await this.resolutionsRepository.findOne(resolutionOrId, { relations: ['petition'] }) : resolutionOrId;
+		const resolution = typeof resolutionOrId === 'number' ? await this.resolutionsRepository.findOne(resolutionOrId, { relations: ['petition'] }) : { ...resolutionOrId };
 		
 		if (!resolution) throw new NotFoundException();
 		if (resolution.petition.campus !== supportUser.school.campus) throw new UnauthorizedException();
@@ -117,15 +117,16 @@ export class ResolutionsService extends PostsService<Resolution, ResolutionInfo,
 	
 	async returnToProgress(resolution: Resolution): Promise<void>
 	{
-		await this.resolutionsRepository.deleteRejectionVotes(resolution.id);
+		let resolutionCopy = { ...resolution };
+		await this.resolutionsRepository.deleteRejectionVotes(resolutionCopy.id);
 		
 		const deadline = new Date(Date.now() + RESOLUTION_WINDOW_MILLISECONDS);
-		resolution.resolutionDate = null;
-		resolution.deadline = deadline;
-		resolution = await this.resolutionsRepository.save(resolution);
+		resolutionCopy.resolutionDate = null;
+		resolutionCopy.deadline = deadline;
+		resolutionCopy = await this.resolutionsRepository.save(resolutionCopy);
 		
-		this.schedulingService.scheduleResolutionDeadline(resolution);
-		await this.notificationsService.triggerNotifications(resolution);
+		this.schedulingService.scheduleResolutionDeadline(resolutionCopy);
+		await this.notificationsService.triggerNotifications(resolutionCopy);
 	}
 	
 	async getInfo(resolution: Resolution): Promise<ResolutionInfo>

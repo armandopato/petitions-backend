@@ -1,17 +1,4 @@
-import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    Injectable,
-    Param,
-    Patch,
-    Post,
-    Put,
-    Query,
-    Request,
-    UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Request, UseGuards } from '@nestjs/common';
 import { PetitionsService } from './petitions.service';
 import { JwtOptionalAuthGuard } from 'src/auth/guards/jwt-optional-auth.guard';
 import { AuthRequest } from 'src/auth/interfaces/auth-request.interface';
@@ -26,13 +13,12 @@ import { StudentUser, User } from '../../users/entities/user.entity';
 import { PetitionCommentsService } from './comments/petition-comments.service';
 import { PetitionInfo } from './interfaces/petition-info.interface';
 import { CommentInfo } from '../../comments/interfaces/comment-info.interface';
+import { ApiTags } from '@nestjs/swagger';
 
-@Injectable()
+@ApiTags('Petitions')
 @Controller('petitions')
 export class PetitionsController
 {
-    getPetitionsInfoPageBySchool: (params: PetitionQueryParams, user: User) => Promise<Page<PetitionInfo>>;
-    
     constructor(private petitionsService: PetitionsService,
                 private commentsService: PetitionCommentsService)
     {
