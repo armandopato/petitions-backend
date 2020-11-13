@@ -1,4 +1,4 @@
-import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { CommentsService } from '../../../comments/comments.service';
 import { ResolutionComment } from '../../../comments/comment.entity';
 import { ResolutionsRepository } from '../resolutions.repository';
@@ -8,10 +8,10 @@ import { ResolutionStatus } from '../enums/resolution-status.enum';
 @Injectable()
 export class ResolutionCommentsService extends CommentsService<ResolutionComment>
 {
-	constructor(@Inject(ResolutionCommentsRepository) resolutionCommentRepository: ResolutionCommentsRepository,
+	constructor(resolutionCommentsRepository: ResolutionCommentsRepository,
 	            private readonly resolutionsRepository: ResolutionsRepository)
 	{
-		super(resolutionCommentRepository);
+		super(resolutionCommentsRepository);
 	}
 	
 	async createCommentInstanceWithConditions(elementId: number): Promise<ResolutionComment>

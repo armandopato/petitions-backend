@@ -18,7 +18,7 @@ export abstract class CommentsRepository<CommentType extends GenericComment> ext
 	async countNumberOfComments(elementId: number): Promise<number>
 	{
 		return await this.connection.createQueryBuilder(this.commentEntity, 'comment')
-			.innerJoinAndSelect('comments.element', 'element')
+			.innerJoinAndSelect('comment.element', 'element')
 			.where('element.id = :id', { id: elementId })
 			.getCount();
 	}
@@ -26,13 +26,13 @@ export abstract class CommentsRepository<CommentType extends GenericComment> ext
 	async getCommentsPage(elementId: number, page: number, user?: User): Promise<Page<CommentType>>
 	{
 		const query = this.connection.createQueryBuilder(this.commentEntity, 'comment')
-			.innerJoin('comments.element', 'element')
+			.innerJoin('comment.element', 'element')
 			.where('element.id = :id', { id: elementId })
-			.orderBy('comments.id', 'DESC');
+			.orderBy('comment.id', 'DESC');
 		
 		if (user)
 		{
-			query.andWhere('comments.by != :userid', { userid: user.id });
+			query.andWhere('comment.by != :userid', { userid: user.id });
 		}
 		
 		return await getPage(query, page);
@@ -41,8 +41,8 @@ export abstract class CommentsRepository<CommentType extends GenericComment> ext
 	async getUserComment(elementId: number, userId: number): Promise<CommentType>
 	{
 		return await this.connection.createQueryBuilder(this.commentEntity, 'comment')
-			.innerJoin('comments.element', 'element')
-			.innerJoin('comments.by', 'user')
+			.innerJoin('comment.element', 'element')
+			.innerJoin('comment.by', 'user')
 			.where('element.id = :id', { id: elementId })
 			.andWhere('user.id = :userId', { userId: userId })
 			.getOne();
@@ -51,17 +51,17 @@ export abstract class CommentsRepository<CommentType extends GenericComment> ext
 	async getNumberOfCommentLikes(commentId: number): Promise<number>
 	{
 		return await this.connection.createQueryBuilder(this.commentEntity, 'comment')
-			.innerJoin('comments.likedBy', 'user')
-			.where('comments.id = :id', { id: commentId })
+			.innerJoin('comment.likedBy', 'user')
+			.where('comment.id = :id', { id: commentId })
 			.getCount();
 	}
 	
 	async didUserLikeComment(commentId: number, userId: number): Promise<boolean>
 	{
 		const like = await this.connection.createQueryBuilder(this.commentEntity, 'comment')
-			.innerJoin('comments.likedBy', 'user')
+			.innerJoin('comment.likedBy', 'user')
 			.where('user.id = :userId', { userId: userId })
-			.andWhere('comments.id = :id', { id: commentId })
+			.andWhere('comment.id = :id', { id: commentId })
 			.getCount();
 		return like === 1;
 	}
