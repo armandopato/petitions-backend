@@ -1,6 +1,6 @@
-import { PipeTransform, Injectable, BadRequestException } from '@nestjs/common';
-import { Transform } from "class-transformer";
-import { IsInt, IsPositive, validateSync } from "class-validator";
+import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
+import { Transform } from 'class-transformer';
+import { IsInt, IsPositive, validateSync } from 'class-validator';
 
 class PositiveInt
 {
@@ -12,17 +12,18 @@ class PositiveInt
 
 
 @Injectable()
-export class PositiveIntPipe implements PipeTransform<string, number> {
-	transform(value: string): number
-	{
-		const num = new PositiveInt();
-		num.value = value;
-
-		if (validateSync(num).length > 0)
-		{
-			throw new BadRequestException();
-		}
-		
-		return num.value;
-	}
+export class PositiveIntPipe implements PipeTransform<string, number>
+{
+    transform(value: string): number
+    {
+        const num = new PositiveInt();
+        num.value = value;
+        
+        if (validateSync(num).length > 0)
+        {
+            throw new BadRequestException();
+        }
+        
+        return num.value;
+    }
 }

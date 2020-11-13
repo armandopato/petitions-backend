@@ -10,14 +10,14 @@ import { ResolutionCommentsService } from './comments/resolution-comments.servic
 import { ResolutionCommentsRepository } from './comments/resolution-comments.repository';
 
 @Module({
-	imports: [
-		TypeOrmModule.forFeature([ResolutionsRepository, PetitionsRepository, ResolutionCommentsRepository]),
-		SchedulingModule,
-		NotificationsModule,
-	],
-	providers: [ResolutionsService, ResolutionCommentsService],
-	exports: [ResolutionsService],
-	controllers: [ResolutionsController],
+    imports: [
+        TypeOrmModule.forFeature([ResolutionsRepository, PetitionsRepository, ResolutionCommentsRepository]),
+        SchedulingModule,
+        NotificationsModule,
+    ],
+    providers: [ResolutionsService, ResolutionCommentsService],
+    exports: [ResolutionsService],
+    controllers: [ResolutionsController],
 })
 export class ResolutionsModule
 {

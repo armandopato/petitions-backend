@@ -12,7 +12,7 @@ export class MeGuard implements CanActivate
     {
         this.protectedMail = this.configService.get<string>('MY_MAIL');
     }
-
+    
     canActivate(context: ExecutionContext): boolean
     {
         const req: AuthRequest<User> = context.switchToHttp().getRequest();

@@ -10,38 +10,39 @@ import { ResolutionStatus } from '../posts/resolutions/enums/resolution-status.e
 @Injectable()
 export class SchedulingService
 {
-	constructor(private readonly scheduler: SchedulerRegistry,
-	            private readonly notificationsService: NotificationsService,
-	            private readonly resolutionsRepository: ResolutionsRepository,
-	)
-	{
-	}
-	
-	async initialResolutionDeadlineScheduling(): Promise<void>
-	{
-		const resolutions = await this.resolutionsRepository.find();
-		resolutions.filter(resolution => this.resolutionsRepository.getResolutionStatus(resolution) === ResolutionStatus.IN_PROGRESS)
-			.forEach(resolution => this.scheduleResolutionDeadline(resolution));
-	}
-	
-	scheduleResolutionDeadline(resolution: Resolution): void
-	{
-		const handler = async () => await this.notificationsService.triggerNotifications(resolution);
-		const job = new CronJob(resolution.deadline, handler);
-		
-		this.scheduler.addCronJob(resolution.id.toString(), job);
-		job.start();
-	}
-	
-	cancelResolutionDeadline(resolutionId: number): void
-	{
-		try
-		{
-			this.scheduler.deleteCronJob(resolutionId.toString());
-		}
-		catch (err)
-		{
-			console.log('No cron job was found for resolution ' + resolutionId);
-		}
-	}
+    constructor(private readonly scheduler: SchedulerRegistry,
+                private readonly notificationsService: NotificationsService,
+                private readonly resolutionsRepository: ResolutionsRepository,
+    )
+    {
+    }
+    
+    async initialResolutionDeadlineScheduling(): Promise<void>
+    {
+        const resolutions = await this.resolutionsRepository.find();
+        resolutions.filter(
+            resolution => this.resolutionsRepository.getResolutionStatus(resolution) === ResolutionStatus.IN_PROGRESS)
+            .forEach(resolution => this.scheduleResolutionDeadline(resolution));
+    }
+    
+    scheduleResolutionDeadline(resolution: Resolution): void
+    {
+        const handler = async () => await this.notificationsService.triggerNotifications(resolution);
+        const job = new CronJob(resolution.deadline, handler);
+        
+        this.scheduler.addCronJob(resolution.id.toString(), job);
+        job.start();
+    }
+    
+    cancelResolutionDeadline(resolutionId: number): void
+    {
+        try
+        {
+            this.scheduler.deleteCronJob(resolutionId.toString());
+        }
+        catch (err)
+        {
+            console.log('No cron job was found for resolution ' + resolutionId);
+        }
+    }
 }

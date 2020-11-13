@@ -47,21 +47,24 @@ export class UsersController
     
     @UseGuards(JwtAuthGuard)
     @Get('saved/petitions')
-    async getSavedPetitions(@Request() req: AuthRequest<User>, @Query('page', PositiveIntPipe) page: number): Promise<Page<PetitionInfo>>
+    async getSavedPetitions(@Request() req: AuthRequest<User>,
+                            @Query('page', PositiveIntPipe) page: number): Promise<Page<PetitionInfo>>
     {
         return await this.usersService.getSavedPetitions(req.user, page);
     }
     
     @UseGuards(JwtAuthGuard)
     @Get('saved/resolutions')
-    async getSavedResolutions(@Request() req: AuthRequest<User>, @Query('page', PositiveIntPipe) page: number): Promise<Page<ResolutionInfo>>
+    async getSavedResolutions(@Request() req: AuthRequest<User>,
+                              @Query('page', PositiveIntPipe) page: number): Promise<Page<ResolutionInfo>>
     {
         return await this.usersService.getSavedResolutions(req.user, page);
     }
     
     @UseGuards(JwtAuthGuard)
     @Get('notification')
-    async getNotifications(@Request() req: AuthRequest<User>, @Query('page', PositiveIntPipe) page: number): Promise<Page<UserNotificationInfo>>
+    async getNotifications(@Request() req: AuthRequest<User>,
+                           @Query('page', PositiveIntPipe) page: number): Promise<Page<UserNotificationInfo>>
     {
         return await this.notificationsService.getUserNotifications(req.user, page);
     }
@@ -83,14 +86,16 @@ export class UsersController
     
     @UseGuards(JwtAuthGuard)
     @Patch('notifications/:id')
-    async markNotificationAsSeenById(@Request() req: AuthRequest<User>, @Param('id', PositiveIntPipe) notificationId: number): Promise<void>
+    async markNotificationAsSeenById(@Request() req: AuthRequest<User>,
+                                     @Param('id', PositiveIntPipe) notificationId: number): Promise<void>
     {
         await this.notificationsService.markAsSeen(req.user, notificationId);
     }
     
     @UseGuards(JwtAuthGuard)
     @Delete('notifications/:id')
-    async deleteNotificationById(@Request() req: AuthRequest<User>, @Param('id', PositiveIntPipe) notificationId: number): Promise<void>
+    async deleteNotificationById(@Request() req: AuthRequest<User>,
+                                 @Param('id', PositiveIntPipe) notificationId: number): Promise<void>
     {
         await this.notificationsService.deleteUserNotificationById(req.user, notificationId);
     }
@@ -104,7 +109,8 @@ export class UsersController
     
     @UseGuards(JwtAuthGuard)
     @Patch('settings')
-    async modifyUserSettings(@Request() req: AuthRequest<User>, @Body() changeUserSettingsDto: ChangeUserSettingsDto): Promise<void>
+    async modifyUserSettings(@Request() req: AuthRequest<User>,
+                             @Body() changeUserSettingsDto: ChangeUserSettingsDto): Promise<void>
     {
         await this.usersService.modifyUserSettings(req.user, changeUserSettingsDto);
     }

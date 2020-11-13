@@ -8,12 +8,12 @@ export class JwtConfigService implements JwtOptionsFactory
     constructor(private readonly configService: ConfigService)
     {
     }
-
+    
     createJwtOptions(): JwtModuleOptions
     {
-        const secret = this.configService.get<string>("JWT_SECRET");
+        const secret = this.configService.get<string>('JWT_SECRET');
         return {
-            secret: secret
+            secret: secret,
         };
     }
 }

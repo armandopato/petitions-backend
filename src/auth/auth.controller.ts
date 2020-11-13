@@ -37,7 +37,8 @@ export class AuthController
     {
         this.SECURE = this.configService.get<string>('SECURE') === 'true';
         this.SAME_SITE = this.configService.get('SAME_SITE');
-        this.REFRESH_EXPIRATION_MILLISECONDS = getDaysMilliseconds(this.configService.get<string>('REFRESH_EXPIRATION'));
+        this.REFRESH_EXPIRATION_MILLISECONDS =
+            getDaysMilliseconds(this.configService.get<string>('REFRESH_EXPIRATION'));
     }
     
     @UseGuards(LocalAuthGuard)
@@ -80,7 +81,8 @@ export class AuthController
     
     @UseGuards(LocalAuthGuard)
     @Post('email')
-    async confirmEmailAndSignIn(@Request() req: AuthRequest<User>, @Response() res: ExpressResponse, @Body('token') confirmationToken: string): Promise<void>
+    async confirmEmailAndSignIn(@Request() req: AuthRequest<User>, @Response() res: ExpressResponse,
+                                @Body('token') confirmationToken: string): Promise<void>
     {
         const { user } = req;
         if (user.active)

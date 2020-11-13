@@ -5,8 +5,8 @@ import { CommentsRepository } from '../../../comments/comments.repository';
 @EntityRepository(ResolutionComment)
 export class ResolutionCommentsRepository extends CommentsRepository<ResolutionComment>
 {
-	constructor()
-	{
-		super(ResolutionComment);
-	}
+    constructor()
+    {
+        super(ResolutionComment);
+    }
 }

@@ -10,14 +10,16 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { UsersRepository } from '../users/users.repository';
 
 @Module({
-  controllers: [AuthController],
-  providers: [AuthService, MailService, LocalStrategy, JwtStrategy, JwtConfigService],
+    controllers: [AuthController],
+    providers: [AuthService, MailService, LocalStrategy, JwtStrategy, JwtConfigService],
     imports: [TypeOrmModule.forFeature([UsersRepository]),
         JwtModule.registerAsync({
             imports: [AuthModule],
             useExisting: JwtConfigService,
         }),
     ],
-  exports: [MailService, JwtConfigService, JwtModule]
+    exports: [MailService, JwtConfigService, JwtModule],
 })
-export class AuthModule {}
+export class AuthModule
+{
+}

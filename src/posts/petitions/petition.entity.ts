@@ -29,27 +29,27 @@ export class Petition
         enum: SchoolName,
     })
     campus: SchoolName;
-
+    
     @Column({ type: 'varchar', length: Length.MAX_PETITION_TITLE })
     title: string;
     
     @Column({ type: 'varchar', length: Length.MAX_PETITION_DESC })
     description: string;
-
+    
     @OneToOne(() => Resolution, resolution => resolution.petition)
     resolution?: Resolution;
-
+    
     // Owner of relationship
     @ManyToOne(() => StudentUser, user => user.myPetitions)
     by: StudentUser;
-
+    
     @ManyToMany(() => StudentUser, studentUser => studentUser.votedPetitions)
     @JoinTable()
     votedBy: StudentUser[];
-
+    
     @OneToMany(() => PetitionComment, petitionComment => petitionComment.element)
     comments: PetitionComment[];
-
+    
     @ManyToMany(() => User, user => user.savedPetitions)
     savedBy: User[];
 }

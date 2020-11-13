@@ -11,13 +11,13 @@ export class ModifyUserDto
     
     @IsBoolean()
     admin: boolean;
-
+    
     @IsBoolean()
     moderator: boolean;
-
+    
     @IsBoolean()
     active: boolean;
-
+    
     @IsEnum(Role)
     role: Role;
 }
@@ -28,7 +28,7 @@ export class ModifyUserRoleDto
     @IsEmail()
     @IsString()
     email: string;
-
+    
     @IsEnum(Role)
     role: Role;
 }

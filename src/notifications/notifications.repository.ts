@@ -29,14 +29,14 @@ export class NotificationsRepository extends Repository<UserNotification>
         const notificationIds = notificationRels.map(notificationRel => notificationRel.notification.id);
         this.cleanNotifications(notificationIds);
     }
-
-
+    
+    
     async deleteUserNotificationById(userId: number, notificationId: number): Promise<void>
     {
         const query = this.connection.createQueryBuilder(UserToNotification, 'rel')
             .where('rel.user = :id', { id: userId })
             .andWhere('rel.notifications = :notifId', { notifId: notificationId });
-                        
+    
         const notification = await query.getCount();
         if (!notification) throw new NotFoundException();
     
@@ -44,33 +44,25 @@ export class NotificationsRepository extends Repository<UserNotification>
         
         this.cleanNotification(notificationId);
     }
-
+    
     async getUserNotificationRelationPage(userId: number, page: number): Promise<Page<UserToNotification>>
     {
         const query = this.connection.createQueryBuilder(UserToNotification, 'rel')
             .innerJoinAndSelect('rel.notifications', 'notification')
             .innerJoinAndSelect('notifications.resolution', 'res')
-                                                .where("rel.user = :id", { id: userId })
-                                                .orderBy("rel.id", "DESC");
+            .where('rel.user = :id', { id: userId })
+            .orderBy('rel.id', 'DESC');
         
         return await getPage(query, page);
     }
-
+    
     async getNumberOfUnreadNotifications(userId: number): Promise<number>
     {
         return await this.connection.createQueryBuilder(UserToNotification, 'notification')
             .addSelect('notifications.userId', 'userid')
             .where('userid = :id', { id: userId })
             .where('notifications.seen = false')
-                        .getCount();
-    }
-
-    private async cleanNotifications(notificationIds: number[]): Promise<void>
-    {
-        for (const id of notificationIds)
-        {
-            await this.cleanNotification(id);
-        }
+            .getCount();
     }
     
     async markAsSeen(userId: number, notificationId: number): Promise<void>
@@ -88,40 +80,48 @@ export class NotificationsRepository extends Repository<UserNotification>
             .andWhere('notifications = :notifId')
             .execute();
     }
-
+    
     async createNotificationRelations(notification: UserNotification): Promise<void>
     {
         const campus = notification.resolution.petition.campus;
-        const query = this.connection.createQueryBuilder(User, "user")
-                                                .innerJoin("user.settings", "settings")
-                                                .innerJoin("user.school", "school")
-                                                .where("school.campus = :campus", { campus: campus });
+        const query = this.connection.createQueryBuilder(User, 'user')
+            .innerJoin('user.settings', 'settings')
+            .innerJoin('user.school', 'school')
+            .where('school.campus = :campus', { campus: campus });
         
         switch (notification.type)
         {
             case ResolutionStatus.IN_PROGRESS:
-                query.andWhere("settings.notifyNewResolutions = true");
+                query.andWhere('settings.notifyNewResolutions = true');
                 break;
             
             case ResolutionStatus.OVERDUE:
-                query.andWhere("settings.notifyOverdueResolutions = true");
+                query.andWhere('settings.notifyOverdueResolutions = true');
                 break;
             
             case ResolutionStatus.TERMINATED:
-                query.andWhere("settings.notifyTerminatedResolutions = true")
+                query.andWhere('settings.notifyTerminatedResolutions = true');
                 break;
         }
-
+        
         const users = await query.getMany();
         const notificationRelations: QueryDeepPartialEntity<UserToNotification>[] = users.map(user => {
             return {
                 notification: notification,
-                user: user
-            }
+                user: user,
+            };
         });
-
-        await this.connection.createQueryBuilder(UserToNotification, "rel")
-                            .insert().values(notificationRelations).execute();
+        
+        await this.connection.createQueryBuilder(UserToNotification, 'rel')
+            .insert().values(notificationRelations).execute();
+    }
+    
+    private async cleanNotifications(notificationIds: number[]): Promise<void>
+    {
+        for (const id of notificationIds)
+        {
+            await this.cleanNotification(id);
+        }
     }
     
     private async cleanNotification(notificationId: number): Promise<void>

@@ -41,25 +41,25 @@ export class AuthService
         const userCredentials = new UserCredentials();
         userCredentials.email = email;
         userCredentials.password = password;
-
+    
         try
         {
             await validateOrReject(userCredentials);
         }
-        catch(err)
+        catch (err)
         {
             throw new UnauthorizedException();
         }
     
         const user = await this.usersRepository.findOne({ email: email });
         if (!user) return null;
-
+    
         const match = await compare(password, user.password);
         if (!match) return null;
-
+    
         return user;
     }
-
+    
     async generateAuthTokens(user: User): Promise<AuthTokens>
     {
         const accessPayload: Payload = {
@@ -80,7 +80,7 @@ export class AuthService
             refresh_token,
         };
     }
-
+    
     async confirmEmail(user: User, confirmationToken: string): Promise<void>
     {
         try
@@ -89,24 +89,24 @@ export class AuthService
             if (type !== Token.CONFIRMATION) throw new Error();
             await this.usersRepository.update(sub, { active: true });
         }
-        catch(err)
+        catch (err)
         {
             throw new UnauthorizedException();
         }
     }
-
+    
     async changePassword(user: User, changePasswordDto: ChangePasswordDto): Promise<void>
     {
         const password = changePasswordDto.password;
         let newPassword = changePasswordDto.newPassword;
-
+    
         const match = await compare(password, user.password);
         if (!match) throw new UnauthorizedException();
     
         newPassword = await hash(newPassword, SALT_ROUNDS);
         await this.usersRepository.update(user.id, { password: newPassword });
     }
-
+    
     async sendPasswordResetToken(email: string): Promise<{ expiresAt: Date }>
     {
         const user = await this.usersRepository.findOne({ email: email });
@@ -127,12 +127,12 @@ export class AuthService
     
         return expiresAtObj;
     }
-
+    
     async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<void>
     {
         const token = resetPasswordDto.token;
         let newPassword = resetPasswordDto.newPassword;
-
+    
         try
         {
             const payload: Payload = await this.jwtService.verifyAsync(token);

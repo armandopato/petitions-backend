@@ -27,14 +27,16 @@ export class PetitionsController extends CommentsController<PetitionComment>
     
     @UseGuards(JwtOptionalAuthGuard)
     @Get()
-    async getPetitionsPageBySchool(@Request() req: AuthRequest<User>, @Query() petitionQueryParams: PetitionQueryParams): Promise<Page<PetitionInfo>>
+    async getPetitionsPageBySchool(@Request() req: AuthRequest<User>,
+                                   @Query() petitionQueryParams: PetitionQueryParams): Promise<Page<PetitionInfo>>
     {
         return await this.petitionsService.getInfoPage(petitionQueryParams, req.user);
     }
     
     @UseGuards(JwtAuthGuard, IsStudentGuard)
     @Post()
-    async postPetition(@Request() req: AuthRequest<StudentUser>, @Body() createPetitionDto: CreatePetitionDto): Promise<{ id: number }>
+    async postPetition(@Request() req: AuthRequest<StudentUser>,
+                       @Body() createPetitionDto: CreatePetitionDto): Promise<{ id: number }>
     {
         const id = await this.petitionsService.postPetition(req.user, createPetitionDto);
         return { id };
@@ -42,35 +44,40 @@ export class PetitionsController extends CommentsController<PetitionComment>
     
     @UseGuards(JwtOptionalAuthGuard)
     @Get('/:id')
-    async getPetitionInfoById(@Request() req: AuthRequest<User>, @Param('id', PositiveIntPipe) petitionId: number): Promise<PetitionInfo>
+    async getPetitionInfoById(@Request() req: AuthRequest<User>,
+                              @Param('id', PositiveIntPipe) petitionId: number): Promise<PetitionInfo>
     {
         return await this.petitionsService.getInfoById(petitionId, req.user);
     }
     
     @UseGuards(JwtAuthGuard, IsStudentGuard)
     @Post('/:id')
-    async votePetition(@Request() req: AuthRequest<StudentUser>, @Param('id', PositiveIntPipe) petitionId: number): Promise<void>
+    async votePetition(@Request() req: AuthRequest<StudentUser>,
+                       @Param('id', PositiveIntPipe) petitionId: number): Promise<void>
     {
         await this.petitionsService.vote(petitionId, req.user);
     }
     
     @UseGuards(JwtAuthGuard)
     @Patch('/:id')
-    async saveOrUnsavePetition(@Request() req: AuthRequest<User>, @Param('id', PositiveIntPipe) petitionId: number): Promise<void>
+    async saveOrUnsavePetition(@Request() req: AuthRequest<User>,
+                               @Param('id', PositiveIntPipe) petitionId: number): Promise<void>
     {
         return await this.petitionsService.saveOrUnsave(petitionId, req.user);
     }
     
     @UseGuards(JwtAuthGuard, IsStudentGuard)
     @Delete('/:id')
-    async deletePetition(@Request() req: AuthRequest<StudentUser>, @Param('id', PositiveIntPipe) petitionId: number): Promise<void>
+    async deletePetition(@Request() req: AuthRequest<StudentUser>,
+                         @Param('id', PositiveIntPipe) petitionId: number): Promise<void>
     {
         await this.petitionsService.deletePetition(petitionId, req.user);
     }
     
     @UseGuards(JwtAuthGuard, IsStudentGuard)
     @Put('/:id')
-    async editPetition(@Request() req: AuthRequest<StudentUser>, @Param('id', PositiveIntPipe) petitionId: number, @Body() editPetitionDto: CreatePetitionDto): Promise<void>
+    async editPetition(@Request() req: AuthRequest<StudentUser>, @Param('id', PositiveIntPipe) petitionId: number,
+                       @Body() editPetitionDto: CreatePetitionDto): Promise<void>
     {
         await this.petitionsService.editPetition(petitionId, req.user, editPetitionDto);
     }

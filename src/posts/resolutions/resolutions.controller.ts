@@ -30,14 +30,16 @@ export class ResolutionsController extends CommentsController<ResolutionComment>
     
     @UseGuards(JwtOptionalAuthGuard)
     @Get()
-    async getResolutionsPageBySchool(@Request() req: AuthRequest<User>, @Query() resolutionQueryParams: ResolutionQueryParams): Promise<Page<ResolutionInfo>>
+    async getResolutionsPageBySchool(@Request() req: AuthRequest<User>,
+                                     @Query() resolutionQueryParams: ResolutionQueryParams): Promise<Page<ResolutionInfo>>
     {
         return await this.resolutionsService.getInfoPage(resolutionQueryParams, req.user);
     }
     
     @UseGuards(JwtAuthGuard, IsSupportGuard)
     @Post()
-    async postTerminatedResolution(@Request() req: AuthRequest<SupportTeamUser>, @Body() postTerminatedResolutionDto: PostTerminatedResolutionDto): Promise<{ resolutionId: number }>
+    async postTerminatedResolution(@Request() req: AuthRequest<SupportTeamUser>,
+                                   @Body() postTerminatedResolutionDto: PostTerminatedResolutionDto): Promise<{ resolutionId: number }>
     {
         return {
             resolutionId: await this.resolutionsService.resolvePetition(postTerminatedResolutionDto, req.user),
@@ -46,28 +48,33 @@ export class ResolutionsController extends CommentsController<ResolutionComment>
     
     @UseGuards(JwtOptionalAuthGuard)
     @Get(':id')
-    async getResolutionById(@Request() req: AuthRequest<User>, @Param('id', PositiveIntPipe) resolutionId: number): Promise<ResolutionInfo>
+    async getResolutionById(@Request() req: AuthRequest<User>,
+                            @Param('id', PositiveIntPipe) resolutionId: number): Promise<ResolutionInfo>
     {
         return await this.resolutionsService.getInfoById(resolutionId, req.user);
     }
     
     @UseGuards(JwtOptionalAuthGuard, IsSupportGuard)
     @Put(':id')
-    async terminateResolutionById(@Request() req: AuthRequest<SupportTeamUser>, @Param('id', PositiveIntPipe) resolutionId: number, @Body() resolutionTextDto: ResolutionTextDto): Promise<void>
+    async terminateResolutionById(@Request() req: AuthRequest<SupportTeamUser>,
+                                  @Param('id', PositiveIntPipe) resolutionId: number,
+                                  @Body() resolutionTextDto: ResolutionTextDto): Promise<void>
     {
         await this.resolutionsService.terminateResolution(resolutionId, req.user, resolutionTextDto.resolutionText);
     }
     
     @UseGuards(JwtAuthGuard)
     @Patch(':id')
-    async saveOrUnsaveResolution(@Request() req: AuthRequest<User>, @Param('id', PositiveIntPipe) resolutionId: number): Promise<void>
+    async saveOrUnsaveResolution(@Request() req: AuthRequest<User>,
+                                 @Param('id', PositiveIntPipe) resolutionId: number): Promise<void>
     {
         return await this.resolutionsService.saveOrUnsave(resolutionId, req.user);
     }
     
     @UseGuards(JwtAuthGuard, IsStudentGuard)
     @Post(':id')
-    async voteResolution(@Request() req: AuthRequest<StudentUser>, @Param('id', PositiveIntPipe) resolutionId: number): Promise<void>
+    async voteResolution(@Request() req: AuthRequest<StudentUser>,
+                         @Param('id', PositiveIntPipe) resolutionId: number): Promise<void>
     {
         return await this.resolutionsService.vote(resolutionId, req.user);
     }

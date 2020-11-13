@@ -8,18 +8,19 @@ import { ResolutionStatus } from '../enums/resolution-status.enum';
 @Injectable()
 export class ResolutionCommentsService extends CommentsService<ResolutionComment>
 {
-	constructor(resolutionCommentsRepository: ResolutionCommentsRepository,
-	            private readonly resolutionsRepository: ResolutionsRepository)
-	{
-		super(resolutionCommentsRepository);
-	}
-	
-	async createCommentInstanceWithConditions(elementId: number): Promise<ResolutionComment>
-	{
-		const resolution = await this.resolutionsRepository.findOne(elementId);
-		if (!resolution) throw new NotFoundException();
-		if (this.resolutionsRepository.getResolutionStatus(resolution) !== ResolutionStatus.TERMINATED) throw new ForbiddenException();
-		return new ResolutionComment();
-	}
-	
+    constructor(resolutionCommentsRepository: ResolutionCommentsRepository,
+                private readonly resolutionsRepository: ResolutionsRepository)
+    {
+        super(resolutionCommentsRepository);
+    }
+    
+    async createCommentInstanceWithConditions(elementId: number): Promise<ResolutionComment>
+    {
+        const resolution = await this.resolutionsRepository.findOne(elementId);
+        if (!resolution) throw new NotFoundException();
+        if (this.resolutionsRepository.getResolutionStatus(resolution) !==
+            ResolutionStatus.TERMINATED) throw new ForbiddenException();
+        return new ResolutionComment();
+    }
+    
 }

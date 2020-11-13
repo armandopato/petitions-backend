@@ -10,4 +10,6 @@ import { ScheduleModule } from '@nestjs/schedule';
     providers: [SchedulingService],
     exports: [SchedulingService],
 })
-export class SchedulingModule {}
+export class SchedulingModule
+{
+}

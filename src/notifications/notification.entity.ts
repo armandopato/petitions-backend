@@ -11,13 +11,13 @@ export class UserNotification
     
     @OneToMany(() => UserToNotification, notificationRelation => notificationRelation.notification)
     userToNotifications: UserToNotification[];
-
+    
     @Column({
-        type: "enum",
-        enum: ResolutionStatus
+        type: 'enum',
+        enum: ResolutionStatus,
     })
     type: ResolutionStatus;
-
+    
     @ManyToOne(() => Resolution)
     @JoinColumn()
     resolution: Resolution;

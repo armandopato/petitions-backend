@@ -19,42 +19,48 @@ export abstract class CommentsController<CommentType extends GenericComment>
     
     @UseGuards(JwtOptionalAuthGuard)
     @Get('/:id/comments')
-    async getCommentsPage(@Request() req: AuthRequest<User>, @Param('id', PositiveIntPipe) postId: number, @Query('page', PositiveIntPipe) page: number): Promise<Page<CommentInfo>>
+    async getCommentsPage(@Request() req: AuthRequest<User>, @Param('id', PositiveIntPipe) postId: number,
+                          @Query('page', PositiveIntPipe) page: number): Promise<Page<CommentInfo>>
     {
         return await this.commentsService.getCommentInfoPage(postId, req.user, page);
     }
     
     @UseGuards(JwtAuthGuard, IsStudentGuard)
     @Post('/:id/comments')
-    async postComment(@Request() req: AuthRequest<StudentUser>, @Param('id', PositiveIntPipe) postId: number, @Body() postCommentDto: PostCommentDto): Promise<void>
+    async postComment(@Request() req: AuthRequest<StudentUser>, @Param('id', PositiveIntPipe) postId: number,
+                      @Body() postCommentDto: PostCommentDto): Promise<void>
     {
         await this.commentsService.postComment(postId, req.user, postCommentDto.comment);
     }
     
     @UseGuards(JwtAuthGuard, IsStudentGuard)
     @Get('/:id/mycomment')
-    async getMyComment(@Request() req: AuthRequest<StudentUser>, @Param('id', PositiveIntPipe) postId: number): Promise<{ myComment: CommentInfo }>
+    async getMyComment(@Request() req: AuthRequest<StudentUser>,
+                       @Param('id', PositiveIntPipe) postId: number): Promise<{ myComment: CommentInfo }>
     {
         return { myComment: await this.commentsService.getMyCommentInfo(postId, req.user) };
     }
     
     @UseGuards(JwtAuthGuard, IsStudentGuard)
     @Put('/:id/mycomment')
-    async editComment(@Request() req: AuthRequest<StudentUser>, @Param('id', PositiveIntPipe) postId: number, @Body() putCommentDto: PostCommentDto): Promise<void>
+    async editComment(@Request() req: AuthRequest<StudentUser>, @Param('id', PositiveIntPipe) postId: number,
+                      @Body() putCommentDto: PostCommentDto): Promise<void>
     {
         await this.commentsService.editMyComment(postId, req.user, putCommentDto.comment);
     }
     
     @UseGuards(JwtAuthGuard, IsStudentGuard)
     @Delete('/:id/mycomment')
-    async deleteComment(@Request() req: AuthRequest<StudentUser>, @Param('id', PositiveIntPipe) postId: number): Promise<void>
+    async deleteComment(@Request() req: AuthRequest<StudentUser>,
+                        @Param('id', PositiveIntPipe) postId: number): Promise<void>
     {
         await this.commentsService.deleteMyComment(postId, req.user);
     }
     
     @UseGuards(JwtAuthGuard, IsStudentGuard)
     @Patch('/comments/:commentId')
-    async likeOrDislikeComment(@Request() req: AuthRequest<StudentUser>, @Param('commentId', PositiveIntPipe) commentId: number): Promise<void>
+    async likeOrDislikeComment(@Request() req: AuthRequest<StudentUser>,
+                               @Param('commentId', PositiveIntPipe) commentId: number): Promise<void>
     {
         await this.commentsService.likeOrDislikeComment(commentId, req.user);
     }

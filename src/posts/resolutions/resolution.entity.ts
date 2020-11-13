@@ -24,30 +24,30 @@ export class Resolution
     
     @CreateDateColumn()
     startDate: Date;
-
+    
     @Column()
     deadline: Date;
-
+    
     @Column({ nullable: true })
     resolutionDate?: Date;
-
+    
     @Column({ type: 'varchar', length: Length.MAX_RESOLUTION_TEXT, nullable: true })
     resolutionText?: string;
-
+    
     @OneToOne(() => Petition, petition => petition.resolution)
     @JoinColumn()
     petition: Petition;
-
+    
     @ManyToOne(() => SupportTeamUser, user => user.myResolutions, { nullable: true })
     by?: SupportTeamUser;
-
+    
     @ManyToMany(() => StudentUser, studentUser => studentUser.votedResolutions)
     @JoinTable()
     rejectionVotesBy: StudentUser[];
-
+    
     @OneToMany(() => ResolutionComment, resolutionComment => resolutionComment.element)
     comments: ResolutionComment[];
-
+    
     @ManyToMany(() => User, user => user.savedResolutions)
     savedBy: User[];
 }

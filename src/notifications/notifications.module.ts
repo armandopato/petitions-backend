@@ -5,8 +5,10 @@ import { NotificationsRepository } from './notifications.repository';
 import { NotificationsService } from './notifications.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([NotificationsRepository, ResolutionsRepository])],
-  providers: [NotificationsService],
-  exports: [NotificationsService],
+    imports: [TypeOrmModule.forFeature([NotificationsRepository, ResolutionsRepository])],
+    providers: [NotificationsService],
+    exports: [NotificationsService],
 })
-export class NotificationsModule {}
+export class NotificationsModule
+{
+}

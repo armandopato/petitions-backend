@@ -8,13 +8,13 @@ import { PetitionCommentsService } from './comments/petition-comments.service';
 import { PetitionCommentsRepository } from './comments/petition-comments.repository';
 
 @Module({
-	imports: [
-		TypeOrmModule.forFeature([PetitionsRepository, PetitionCommentsRepository]),
-		ResolutionsModule,
-	],
-	controllers: [PetitionsController],
-	providers: [PetitionsService, PetitionCommentsService],
-	exports: [PetitionsService],
+    imports: [
+        TypeOrmModule.forFeature([PetitionsRepository, PetitionCommentsRepository]),
+        ResolutionsModule,
+    ],
+    controllers: [PetitionsController],
+    providers: [PetitionsService, PetitionCommentsService],
+    exports: [PetitionsService],
 })
 export class PetitionsModule
 {

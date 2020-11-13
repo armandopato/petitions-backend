@@ -14,101 +14,102 @@ import { PetitionStatus } from './enums/petition-status.enum';
 @Injectable()
 export class PetitionsService extends PostsService<Petition, PetitionInfo, PetitionQueryParams>
 {
-	constructor(
-		private readonly petitionsRepository: PetitionsRepository,
-		private readonly resolutionsService: ResolutionsService,
-		private readonly commentsService: PetitionCommentsService,
-	)
-	{
-		super();
-	}
-	
-	get repository(): PetitionsRepository
-	{
-		return this.petitionsRepository;
-	}
-	
-	async loadOne(id: number): Promise<Petition>
-	{
-		return await this.repository.findOne(id);
-	}
-	
-	propertyRemover(info: PetitionInfo): void
-	{
-		info.description = undefined;
-	}
-	
-	async postPetition(user: StudentUser, createPetitionDto: CreatePetitionDto): Promise<number>
-	{
-		const { title, description } = createPetitionDto;
-		
-		const newPetition = new Petition();
-		newPetition.campus = user.school.campus;
-		newPetition.title = title;
-		newPetition.description = description;
-		newPetition.by = user;
-		
-		const { id } = await this.petitionsRepository.save(newPetition);
-		
-		return id;
-	}
-	
-	async triggerVoteLimitAction(petition: Petition): Promise<void>
-	{
-		if (await this.petitionsRepository.countNumberOfVotes(petition.id) >= MIN_PETITION_VOTES)
-		{
-			await this.resolutionsService.createAssociatedResolution(petition.id);
-		}
-	}
-	
-	async deletePetition(petitionId: number, user: StudentUser): Promise<void>
-	{
-		await this.checkPetitionMutationValidity(petitionId, user.id);
-		await this.petitionsRepository.deletePetitionAndSavedRelations(petitionId);
-	}
-	
-	async editPetition(petitionId: number, user: StudentUser, editPetitionDto: CreatePetitionDto): Promise<void>
-	{
-		const petition = await this.checkPetitionMutationValidity(petitionId, user.id);
-		await this.petitionsRepository.editPetition(petition, editPetitionDto);
-	}
-	
-	async getInfo(petition: Petition): Promise<PetitionInfo>
-	{
-		const numVotes = await this.petitionsRepository.countNumberOfVotes(petition.id);
-		const numComments = await this.commentsService.countNumberOfComments(petition.id);
-		const status = await this.petitionsRepository.getPetitionStatus(petition.id);
-		
-		const info: PetitionInfo = {
-			id: petition.id,
-			title: petition.title,
-			date: petition.createdDate,
-			status: status,
-			numVotes: numVotes,
-			numComments: numComments,
-			description: petition.description,
-		};
-		
-		if (status !== PetitionStatus.NO_RESOLUTION)
-		{
-			let petitionCopy = petition;
-			if (!petition.resolution)
-			{
-				petitionCopy = await this.petitionsRepository.findOne(petition.id, { relations: ['resolution'] });
-			}
-			info.resolutionId = petitionCopy.resolution.id;
-		}
-		return info;
-	}
-	
-	private async checkPetitionMutationValidity(petitionId: number, userId: number): Promise<Petition>
-	{
-		const petition = await this.petitionsRepository.findOne(petitionId, { relations: ['resolution', 'by'] });
-		
-		if (!petition) throw new NotFoundException();
-		if (petition.by.id !== userId) throw new UnauthorizedException();
-		if (petition.resolution || await this.petitionsRepository.countNumberOfVotes(petitionId) > 0) throw new ConflictException();
-		
-		return petition;
-	}
+    constructor(
+        private readonly petitionsRepository: PetitionsRepository,
+        private readonly resolutionsService: ResolutionsService,
+        private readonly commentsService: PetitionCommentsService,
+    )
+    {
+        super();
+    }
+    
+    get repository(): PetitionsRepository
+    {
+        return this.petitionsRepository;
+    }
+    
+    async loadOne(id: number): Promise<Petition>
+    {
+        return await this.repository.findOne(id);
+    }
+    
+    propertyRemover(info: PetitionInfo): void
+    {
+        info.description = undefined;
+    }
+    
+    async postPetition(user: StudentUser, createPetitionDto: CreatePetitionDto): Promise<number>
+    {
+        const { title, description } = createPetitionDto;
+        
+        const newPetition = new Petition();
+        newPetition.campus = user.school.campus;
+        newPetition.title = title;
+        newPetition.description = description;
+        newPetition.by = user;
+        
+        const { id } = await this.petitionsRepository.save(newPetition);
+        
+        return id;
+    }
+    
+    async triggerVoteLimitAction(petition: Petition): Promise<void>
+    {
+        if (await this.petitionsRepository.countNumberOfVotes(petition.id) >= MIN_PETITION_VOTES)
+        {
+            await this.resolutionsService.createAssociatedResolution(petition.id);
+        }
+    }
+    
+    async deletePetition(petitionId: number, user: StudentUser): Promise<void>
+    {
+        await this.checkPetitionMutationValidity(petitionId, user.id);
+        await this.petitionsRepository.deletePetitionAndSavedRelations(petitionId);
+    }
+    
+    async editPetition(petitionId: number, user: StudentUser, editPetitionDto: CreatePetitionDto): Promise<void>
+    {
+        const petition = await this.checkPetitionMutationValidity(petitionId, user.id);
+        await this.petitionsRepository.editPetition(petition, editPetitionDto);
+    }
+    
+    async getInfo(petition: Petition): Promise<PetitionInfo>
+    {
+        const numVotes = await this.petitionsRepository.countNumberOfVotes(petition.id);
+        const numComments = await this.commentsService.countNumberOfComments(petition.id);
+        const status = await this.petitionsRepository.getPetitionStatus(petition.id);
+        
+        const info: PetitionInfo = {
+            id: petition.id,
+            title: petition.title,
+            date: petition.createdDate,
+            status: status,
+            numVotes: numVotes,
+            numComments: numComments,
+            description: petition.description,
+        };
+        
+        if (status !== PetitionStatus.NO_RESOLUTION)
+        {
+            let petitionCopy = petition;
+            if (!petition.resolution)
+            {
+                petitionCopy = await this.petitionsRepository.findOne(petition.id, { relations: ['resolution'] });
+            }
+            info.resolutionId = petitionCopy.resolution.id;
+        }
+        return info;
+    }
+    
+    private async checkPetitionMutationValidity(petitionId: number, userId: number): Promise<Petition>
+    {
+        const petition = await this.petitionsRepository.findOne(petitionId, { relations: ['resolution', 'by'] });
+        
+        if (!petition) throw new NotFoundException();
+        if (petition.by.id !== userId) throw new UnauthorizedException();
+        if (petition.resolution || await this.petitionsRepository.countNumberOfVotes(petitionId) >
+            0) throw new ConflictException();
+        
+        return petition;
+    }
 }

@@ -16,10 +16,10 @@ export class ChangeUserSettingsDto
 {
     @IsBoolean()
     newRes: boolean;
-
+    
     @IsBoolean()
     terminated: boolean;
-
+    
     @IsBoolean()
     overdue: boolean;
 }

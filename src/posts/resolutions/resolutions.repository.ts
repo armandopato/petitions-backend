@@ -12,7 +12,8 @@ import { ResolutionOrderBy as OrderBy } from './enums/resolution-order-by.enum';
 
 
 @EntityRepository(Resolution)
-export class ResolutionsRepository extends Repository<Resolution> implements PageRepository<Resolution, ResolutionQueryParams>
+export class ResolutionsRepository extends Repository<Resolution>
+    implements PageRepository<Resolution, ResolutionQueryParams>
 {
     private readonly connection = getConnection();
     
@@ -26,53 +27,55 @@ export class ResolutionsRepository extends Repository<Resolution> implements Pag
         
         if (show)
         {
-            switch(show)
+            switch (show)
             {
                 case ResolutionStatus.TERMINATED:
-                    query.andWhere("NOT resolution.resolutionDate IS NULL");
+                    query.andWhere('NOT resolution.resolutionDate IS NULL');
                     break;
-                
+        
                 case ResolutionStatus.OVERDUE:
-                    query.andWhere("resolution.resolutionDate IS NULL")
-                        .andWhere("resolution.deadline < NOW()");
+                    query.andWhere('resolution.resolutionDate IS NULL')
+                        .andWhere('resolution.deadline < NOW()');
                     break;
         
                 case ResolutionStatus.IN_PROGRESS:
-                    query.andWhere("resolution.resolutionDate IS NULL")
-                        .andWhere("resolution.deadline >= NOW()");
+                    query.andWhere('resolution.resolutionDate IS NULL')
+                        .andWhere('resolution.deadline >= NOW()');
                     break;
             }
         }
-
+        
         if (search)
         {
-            query.leftJoin("resolution.petition", "petition")
-                .andWhere("petition.title LIKE :search", { search: `%${search}%` })
-                .andWhere("resolution.resolutionText LIKE :search", { search: `%${search}%` });
+            query.leftJoin('resolution.petition', 'petition')
+                .andWhere('petition.title LIKE :search', { search: `%${search}%` })
+                .andWhere('resolution.resolutionText LIKE :search', { search: `%${search}%` });
         }
-
-        switch(orderBy)
+        
+        switch (orderBy)
         {
             case OrderBy.MOST_RECENT:
-                query.orderBy("resolution.id", "DESC");
+                query.orderBy('resolution.id', 'DESC');
                 break;
             
             case OrderBy.OLDEST:
-                query.orderBy("resolution.id", "ASC");
+                query.orderBy('resolution.id', 'ASC');
                 break;
-
+            
             case OrderBy.RELEVANCE:
                 if (!show)
                 {
-                    query.addSelect("CASE WHEN resolution.resolutionDate IS NULL AND resolution.deadline < NOW() THEN 1 ELSE 2 END", "relevance")
-                        .orderBy("relevance", "ASC");
+                    query.addSelect(
+                        'CASE WHEN resolution.resolutionDate IS NULL AND resolution.deadline < NOW() THEN 1 ELSE 2 END',
+                        'relevance')
+                        .orderBy('relevance', 'ASC');
                 }
-                query.addOrderBy("resolution.id", "DESC");
+                query.addOrderBy('resolution.id', 'DESC');
                 break;
         }
         return await getPage(query, page);
     }
-
+    
     getResolutionStatus(resolution: Resolution): ResolutionStatus
     {
         const { deadline, resolutionDate } = resolution;
@@ -80,62 +83,62 @@ export class ResolutionsRepository extends Repository<Resolution> implements Pag
         else if (deadline >= new Date(Date.now())) return ResolutionStatus.IN_PROGRESS;
         else return ResolutionStatus.OVERDUE;
     }
-
+    
     async countNumberOfRejectionVotes(id: number): Promise<number>
     {
-        return await this.connection.createQueryBuilder(StudentUser, "user")
-                                    .innerJoinAndSelect("user.votedResolutions", "resolution")
-                                    .where("resolution.id = :id", { id: id })
-                                    .getCount();
+        return await this.connection.createQueryBuilder(StudentUser, 'user')
+            .innerJoinAndSelect('user.votedResolutions', 'resolution')
+            .where('resolution.id = :id', { id: id })
+            .getCount();
     }
-
+    
     async didUserVote(id: number, userId: number): Promise<boolean>
     {
-        const vote = await this.connection.createQueryBuilder(StudentUser, "user")
-                                            .innerJoinAndSelect("user.votedResolutions", "resolution")
-                                            .where("user.id = :userId", { userId: userId })
-                                            .andWhere("resolution.id = :id", { id: id })
-                                            .getCount();
+        const vote = await this.connection.createQueryBuilder(StudentUser, 'user')
+            .innerJoinAndSelect('user.votedResolutions', 'resolution')
+            .where('user.id = :userId', { userId: userId })
+            .andWhere('resolution.id = :id', { id: id })
+            .getCount();
         return vote === 1;
     }
-
+    
     async didUserSave(id: number, userId: number): Promise<boolean>
     {
-        const saved = await this.connection.createQueryBuilder(User, "user")
-                                            .innerJoinAndSelect("user.savedResolutions", "resolution")
-                                            .where("user.id = :userId", { userId: userId })
-                                            .andWhere("resolution.id = :id", { id: id })
-                                            .getCount();
+        const saved = await this.connection.createQueryBuilder(User, 'user')
+            .innerJoinAndSelect('user.savedResolutions', 'resolution')
+            .where('user.id = :userId', { userId: userId })
+            .andWhere('resolution.id = :id', { id: id })
+            .getCount();
         return saved === 1;
     }
-
+    
     async getTitle(id: number): Promise<string>
     {
-        const { title } = await this.connection.createQueryBuilder(Petition, "petition")
-                                                .innerJoinAndSelect("petition.resolution", "resolution")
-                                                .select("petition.title", "title")
-                                                .where("resolution.id = :id", { id: id })
-                                                .getRawOne();
+        const { title } = await this.connection.createQueryBuilder(Petition, 'petition')
+            .innerJoinAndSelect('petition.resolution', 'resolution')
+            .select('petition.title', 'title')
+            .where('resolution.id = :id', { id: id })
+            .getRawOne();
         return title;
     }
-
-
-    async getIdAndTitleByNotificationId(notificationId: number): Promise<{id: number, title: string}>
+    
+    
+    async getIdAndTitleByNotificationId(notificationId: number): Promise<{ id: number, title: string }>
     {
         const { resolutionId: id } = await this.connection.createQueryBuilder(UserNotification, 'notification')
             .innerJoinAndSelect('notifications.resolution', 'resolution')
             .select('resolution.id', 'resolutionId')
             .where('notifications.id = :id', { id: notificationId })
-                                                .getRawOne();
+            .getRawOne();
         
         const title = await this.getTitle(id);
         return { id, title };
     }
-
+    
     async savePost(resolutionId: number, userId: number): Promise<void>
     {
         await this.connection.createQueryBuilder()
-            .relation(Resolution, "savedBy")
+            .relation(Resolution, 'savedBy')
             .of(resolutionId)
             .add(userId);
     }
@@ -143,7 +146,7 @@ export class ResolutionsRepository extends Repository<Resolution> implements Pag
     async unsavePost(resolutionId: number, userId: number): Promise<void>
     {
         await this.connection.createQueryBuilder()
-            .relation(Resolution, "savedBy")
+            .relation(Resolution, 'savedBy')
             .of(resolutionId)
             .remove(userId);
     }
@@ -151,7 +154,7 @@ export class ResolutionsRepository extends Repository<Resolution> implements Pag
     async vote(resolutionId: number, userId: number): Promise<void>
     {
         await this.connection.createQueryBuilder()
-            .relation(Resolution, "rejectionVotesBy")
+            .relation(Resolution, 'rejectionVotesBy')
             .of(resolutionId)
             .add(userId);
     }
@@ -159,8 +162,8 @@ export class ResolutionsRepository extends Repository<Resolution> implements Pag
     async deleteRejectionVotes(resolutionId: number): Promise<void>
     {
         await this.connection.createQueryBuilder().delete()
-            .from("resolution_rejection_votes_by_user", "vote")
-            .where("resolutionId = :id", { id: resolutionId })
+            .from('resolution_rejection_votes_by_user', 'vote')
+            .where('resolutionId = :id', { id: resolutionId })
             .execute();
     }
 }

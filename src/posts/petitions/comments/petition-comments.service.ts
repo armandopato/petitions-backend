@@ -6,13 +6,13 @@ import { PetitionCommentsRepository } from './petition-comments.repository';
 @Injectable()
 export class PetitionCommentsService extends CommentsService<PetitionComment>
 {
-	constructor(petitionCommentRepository: PetitionCommentsRepository)
-	{
-		super(petitionCommentRepository);
-	}
-	
-	async createCommentInstanceWithConditions(): Promise<PetitionComment>
-	{
-		return new PetitionComment();
-	}
+    constructor(petitionCommentRepository: PetitionCommentsRepository)
+    {
+        super(petitionCommentRepository);
+    }
+    
+    async createCommentInstanceWithConditions(): Promise<PetitionComment>
+    {
+        return new PetitionComment();
+    }
 }
