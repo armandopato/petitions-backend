@@ -10,9 +10,9 @@ import { ResolutionStatus } from '../posts/resolutions/enums/resolution-status.e
 @Injectable()
 export class SchedulingService
 {
-	constructor(private scheduler: SchedulerRegistry,
-	            private notificationsService: NotificationsService,
-	            private resolutionsRepository: ResolutionsRepository,
+	constructor(private readonly scheduler: SchedulerRegistry,
+	            private readonly notificationsService: NotificationsService,
+	            private readonly resolutionsRepository: ResolutionsRepository,
 	)
 	{
 	}

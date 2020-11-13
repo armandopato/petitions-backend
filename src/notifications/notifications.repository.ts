@@ -11,7 +11,7 @@ import { ResolutionStatus } from '../posts/resolutions/enums/resolution-status.e
 @EntityRepository(UserNotification)
 export class NotificationsRepository extends Repository<UserNotification>
 {
-    private connection = getConnection();
+    private readonly connection = getConnection();
     
     async deleteUserNotifications(userId: number): Promise<void>
     {

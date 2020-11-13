@@ -11,7 +11,7 @@ export class MailService
 	private readonly mg: mailgun.Mailgun;
 	private readonly domain: string;
 	
-	constructor(private configService: ConfigService)
+	constructor(private readonly configService: ConfigService)
 	{
 		this.sender = this.configService.get<string>('SENDER');
 		const apiKey = this.configService.get<string>('API_KEY');

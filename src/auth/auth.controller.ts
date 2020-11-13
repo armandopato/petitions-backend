@@ -32,8 +32,8 @@ export class AuthController
     private readonly SAME_SITE: boolean | 'lax' | 'strict' | 'none';
     private readonly REFRESH_EXPIRATION_MILLISECONDS: number;
     
-    constructor(private authService: AuthService,
-                private configService: ConfigService)
+    constructor(private readonly authService: AuthService,
+                private readonly configService: ConfigService)
     {
         this.SECURE = this.configService.get<string>('SECURE') === 'true';
         this.SAME_SITE = this.configService.get('SAME_SITE');

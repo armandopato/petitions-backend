@@ -19,8 +19,8 @@ import { ApiTags } from '@nestjs/swagger';
 @Controller('petitions')
 export class PetitionsController
 {
-    constructor(private petitionsService: PetitionsService,
-                private commentsService: PetitionCommentsService)
+    constructor(private readonly petitionsService: PetitionsService,
+                private readonly commentsService: PetitionCommentsService)
     {
     }
     

@@ -7,7 +7,7 @@ import { FOREIGN_KEY_VIOLATION_ERRCODE } from '../util/constants';
 
 export abstract class PostsService<T, TInfo extends UserInfo, TParams>
 {
-	abstract repository: PageRepository<T, TParams>;
+	abstract readonly repository: PageRepository<T, TParams>;
 	
 	async getInfoById(postId: number, user: User): Promise<TInfo>
 	{

@@ -15,9 +15,9 @@ import { PetitionStatus } from './enums/petition-status.enum';
 export class PetitionsService extends PostsService<Petition, PetitionInfo, PetitionQueryParams>
 {
 	constructor(
-		private petitionsRepository: PetitionsRepository,
-		private resolutionsService: ResolutionsService,
-		private commentsService: PetitionCommentsService,
+		private readonly petitionsRepository: PetitionsRepository,
+		private readonly resolutionsService: ResolutionsService,
+		private readonly commentsService: PetitionCommentsService,
 	)
 	{
 		super();

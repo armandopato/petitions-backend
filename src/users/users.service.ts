@@ -26,13 +26,13 @@ export class UsersService
     private readonly CONFIRMATION_EXPIRATION: string;
     
     constructor(
-        private studentUsersRepository: StudentUsersRepository,
-        private usersRepository: UsersRepository,
-        private petitionsService: PetitionsService,
-        private resolutionsService: ResolutionsService,
-        private mailService: MailService,
-        private jwtService: JwtService,
-        private configService: ConfigService,
+        private readonly studentUsersRepository: StudentUsersRepository,
+        private readonly usersRepository: UsersRepository,
+        private readonly petitionsService: PetitionsService,
+        private readonly resolutionsService: ResolutionsService,
+        private readonly mailService: MailService,
+        private readonly jwtService: JwtService,
+        private readonly configService: ConfigService,
     )
     {
         this.protectedMail = this.configService.get<string>('MY_MAIL');

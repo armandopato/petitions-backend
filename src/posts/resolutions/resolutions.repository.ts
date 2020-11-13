@@ -14,7 +14,7 @@ import { ResolutionOrderBy as OrderBy } from './enums/resolution-order-by.enum';
 @EntityRepository(Resolution)
 export class ResolutionsRepository extends Repository<Resolution> implements PageRepository<Resolution, ResolutionQueryParams>
 {
-    connection = getConnection();
+    private readonly connection = getConnection();
     
     async getPage(params: ResolutionQueryParams): Promise<Page<Resolution>>
     {

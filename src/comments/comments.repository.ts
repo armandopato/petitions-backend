@@ -8,9 +8,9 @@ export type Entity<T> = { new(): T };
 
 export abstract class CommentsRepository<CommentType extends GenericComment> extends Repository<CommentType>
 {
-	connection = getConnection();
+	private readonly connection = getConnection();
 	
-	protected constructor(private commentEntity: Entity<CommentType>)
+	protected constructor(private readonly commentEntity: Entity<CommentType>)
 	{
 		super();
 	}

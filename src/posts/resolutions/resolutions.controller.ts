@@ -22,8 +22,8 @@ import { ApiTags } from '@nestjs/swagger';
 export class ResolutionsController
 {
 	
-	constructor(private resolutionsService: ResolutionsService,
-	            private commentsService: ResolutionCommentsService)
+	constructor(private readonly resolutionsService: ResolutionsService,
+	            private readonly commentsService: ResolutionCommentsService)
 	{
 	}
 	

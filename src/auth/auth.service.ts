@@ -24,10 +24,10 @@ export class AuthService
     private readonly RESET_EXPIRATION_MILLISECONDS: number;
     
     constructor(
-        private usersRepository: UsersRepository,
-        private jwtService: JwtService,
-        private mailService: MailService,
-        private configService: ConfigService,
+        private readonly usersRepository: UsersRepository,
+        private readonly jwtService: JwtService,
+        private readonly mailService: MailService,
+        private readonly configService: ConfigService,
     )
     {
         this.ACCESS_EXPIRATION = this.configService.get<string>('ACCESS_EXPIRATION');

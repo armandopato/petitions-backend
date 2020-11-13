@@ -9,7 +9,7 @@ import { ResolutionStatus } from '../enums/resolution-status.enum';
 export class ResolutionCommentsService extends CommentsService<ResolutionComment>
 {
 	constructor(@Inject(ResolutionCommentsRepository) resolutionCommentRepository: ResolutionCommentsRepository,
-	            private resolutionsRepository: ResolutionsRepository)
+	            private readonly resolutionsRepository: ResolutionsRepository)
 	{
 		super(resolutionCommentRepository);
 	}

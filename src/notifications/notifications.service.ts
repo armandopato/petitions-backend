@@ -10,8 +10,8 @@ import { NotificationsRepository } from './notifications.repository';
 @Injectable()
 export class NotificationsService
 {
-    constructor(private notificationsRepository: NotificationsRepository,
-                private resolutionsRepository: ResolutionsRepository)
+    constructor(private readonly notificationsRepository: NotificationsRepository,
+                private readonly resolutionsRepository: ResolutionsRepository)
     {
     }
     

@@ -24,11 +24,11 @@ import { ResolutionStatus } from './enums/resolution-status.enum';
 @Injectable()
 export class ResolutionsService extends PostsService<Resolution, ResolutionInfo, ResolutionQueryParams>
 {
-	constructor(private resolutionsRepository: ResolutionsRepository,
-	            private commentsService: ResolutionCommentsService,
-	            private petitionsRepository: PetitionsRepository,
-	            private schedulingService: SchedulingService,
-	            private notificationsService: NotificationsService)
+	constructor(private readonly resolutionsRepository: ResolutionsRepository,
+	            private readonly commentsService: ResolutionCommentsService,
+	            private readonly petitionsRepository: PetitionsRepository,
+	            private readonly schedulingService: SchedulingService,
+	            private readonly notificationsService: NotificationsService)
 	{
 		super();
 	}

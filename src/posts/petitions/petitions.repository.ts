@@ -14,7 +14,7 @@ import { PetitionOrderBy as OrderBy } from './enums/petition-order-by.enum';
 @EntityRepository(Petition)
 export class PetitionsRepository extends Repository<Petition> implements PageRepository<Petition, PetitionQueryParams>
 {
-	private connection = getConnection();
+	private readonly connection = getConnection();
 	
 	async getPage(params: PetitionQueryParams): Promise<Page<Petition>>
 	{

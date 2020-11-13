@@ -20,8 +20,8 @@ import { ApiTags } from '@nestjs/swagger';
 @Controller('users')
 export class UsersController
 {
-    constructor(private usersService: UsersService,
-                private notificationsService: NotificationsService)
+    constructor(private readonly usersService: UsersService,
+                private readonly notificationsService: NotificationsService)
     {
     }
     

@@ -8,7 +8,7 @@ import { CommentInfo } from './interfaces/comment-info.interface';
 
 export abstract class CommentsService<CommentType extends GenericComment>
 {
-	protected constructor(private commentsRepository: CommentsRepository<CommentType>)
+	protected constructor(private readonly commentsRepository: CommentsRepository<CommentType>)
 	{
 	}
 	

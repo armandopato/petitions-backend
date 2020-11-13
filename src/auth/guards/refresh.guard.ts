@@ -8,8 +8,8 @@ import { UsersRepository } from '../../users/users.repository';
 @Injectable()
 export class RefreshGuard implements CanActivate
 {
-    constructor(private usersRepository: UsersRepository,
-                private jwtService: JwtService)
+    constructor(private readonly usersRepository: UsersRepository,
+                private readonly jwtService: JwtService)
     {
     }
     

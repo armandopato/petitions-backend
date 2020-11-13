@@ -6,9 +6,9 @@ import { User } from '../../users/entities/user.entity';
 @Injectable()
 export class MeGuard implements CanActivate
 {
-    protectedMail: string;
+    private readonly protectedMail: string;
     
-    constructor(private configService: ConfigService)
+    constructor(private readonly configService: ConfigService)
     {
         this.protectedMail = this.configService.get<string>('MY_MAIL');
     }

@@ -14,7 +14,7 @@ import { SALT_ROUNDS } from '../util/constants';
 @EntityRepository(User)
 export class UsersRepository extends Repository<User>
 {
-    connection = getConnection();
+    private readonly connection = getConnection();
     
     // pending: add id to relation to sort according to saving date
     async getSavedPetitionsPage(userId: number, page: number): Promise<Page<Petition>>

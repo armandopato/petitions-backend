@@ -12,8 +12,8 @@ import { UsersRepository } from '../../users/users.repository';
 export class JwtStrategy extends PassportStrategy(Strategy)
 {
     
-    constructor(private usersRepository: UsersRepository,
-                @Inject(ConfigService) private configService: ConfigService)
+    constructor(private readonly usersRepository: UsersRepository,
+                @Inject(ConfigService) private readonly configService: ConfigService)
     {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
