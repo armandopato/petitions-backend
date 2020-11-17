@@ -31,6 +31,7 @@ async function bootstrap()
         .setTitle('UNAM Petitions platform')
         .setDescription('REST API for UNAM petitions platform')
         .setVersion('1.0')
+        .addBearerAuth()
         .build();
     const document = SwaggerModule.createDocument(app, options);
     SwaggerModule.setup('api', app, document);

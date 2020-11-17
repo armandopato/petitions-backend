@@ -2,7 +2,7 @@ import { SchoolName } from 'src/users/enums/school-name.enum';
 import { IsEmail, IsEnum, IsString, Length } from 'class-validator';
 import { IsEmailDomainValid } from '../validation/is-email-domain-valid.decorator';
 import { IsPasswordValid } from '../validation/is-password-valid.decorator';
-import { Length as LengthConstants } from '../../util/length.enum';
+import { LengthConstants as LengthConstants } from '../../util/length.enum';
 
 export class CreateUserDto
 {

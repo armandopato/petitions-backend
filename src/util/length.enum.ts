@@ -1,4 +1,4 @@
-export enum Length
+export enum LengthConstants
 {
     EMAIL = 320,
     MIN_RESOLUTION_TEXT = 1,

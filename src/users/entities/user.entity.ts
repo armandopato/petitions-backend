@@ -16,7 +16,7 @@ import { Settings } from './settings.entity';
 import { Role } from 'src/users/enums/role.enum';
 import { Petition } from 'src/posts/petitions/petition.entity';
 import { Resolution } from 'src/posts/resolutions/resolution.entity';
-import { Length } from 'src/util/length.enum';
+import { LengthConstants } from 'src/util/length.enum';
 import { PetitionComment, ResolutionComment } from '../../comments/comment.entity';
 import { UserToNotification } from './user-to-notification.entity';
 
@@ -30,10 +30,10 @@ export class User
     @CreateDateColumn()
     createdDate: Date;
     
-    @Column({ type: 'varchar', length: Length.EMAIL, unique: true })
+    @Column({ type: 'varchar', length: LengthConstants.EMAIL, unique: true })
     email: string;
     
-    @Column({ type: 'varchar', length: Length.HASH_LENGTH })
+    @Column({ type: 'varchar', length: LengthConstants.HASH_LENGTH })
     password: string;
     
     @Column({ default: false })

@@ -13,7 +13,7 @@ import { Resolution } from 'src/posts/resolutions/resolution.entity';
 import { StudentUser, User } from 'src/users/entities/user.entity';
 import { PetitionComment } from '../../comments/comment.entity';
 import { SchoolName } from 'src/users/enums/school-name.enum';
-import { Length } from 'src/util/length.enum';
+import { LengthConstants } from 'src/util/length.enum';
 
 @Entity()
 export class Petition
@@ -30,10 +30,10 @@ export class Petition
     })
     campus: SchoolName;
     
-    @Column({ type: 'varchar', length: Length.MAX_PETITION_TITLE })
+    @Column({ type: 'varchar', length: LengthConstants.MAX_PETITION_TITLE })
     title: string;
     
-    @Column({ type: 'varchar', length: Length.MAX_PETITION_DESC })
+    @Column({ type: 'varchar', length: LengthConstants.MAX_PETITION_DESC })
     description: string;
     
     @OneToOne(() => Resolution, resolution => resolution.petition)

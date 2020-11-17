@@ -1,7 +1,7 @@
 import { SchoolName } from 'src/users/enums/school-name.enum';
 import { IsEnum, IsInt, IsOptional, IsPositive, IsString, Length, Min } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { Length as LengthConstants } from '../../util/length.enum';
+import { LengthConstants as LengthConstants } from '../../util/length.enum';
 import { FIRST_VALID_YEAR } from '../../util/constants';
 
 export class PostQueryParams<ElementOrderBy, ElementStatus>

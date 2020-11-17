@@ -13,7 +13,7 @@ import {
 import { Petition } from 'src/posts/petitions/petition.entity';
 import { StudentUser, SupportTeamUser, User } from 'src/users/entities/user.entity';
 import { ResolutionComment } from '../../comments/comment.entity';
-import { Length } from 'src/util/length.enum';
+import { LengthConstants } from 'src/util/length.enum';
 
 
 @Entity()
@@ -31,7 +31,7 @@ export class Resolution
     @Column({ nullable: true })
     resolutionDate?: Date;
     
-    @Column({ type: 'varchar', length: Length.MAX_RESOLUTION_TEXT, nullable: true })
+    @Column({ type: 'varchar', length: LengthConstants.MAX_RESOLUTION_TEXT, nullable: true })
     resolutionText?: string;
     
     @OneToOne(() => Petition, petition => petition.resolution)
