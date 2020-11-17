@@ -1,42 +1,15 @@
-import { EntityRepository, getConnection, Repository } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 import { StudentUser, User } from 'src/users/entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { School } from 'src/users/entities/school.entity';
 import { Settings } from 'src/users/entities/settings.entity';
 import { hash } from 'bcrypt';
-import { Petition } from 'src/posts/petitions/petition.entity';
-import { Resolution } from 'src/posts/resolutions/resolution.entity';
-import { getPage } from 'src/util/page/get-page';
-import { Page } from 'src/util/page/page.interface';
 import { SALT_ROUNDS } from '../util/constants';
 
 
 @EntityRepository(User)
 export class UsersRepository extends Repository<User>
 {
-    private readonly connection = getConnection();
-    
-    // pending: add id to relation to sort according to saving date
-    async getSavedPetitionsPage(userId: number, page: number): Promise<Page<Petition>>
-    {
-        const query = this.connection.createQueryBuilder(Petition, 'petition')
-            .innerJoinAndSelect('petition.savedBy', 'user')
-            .where('user.id = :id', { id: userId })
-            .orderBy('petition.id', 'DESC');
-        
-        return await getPage(query, page);
-    }
-    
-    async getSavedResolutionsPage(userId: number, page: number): Promise<Page<Resolution>>
-    {
-        const query = this.connection.createQueryBuilder(Resolution, 'resolution')
-            .innerJoinAndSelect('resolution.savedBy', 'user')
-            .innerJoinAndSelect('resolution.petition', 'petition')
-            .where('user.id = :id', { id: userId })
-            .orderBy('resolution.id', 'DESC');
-        
-        return await getPage(query, page);
-    }
 }
 
 @EntityRepository(StudentUser)

@@ -12,12 +12,9 @@ import { ConfigService } from '@nestjs/config';
 import { Role } from 'src/users/enums/role.enum';
 import { ChangeUserSettingsDto, UserSettingsAndSchoolDto } from './dto/user-settings.dto';
 import { SchoolName } from 'src/users/enums/school-name.enum';
-import { Page } from 'src/util/page/page.interface';
 import { PetitionsService } from '../posts/petitions/petitions.service';
 import { ResolutionsService } from '../posts/resolutions/resolutions.service';
 import { SCHOOL_CHANGE_MILLISECONDS, UNIQUE_VIOLATION_ERRCODE } from '../util/constants';
-import { PetitionInfo } from '../posts/petitions/interfaces/petition-info.interface';
-import { ResolutionInfo } from '../posts/resolutions/interfaces/resolution-info.interface';
 
 @Injectable()
 export class UsersService
@@ -99,19 +96,6 @@ export class UsersService
         }
         
         await this.usersRepository.update(targetUser.id, { role: role });
-    }
-    
-    
-    async getSavedPetitions(user: User, pageNumber: number): Promise<Page<PetitionInfo>>
-    {
-        const page = await this.usersRepository.getSavedPetitionsPage(user.id, pageNumber);
-        return await this.petitionsService.pageToInfoPage(page, user);
-    }
-    
-    async getSavedResolutions(user: User, pageNumber: number): Promise<Page<ResolutionInfo>>
-    {
-        const page = await this.usersRepository.getSavedResolutionsPage(user.id, pageNumber);
-        return await this.resolutionsService.pageToInfoPage(page, user);
     }
     
     getUserSettingsAndSchool(user: User): UserSettingsAndSchoolDto

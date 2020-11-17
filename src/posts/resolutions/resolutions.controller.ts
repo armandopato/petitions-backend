@@ -46,6 +46,14 @@ export class ResolutionsController extends CommentsController<ResolutionComment>
         };
     }
     
+    @UseGuards(JwtAuthGuard)
+    @Get('saved')
+    async getSavedResolutions(@Request() req: AuthRequest<User>,
+                              @Query('page', PositiveIntPipe) page: number): Promise<Page<ResolutionInfo>>
+    {
+        return await this.resolutionsService.getSavedResolutions(req.user, page);
+    }
+    
     @UseGuards(JwtOptionalAuthGuard)
     @Get(':id')
     async getResolutionById(@Request() req: AuthRequest<User>,

@@ -1,5 +1,5 @@
 import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { StudentUser } from 'src/users/entities/user.entity';
+import { StudentUser, User } from 'src/users/entities/user.entity';
 import { PetitionQueryParams } from './dto/petition-query-params.dto';
 import { PetitionsRepository } from './petitions.repository';
 import { Petition } from 'src/posts/petitions/petition.entity';
@@ -10,6 +10,7 @@ import { PetitionCommentsService } from './comments/petition-comments.service';
 import { MIN_PETITION_VOTES } from '../../util/constants';
 import { PetitionInfo } from './interfaces/petition-info.interface';
 import { PetitionStatus } from './enums/petition-status.enum';
+import { Page } from '../../util/page/page.interface';
 
 @Injectable()
 export class PetitionsService extends PostsService<Petition, PetitionInfo, PetitionQueryParams>
@@ -36,6 +37,12 @@ export class PetitionsService extends PostsService<Petition, PetitionInfo, Petit
     propertyRemover(info: PetitionInfo): void
     {
         info.description = undefined;
+    }
+    
+    async getSavedPetitions(user: User, pageNumber: number): Promise<Page<PetitionInfo>>
+    {
+        const page = await this.petitionsRepository.getSavedPetitionsPage(user.id, pageNumber);
+        return await this.pageToInfoPage(page, user);
     }
     
     async postPetition(user: StudentUser, createPetitionDto: CreatePetitionDto): Promise<number>

@@ -166,4 +166,16 @@ export class ResolutionsRepository extends Repository<Resolution>
             .where('resolutionId = :id', { id: resolutionId })
             .execute();
     }
+    
+    // pending: add id to relation to sort according to saving date
+    async getSavedResolutionsPage(userId: number, page: number): Promise<Page<Resolution>>
+    {
+        const query = this.connection.createQueryBuilder(Resolution, 'resolution')
+            .innerJoinAndSelect('resolution.savedBy', 'user')
+            .innerJoinAndSelect('resolution.petition', 'petition')
+            .where('user.id = :id', { id: userId })
+            .orderBy('resolution.id', 'DESC');
+        
+        return await getPage(query, page);
+    }
 }

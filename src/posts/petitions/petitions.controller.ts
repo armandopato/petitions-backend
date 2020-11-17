@@ -59,6 +59,14 @@ export class PetitionsController extends CommentsController<PetitionComment>
     }
     
     @UseGuards(JwtAuthGuard)
+    @Get('saved')
+    async getSavedPetitions(@Request() req: AuthRequest<User>,
+                            @Query('page', PositiveIntPipe) page: number): Promise<Page<PetitionInfo>>
+    {
+        return await this.petitionsService.getSavedPetitions(req.user, page);
+    }
+    
+    @UseGuards(JwtAuthGuard)
     @Patch('/:id')
     async saveOrUnsavePetition(@Request() req: AuthRequest<User>,
                                @Param('id', PositiveIntPipe) petitionId: number): Promise<void>

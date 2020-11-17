@@ -6,7 +6,7 @@ import {
     UnauthorizedException,
 } from '@nestjs/common';
 import { Resolution } from 'src/posts/resolutions/resolution.entity';
-import { SupportTeamUser } from 'src/users/entities/user.entity';
+import { SupportTeamUser, User } from 'src/users/entities/user.entity';
 import { NotificationsService } from 'src/notifications/notifications.service';
 import { PetitionsRepository } from 'src/posts/petitions/petitions.repository';
 import { SchedulingService } from 'src/scheduling/scheduling.service';
@@ -19,6 +19,7 @@ import { MIN_RESOLUTION_VOTES, RESOLUTION_WINDOW_MILLISECONDS } from '../../util
 import { ResolutionInfo } from './interfaces/resolution-info.interface';
 import { PetitionStatus } from '../petitions/enums/petition-status.enum';
 import { ResolutionStatus } from './enums/resolution-status.enum';
+import { Page } from '../../util/page/page.interface';
 
 
 @Injectable()
@@ -46,6 +47,12 @@ export class ResolutionsService extends PostsService<Resolution, ResolutionInfo,
     propertyRemover(info: ResolutionInfo): void
     {
         info.resolutionText = undefined;
+    }
+    
+    async getSavedResolutions(user: User, pageNumber: number): Promise<Page<ResolutionInfo>>
+    {
+        const page = await this.resolutionsRepository.getSavedResolutionsPage(user.id, pageNumber);
+        return await this.pageToInfoPage(page, user);
     }
     
     async resolvePetition(postTerminatedResolutionDto: PostTerminatedResolutionDto,

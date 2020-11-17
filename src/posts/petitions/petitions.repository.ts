@@ -167,13 +167,24 @@ export class PetitionsRepository extends Repository<Petition> implements PageRep
             .innerJoin('resolution.petition', 'petition')
             .where('petition.id = :id', { id: id })
             .getOne();
-        
+    
         if (!resolution) return PetitionStatus.NO_RESOLUTION;
-        
+    
         else if (resolution.resolutionDate) return PetitionStatus.TERMINATED;
-        
+    
         else if (resolution.deadline >= new Date(Date.now())) return PetitionStatus.IN_PROGRESS;
-        
+    
         else return PetitionStatus.OVERDUE;
+    }
+    
+    // pending: add id to relation to sort according to saving date
+    async getSavedPetitionsPage(userId: number, page: number): Promise<Page<Petition>>
+    {
+        const query = this.connection.createQueryBuilder(Petition, 'petition')
+            .innerJoinAndSelect('petition.savedBy', 'user')
+            .where('user.id = :id', { id: userId })
+            .orderBy('petition.id', 'DESC');
+        
+        return await getPage(query, page);
     }
 }
