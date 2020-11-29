@@ -14,11 +14,11 @@ export class ResolutionCommentsService extends CommentsService<ResolutionComment
         super(resolutionCommentsRepository);
     }
     
-    async createCommentInstanceWithConditions(elementId: number): Promise<ResolutionComment>
+    async createNewInstanceWithConditions(elementId: number): Promise<ResolutionComment>
     {
         const resolution = await this.resolutionsRepository.findOne(elementId);
         if (!resolution) throw new NotFoundException();
-        if (this.resolutionsRepository.getResolutionStatus(resolution) !==
+        if (this.resolutionsRepository.getStatus(resolution) !==
             ResolutionStatus.TERMINATED) throw new ForbiddenException();
         return new ResolutionComment();
     }

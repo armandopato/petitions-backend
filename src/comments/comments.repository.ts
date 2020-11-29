@@ -1,6 +1,6 @@
 import { getConnection, Repository } from 'typeorm';
 import { Page } from 'src/util/page/page.interface';
-import { getPage } from 'src/util/page/get-page';
+import { getPageUtil } from 'src/util/page/get-page-util';
 import { GenericComment } from './comment.entity';
 import { User } from '../users/entities/user.entity';
 
@@ -15,7 +15,7 @@ export abstract class CommentsRepository<CommentType extends GenericComment> ext
         super();
     }
     
-    async countNumberOfComments(elementId: number): Promise<number>
+    async countPostComments(elementId: number): Promise<number>
     {
         return await this.connection.createQueryBuilder(this.commentEntity, 'comment')
             .innerJoinAndSelect('comment.element', 'element')
@@ -23,7 +23,7 @@ export abstract class CommentsRepository<CommentType extends GenericComment> ext
             .getCount();
     }
     
-    async getCommentsPage(elementId: number, page: number, user?: User): Promise<Page<CommentType>>
+    async getPage(elementId: number, page: number, user?: User): Promise<Page<CommentType>>
     {
         const query = this.connection.createQueryBuilder(this.commentEntity, 'comment')
             .innerJoin('comment.element', 'element')
@@ -35,7 +35,7 @@ export abstract class CommentsRepository<CommentType extends GenericComment> ext
             query.andWhere('comment.by != :userid', { userid: user.id });
         }
         
-        return await getPage(query, page);
+        return await getPageUtil(query, page);
     }
     
     async getUserComment(elementId: number, userId: number): Promise<CommentType>
@@ -48,7 +48,7 @@ export abstract class CommentsRepository<CommentType extends GenericComment> ext
             .getOne();
     }
     
-    async getNumberOfCommentLikes(commentId: number): Promise<number>
+    async getLikes(commentId: number): Promise<number>
     {
         return await this.connection.createQueryBuilder(this.commentEntity, 'comment')
             .innerJoin('comment.likedBy', 'user')
@@ -56,7 +56,7 @@ export abstract class CommentsRepository<CommentType extends GenericComment> ext
             .getCount();
     }
     
-    async didUserLikeComment(commentId: number, userId: number): Promise<boolean>
+    async didUserLike(commentId: number, userId: number): Promise<boolean>
     {
         const like = await this.connection.createQueryBuilder(this.commentEntity, 'comment')
             .innerJoin('comment.likedBy', 'user')
@@ -66,7 +66,8 @@ export abstract class CommentsRepository<CommentType extends GenericComment> ext
         return like === 1;
     }
     
-    async deleteComment(comment: CommentType): Promise<void>
+    // use built-in instead
+    async deleteById(comment: CommentType): Promise<void>
     {
         await this.connection.createQueryBuilder(this.commentEntity, 'comment')
             .delete()
@@ -74,7 +75,7 @@ export abstract class CommentsRepository<CommentType extends GenericComment> ext
             .execute();
     }
     
-    async likeComment(commentId: number, userId: number): Promise<void>
+    async likeById(commentId: number, userId: number): Promise<void>
     {
         await this.connection.createQueryBuilder()
             .relation(this.commentEntity, 'likedBy')
@@ -82,7 +83,7 @@ export abstract class CommentsRepository<CommentType extends GenericComment> ext
             .add(userId);
     }
     
-    async dislikeComment(commentId: number, userId: number): Promise<void>
+    async dislikeById(commentId: number, userId: number): Promise<void>
     {
         await this.connection.createQueryBuilder()
             .relation(this.commentEntity, 'likedBy')

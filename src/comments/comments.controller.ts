@@ -7,7 +7,7 @@ import { Page } from '../util/page/page.interface';
 import { CommentInfo } from './interfaces/comment-info.interface';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { IsStudentGuard } from '../auth/guards/is-student.guard';
-import { PostCommentDto } from './dto/post-comment.dto';
+import { CreateCommentDto } from './dto/create-comment.dto';
 import { CommentsService } from './comments.service';
 import { GenericComment } from './comment.entity';
 
@@ -19,49 +19,49 @@ export abstract class CommentsController<CommentType extends GenericComment>
     
     @UseGuards(JwtOptionalAuthGuard)
     @Get('/:id/comments')
-    async getCommentsPage(@Request() req: AuthRequest<User>, @Param('id', PositiveIntPipe) postId: number,
-                          @Query('page', PositiveIntPipe) page: number): Promise<Page<CommentInfo>>
+    async getCommentInfoPage(@Request() req: AuthRequest<User>, @Param('id', PositiveIntPipe) postId: number,
+                             @Query('page', PositiveIntPipe) page: number): Promise<Page<CommentInfo>>
     {
-        return await this.commentsService.getCommentInfoPage(postId, req.user, page);
+        return await this.commentsService.getInfoPage(postId, req.user, page);
     }
     
     @UseGuards(JwtAuthGuard, IsStudentGuard)
     @Post('/:id/comments')
-    async postComment(@Request() req: AuthRequest<StudentUser>, @Param('id', PositiveIntPipe) postId: number,
-                      @Body() postCommentDto: PostCommentDto): Promise<void>
+    async createComment(@Request() req: AuthRequest<StudentUser>, @Param('id', PositiveIntPipe) postId: number,
+                        @Body() createCommentDto: CreateCommentDto): Promise<void>
     {
-        await this.commentsService.postComment(postId, req.user, postCommentDto.comment);
+        await this.commentsService.create(postId, req.user, createCommentDto.comment);
     }
     
     @UseGuards(JwtAuthGuard, IsStudentGuard)
     @Get('/:id/mycomment')
-    async getMyComment(@Request() req: AuthRequest<StudentUser>,
-                       @Param('id', PositiveIntPipe) postId: number): Promise<{ myComment: CommentInfo }>
+    async getUserCommentInfo(@Request() req: AuthRequest<StudentUser>,
+                             @Param('id', PositiveIntPipe) postId: number): Promise<{ myComment: CommentInfo }>
     {
-        return { myComment: await this.commentsService.getMyCommentInfo(postId, req.user) };
+        return { myComment: await this.commentsService.getUserCommentInfo(postId, req.user) };
     }
     
     @UseGuards(JwtAuthGuard, IsStudentGuard)
     @Put('/:id/mycomment')
-    async editComment(@Request() req: AuthRequest<StudentUser>, @Param('id', PositiveIntPipe) postId: number,
-                      @Body() putCommentDto: PostCommentDto): Promise<void>
+    async update(@Request() req: AuthRequest<StudentUser>, @Param('id', PositiveIntPipe) postId: number,
+                 @Body() createCommentDto: CreateCommentDto): Promise<void>
     {
-        await this.commentsService.editMyComment(postId, req.user, putCommentDto.comment);
+        await this.commentsService.update(postId, req.user, createCommentDto.comment);
     }
     
     @UseGuards(JwtAuthGuard, IsStudentGuard)
     @Delete('/:id/mycomment')
-    async deleteComment(@Request() req: AuthRequest<StudentUser>,
-                        @Param('id', PositiveIntPipe) postId: number): Promise<void>
+    async delete(@Request() req: AuthRequest<StudentUser>,
+                 @Param('id', PositiveIntPipe) postId: number): Promise<void>
     {
-        await this.commentsService.deleteMyComment(postId, req.user);
+        await this.commentsService.delete(postId, req.user);
     }
     
     @UseGuards(JwtAuthGuard, IsStudentGuard)
     @Patch('/comments/:commentId')
-    async likeOrDislikeComment(@Request() req: AuthRequest<StudentUser>,
-                               @Param('commentId', PositiveIntPipe) commentId: number): Promise<void>
+    async toggleLiked(@Request() req: AuthRequest<StudentUser>,
+                      @Param('commentId', PositiveIntPipe) commentId: number): Promise<void>
     {
-        await this.commentsService.likeOrDislikeComment(commentId, req.user);
+        await this.commentsService.toggleLiked(commentId, req.user);
     }
 }

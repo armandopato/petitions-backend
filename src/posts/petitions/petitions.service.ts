@@ -29,7 +29,7 @@ export class PetitionsService extends PostsService<Petition, PetitionInfo, Petit
         return this.petitionsRepository;
     }
     
-    async loadOne(id: number): Promise<Petition>
+    async findOne(id: number): Promise<Petition>
     {
         return await this.repository.findOne(id);
     }
@@ -39,13 +39,13 @@ export class PetitionsService extends PostsService<Petition, PetitionInfo, Petit
         info.description = undefined;
     }
     
-    async getSavedPetitions(user: User, pageNumber: number): Promise<Page<PetitionInfo>>
+    async getSavedInfoPage(user: User, pageNumber: number): Promise<Page<PetitionInfo>>
     {
-        const page = await this.petitionsRepository.getSavedPetitionsPage(user.id, pageNumber);
+        const page = await this.petitionsRepository.getSavedPage(user.id, pageNumber);
         return await this.pageToInfoPage(page, user);
     }
     
-    async postPetition(user: StudentUser, createPetitionDto: CreatePetitionDto): Promise<number>
+    async create(user: StudentUser, createPetitionDto: CreatePetitionDto): Promise<number>
     {
         const { title, description } = createPetitionDto;
         
@@ -62,30 +62,30 @@ export class PetitionsService extends PostsService<Petition, PetitionInfo, Petit
     
     async triggerVoteLimitAction(petition: Petition): Promise<void>
     {
-        if (await this.petitionsRepository.countNumberOfVotes(petition.id) >= MIN_PETITION_VOTES)
+        if (await this.petitionsRepository.countVotes(petition.id) >= MIN_PETITION_VOTES)
         {
-            await this.resolutionsService.createAssociatedResolution(petition.id);
+            await this.resolutionsService.createAssociatedByPetitionId(petition.id);
         }
     }
     
-    async deletePetition(petitionId: number, user: StudentUser): Promise<void>
+    async deleteById(petitionId: number, user: StudentUser): Promise<void>
     {
-        await this.checkPetitionMutationValidity(petitionId, user.id);
-        await this.petitionsRepository.deletePetitionAndSavedRelations(petitionId);
+        await this.checkMutationValidity(petitionId, user.id);
+        await this.petitionsRepository.deleteWithRelations(petitionId);
     }
     
-    async editPetition(petitionId: number, user: StudentUser, editPetitionDto: CreatePetitionDto): Promise<void>
+    async updateById(petitionId: number, user: StudentUser, createPetitionDto: CreatePetitionDto): Promise<void>
     {
-        const petition = await this.checkPetitionMutationValidity(petitionId, user.id);
-        await this.petitionsRepository.editPetition(petition, editPetitionDto);
+        const petition = await this.checkMutationValidity(petitionId, user.id);
+        await this.petitionsRepository.updatePetition(petition, createPetitionDto);
     }
     
     async getInfo(petition: Petition): Promise<PetitionInfo>
     {
-        const numVotes = await this.petitionsRepository.countNumberOfVotes(petition.id);
-        const numComments = await this.commentsService.countNumberOfComments(petition.id);
-        const status = await this.petitionsRepository.getPetitionStatus(petition.id);
-        
+        const numVotes = await this.petitionsRepository.countVotes(petition.id);
+        const numComments = await this.commentsService.countPostComments(petition.id);
+        const status = await this.petitionsRepository.getStatus(petition.id);
+    
         const info: PetitionInfo = {
             id: petition.id,
             title: petition.title,
@@ -108,13 +108,13 @@ export class PetitionsService extends PostsService<Petition, PetitionInfo, Petit
         return info;
     }
     
-    private async checkPetitionMutationValidity(petitionId: number, userId: number): Promise<Petition>
+    private async checkMutationValidity(petitionId: number, userId: number): Promise<Petition>
     {
         const petition = await this.petitionsRepository.findOne(petitionId, { relations: ['resolution', 'by'] });
         
         if (!petition) throw new NotFoundException();
         if (petition.by.id !== userId) throw new UnauthorizedException();
-        if (petition.resolution || await this.petitionsRepository.countNumberOfVotes(petitionId) >
+        if (petition.resolution || await this.petitionsRepository.countVotes(petitionId) >
             0) throw new ConflictException();
         
         return petition;

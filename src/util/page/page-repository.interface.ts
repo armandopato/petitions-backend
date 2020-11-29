@@ -7,9 +7,9 @@ export interface PageRepository<T, TParams> extends Repository<T>
     
     didUserSave(postId: number, userId: number): Promise<boolean>;
     
-    savePost(postId: number, userId: number): Promise<void>;
+    addToSaved(postId: number, userId: number): Promise<void>;
     
-    unsavePost(postId: number, userId: number): Promise<void>;
+    deleteFromSaved(postId: number, userId: number): Promise<void>;
     
     didUserVote(postId: number, userId: number): Promise<boolean>;
     

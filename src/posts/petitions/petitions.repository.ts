@@ -3,7 +3,7 @@ import { Petition } from 'src/posts/petitions/petition.entity';
 import { StudentUser, User } from 'src/users/entities/user.entity';
 import { Page } from 'src/util/page/page.interface';
 import { PetitionQueryParams } from './dto/petition-query-params.dto';
-import { getPage } from 'src/util/page/get-page';
+import { getPageUtil } from 'src/util/page/get-page-util';
 import { CreatePetitionDto } from './dto/create-petition.dto';
 import { Resolution } from 'src/posts/resolutions/resolution.entity';
 import { PageRepository } from '../../util/page/page-repository.interface';
@@ -86,11 +86,11 @@ export class PetitionsRepository extends Repository<Petition> implements PageRep
                 query.addOrderBy('petition.id', 'DESC');
                 break;
         }
-        
-        return await getPage(query, page);
+    
+        return await getPageUtil(query, page);
     }
     
-    async countNumberOfVotes(id: number): Promise<number>
+    async countVotes(id: number): Promise<number>
     {
         return await this.connection.createQueryBuilder(StudentUser, 'user')
             .innerJoinAndSelect('user.votedPetitions', 'petition')
@@ -118,7 +118,6 @@ export class PetitionsRepository extends Repository<Petition> implements PageRep
         return saved === 1;
     }
     
-    
     async vote(petitionId: number, userId: number): Promise<void>
     {
         await this.connection.createQueryBuilder()
@@ -127,7 +126,7 @@ export class PetitionsRepository extends Repository<Petition> implements PageRep
             .add(userId);
     }
     
-    async savePost(petitionId: number, userId: number): Promise<void>
+    async addToSaved(petitionId: number, userId: number): Promise<void>
     {
         await this.connection.createQueryBuilder()
             .relation(Petition, 'savedBy')
@@ -135,7 +134,7 @@ export class PetitionsRepository extends Repository<Petition> implements PageRep
             .add(userId);
     }
     
-    async unsavePost(petitionId: number, userId: number): Promise<void>
+    async deleteFromSaved(petitionId: number, userId: number): Promise<void>
     {
         await this.connection.createQueryBuilder()
             .relation(Petition, 'savedBy')
@@ -143,7 +142,7 @@ export class PetitionsRepository extends Repository<Petition> implements PageRep
             .remove(userId);
     }
     
-    async deletePetitionAndSavedRelations(petitionId: number): Promise<void>
+    async deleteWithRelations(petitionId: number): Promise<void>
     {
         await this.connection.createQueryBuilder().delete()
             .from('user_saved_petitions_petition')
@@ -153,23 +152,24 @@ export class PetitionsRepository extends Repository<Petition> implements PageRep
         await this.delete(petitionId);
     }
     
-    async editPetition(petition: Petition, editPetitionDto: CreatePetitionDto): Promise<void>
+    // Refactor to delete this and use the built-in update method
+    async updatePetition(petition: Petition, createPetitionDto: CreatePetitionDto): Promise<void>
     {
-        petition.title = editPetitionDto.title;
-        petition.description = editPetitionDto.description;
+        petition.title = createPetitionDto.title;
+        petition.description = createPetitionDto.description;
         
         await this.save(petition);
     }
     
-    async getPetitionStatus(id: number): Promise<PetitionStatus>
+    async getStatus(id: number): Promise<PetitionStatus>
     {
         const resolution = await this.connection.createQueryBuilder(Resolution, 'resolution')
             .innerJoin('resolution.petition', 'petition')
             .where('petition.id = :id', { id: id })
             .getOne();
-    
+        
         if (!resolution) return PetitionStatus.NO_RESOLUTION;
-    
+        
         else if (resolution.resolutionDate) return PetitionStatus.TERMINATED;
     
         else if (resolution.deadline >= new Date(Date.now())) return PetitionStatus.IN_PROGRESS;
@@ -178,13 +178,13 @@ export class PetitionsRepository extends Repository<Petition> implements PageRep
     }
     
     // pending: add id to relation to sort according to saving date
-    async getSavedPetitionsPage(userId: number, page: number): Promise<Page<Petition>>
+    async getSavedPage(userId: number, page: number): Promise<Page<Petition>>
     {
         const query = this.connection.createQueryBuilder(Petition, 'petition')
             .innerJoinAndSelect('petition.savedBy', 'user')
             .where('user.id = :id', { id: userId })
             .orderBy('petition.id', 'DESC');
         
-        return await getPage(query, page);
+        return await getPageUtil(query, page);
     }
 }

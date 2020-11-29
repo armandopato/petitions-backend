@@ -1,7 +1,7 @@
 import { IsInt, IsPositive, IsString, Length } from 'class-validator';
 import { LengthConstants as LengthConstants } from '../../../util/length.enum';
 
-export class PostTerminatedResolutionDto
+export class CreateTerminatedResolutionDto
 {
     @IsPositive()
     @IsInt()

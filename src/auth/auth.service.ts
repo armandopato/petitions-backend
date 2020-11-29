@@ -6,7 +6,7 @@ import { validateOrReject } from 'class-validator';
 import { JwtService } from '@nestjs/jwt';
 import { AuthTokens } from 'src/auth/interfaces/auth-tokens.interface';
 import { Payload } from 'src/auth/interfaces/payload.interface';
-import { ChangePasswordDto } from './dto/change-password.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 import { Token } from 'src/auth/enums/token.enum';
 import { MailService } from './mail.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
@@ -95,14 +95,14 @@ export class AuthService
         }
     }
     
-    async changePassword(user: User, changePasswordDto: ChangePasswordDto): Promise<void>
+    async updatePassword(user: User, changePasswordDto: UpdatePasswordDto): Promise<void>
     {
         const password = changePasswordDto.password;
         let newPassword = changePasswordDto.newPassword;
-    
+        
         const match = await compare(password, user.password);
         if (!match) throw new UnauthorizedException();
-    
+        
         newPassword = await hash(newPassword, SALT_ROUNDS);
         await this.usersRepository.update(user.id, { password: newPassword });
     }

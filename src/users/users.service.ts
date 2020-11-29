@@ -5,16 +5,17 @@ import { MailService } from 'src/auth/mail.service';
 import { JwtService } from '@nestjs/jwt';
 import { Payload } from 'src/auth/interfaces/payload.interface';
 import { Token } from 'src/auth/enums/token.enum';
-import { ModifyUserDto, ModifyUserRoleDto } from './dto/modify-user.dto';
+import { UpdatePrivilegesDto } from './dto/update-privileges.dto';
 import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { User } from 'src/users/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { Role } from 'src/users/enums/role.enum';
-import { ChangeUserSettingsDto, UserSettingsAndSchoolDto } from './dto/user-settings.dto';
+import { UpdateSettingsDto, UserSettingsAndSchoolDto } from './dto/user-settings.dto';
 import { SchoolName } from 'src/users/enums/school-name.enum';
 import { PetitionsService } from '../posts/petitions/petitions.service';
 import { ResolutionsService } from '../posts/resolutions/resolutions.service';
 import { SCHOOL_CHANGE_MILLISECONDS, UNIQUE_VIOLATION_ERRCODE } from '../util/constants';
+import { UpdateRoleDto } from './dto/update-role.dto';
 
 @Injectable()
 export class UsersService
@@ -36,13 +37,13 @@ export class UsersService
         this.CONFIRMATION_EXPIRATION = this.configService.get<string>('CONFIRMATION_EXPIRATION');
     }
     
-    async createUser(createUserDto: CreateUserDto): Promise<void>
+    async create(createUserDto: CreateUserDto): Promise<void>
     {
         let userId: number;
         
         try
         {
-            userId = await this.studentUsersRepository.createUser(createUserDto);
+            userId = await this.studentUsersRepository.createStudent(createUserDto);
         }
         catch (err)
         {
@@ -65,9 +66,9 @@ export class UsersService
     }
     
     
-    async updateUserPrivileges(modifyUserPrivilegesDto: ModifyUserDto): Promise<void>
+    async updatePrivileges(updatePrivilegesDto: UpdatePrivilegesDto): Promise<void>
     {
-        const { email, admin, moderator, role, active } = modifyUserPrivilegesDto;
+        const { email, admin, moderator, role, active } = updatePrivilegesDto;
         
         const updateQueryObj: QueryDeepPartialEntity<User> = {
             hasAdminPrivileges: admin,
@@ -80,9 +81,9 @@ export class UsersService
         if (updateResult.affected === 0) throw new BadRequestException('User does not exist');
     }
     
-    async updateUserRole(modifyUserRoleDto: ModifyUserRoleDto, user: User): Promise<void>
+    async updateRole(updateRoleDto: UpdateRoleDto, user: User): Promise<void>
     {
-        const { email, role } = modifyUserRoleDto;
+        const { email, role } = updateRoleDto;
         if (user.email !== this.protectedMail && email === this.protectedMail)
         {
             throw new UnauthorizedException('No!');
@@ -98,7 +99,7 @@ export class UsersService
         await this.usersRepository.update(targetUser.id, { role: role });
     }
     
-    getUserSettingsAndSchool(user: User): UserSettingsAndSchoolDto
+    getSettingsAndSchool(user: User): UserSettingsAndSchoolDto
     {
         return {
             newRes: user.settings.notifyNewResolutions,
@@ -111,24 +112,24 @@ export class UsersService
         };
     }
     
-    async modifyUserSettings(user: User, changeUserSettingsDto: ChangeUserSettingsDto): Promise<void>
+    async updateSettings(user: User, updateSettingsDto: UpdateSettingsDto): Promise<void>
     {
-        const { newRes, terminated, overdue } = changeUserSettingsDto;
+        const { newRes, terminated, overdue } = updateSettingsDto;
         const userCopy = { ...user };
         userCopy.settings.notifyNewResolutions = newRes;
         userCopy.settings.notifyTerminatedResolutions = terminated;
         userCopy.settings.notifyOverdueResolutions = overdue;
-    
+        
         await this.usersRepository.save(userCopy);
     }
     
-    async modifySchool(user: User, newCampus: SchoolName): Promise<void>
+    async updateSchool(user: User, newCampus: SchoolName): Promise<void>
     {
         if (user.hasAdminPrivileges || user.hasModeratorPrivileges || user.role === Role.SupportTeam)
         {
             throw new UnauthorizedException('Your role or privilege doesn\'t allow switching schools');
         }
-    
+        
         const updatedDate = user.school.updatedDate;
         const limitDate = new Date(updatedDate.getTime() + SCHOOL_CHANGE_MILLISECONDS);
         const nowDate = new Date(Date.now());

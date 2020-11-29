@@ -11,7 +11,7 @@ export abstract class PostsService<T, TInfo extends UserInfo, TParams>
 	
 	async getInfoById(postId: number, user: User): Promise<TInfo>
 	{
-		const post = await this.loadOne(postId);
+		const post = await this.findOne(postId);
 		if (!post) throw new NotFoundException();
 		
 		const info = await this.getInfo(post);
@@ -48,7 +48,7 @@ export abstract class PostsService<T, TInfo extends UserInfo, TParams>
 		};
 	}
 	
-	async saveOrUnsave(postId: number, user: User): Promise<void>
+	async toggleSavedById(postId: number, user: User): Promise<void>
 	{
 		const didUserSave = await this.repository.didUserSave(postId, user.id);
 		
@@ -56,11 +56,11 @@ export abstract class PostsService<T, TInfo extends UserInfo, TParams>
 		{
 			if (didUserSave)
 			{
-				await this.repository.unsavePost(postId, user.id);
+				await this.repository.deleteFromSaved(postId, user.id);
 			}
 			else
 			{
-				await this.repository.savePost(postId, user.id);
+				await this.repository.addToSaved(postId, user.id);
 			}
 		}
 		catch (err)
@@ -70,9 +70,9 @@ export abstract class PostsService<T, TInfo extends UserInfo, TParams>
 		}
 	}
 	
-	async vote(postId: number, user: StudentUser): Promise<void>
+	async voteById(postId: number, user: StudentUser): Promise<void>
 	{
-		const post = await this.loadOne(postId);
+		const post = await this.findOne(postId);
 		if (!post) throw new NotFoundException();
 		
 		if (this.checkVoteConstraint)
@@ -109,7 +109,10 @@ export abstract class PostsService<T, TInfo extends UserInfo, TParams>
 	
 	checkVoteConstraint?(post: T): void;
 	
-	abstract async loadOne(id: number): Promise<T>;
+	// get saved
+	
+	// refactor to avoid repetition
+	abstract async findOne(id: number): Promise<T>;
 	
 	abstract async getInfo(post: T): Promise<TInfo>;
 	

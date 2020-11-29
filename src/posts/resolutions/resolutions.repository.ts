@@ -5,7 +5,7 @@ import { Petition } from 'src/posts/petitions/petition.entity';
 import { UserNotification } from 'src/notifications/notification.entity';
 import { Page } from 'src/util/page/page.interface';
 import { ResolutionQueryParams } from './dto/resolution-query.params.dto';
-import { getPage } from 'src/util/page/get-page';
+import { getPageUtil } from 'src/util/page/get-page-util';
 import { PageRepository } from '../../util/page/page-repository.interface';
 import { ResolutionStatus } from './enums/resolution-status.enum';
 import { ResolutionOrderBy as OrderBy } from './enums/resolution-order-by.enum';
@@ -73,10 +73,10 @@ export class ResolutionsRepository extends Repository<Resolution>
                 query.addOrderBy('resolution.id', 'DESC');
                 break;
         }
-        return await getPage(query, page);
+        return await getPageUtil(query, page);
     }
     
-    getResolutionStatus(resolution: Resolution): ResolutionStatus
+    getStatus(resolution: Resolution): ResolutionStatus
     {
         const { deadline, resolutionDate } = resolution;
         if (resolutionDate) return ResolutionStatus.TERMINATED;
@@ -84,7 +84,7 @@ export class ResolutionsRepository extends Repository<Resolution>
         else return ResolutionStatus.OVERDUE;
     }
     
-    async countNumberOfRejectionVotes(id: number): Promise<number>
+    async countVotes(id: number): Promise<number>
     {
         return await this.connection.createQueryBuilder(StudentUser, 'user')
             .innerJoinAndSelect('user.votedResolutions', 'resolution')
@@ -135,7 +135,7 @@ export class ResolutionsRepository extends Repository<Resolution>
         return { id, title };
     }
     
-    async savePost(resolutionId: number, userId: number): Promise<void>
+    async addToSaved(resolutionId: number, userId: number): Promise<void>
     {
         await this.connection.createQueryBuilder()
             .relation(Resolution, 'savedBy')
@@ -143,7 +143,7 @@ export class ResolutionsRepository extends Repository<Resolution>
             .add(userId);
     }
     
-    async unsavePost(resolutionId: number, userId: number): Promise<void>
+    async deleteFromSaved(resolutionId: number, userId: number): Promise<void>
     {
         await this.connection.createQueryBuilder()
             .relation(Resolution, 'savedBy')
@@ -159,7 +159,7 @@ export class ResolutionsRepository extends Repository<Resolution>
             .add(userId);
     }
     
-    async deleteRejectionVotes(resolutionId: number): Promise<void>
+    async deleteVotes(resolutionId: number): Promise<void>
     {
         await this.connection.createQueryBuilder().delete()
             .from('resolution_rejection_votes_by_user', 'vote')
@@ -168,7 +168,7 @@ export class ResolutionsRepository extends Repository<Resolution>
     }
     
     // pending: add id to relation to sort according to saving date
-    async getSavedResolutionsPage(userId: number, page: number): Promise<Page<Resolution>>
+    async getSavedPage(userId: number, page: number): Promise<Page<Resolution>>
     {
         const query = this.connection.createQueryBuilder(Resolution, 'resolution')
             .innerJoinAndSelect('resolution.savedBy', 'user')
@@ -176,6 +176,6 @@ export class ResolutionsRepository extends Repository<Resolution>
             .where('user.id = :id', { id: userId })
             .orderBy('resolution.id', 'DESC');
         
-        return await getPage(query, page);
+        return await getPageUtil(query, page);
     }
 }

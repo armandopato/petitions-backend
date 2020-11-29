@@ -15,9 +15,9 @@ export class NotificationsService
     {
     }
     
-    async getUserNotifications(user: User, page: number): Promise<Page<UserNotificationInfo>>
+    async getInfoPage(user: User, page: number): Promise<Page<UserNotificationInfo>>
     {
-        const { totalPages, pageElements: notificationRelations } = await this.notificationsRepository.getUserNotificationRelationPage(
+        const { totalPages, pageElements: notificationRelations } = await this.notificationsRepository.getUserRelationsPage(
             user.id, page);
         const notificationsInfo: UserNotificationInfo[] = [];
     
@@ -41,32 +41,32 @@ export class NotificationsService
         };
     }
     
-    async getNumberOfUnreadNotifications(user: User): Promise<number>
+    async getUnreadNumber(user: User): Promise<number>
     {
-        return await this.notificationsRepository.getNumberOfUnreadNotifications(user.id);
+        return await this.notificationsRepository.getUnreadNumber(user.id);
     }
     
-    async deleteUserNotifications(user: User): Promise<void>
+    async deleteAll(user: User): Promise<void>
     {
-        await this.notificationsRepository.deleteUserNotifications(user.id);
+        await this.notificationsRepository.deleteUserRelations(user.id);
     }
     
-    async deleteUserNotificationById(user: User, notificationId: number): Promise<void>
+    async deleteById(user: User, notificationId: number): Promise<void>
     {
-        await this.notificationsRepository.deleteUserNotificationById(user.id, notificationId);
+        await this.notificationsRepository.deleteUserRelationById(user.id, notificationId);
     }
     
-    async markAsSeen(user: User, notificationId: number): Promise<void>
+    async markAsSeenById(user: User, notificationId: number): Promise<void>
     {
-        await this.notificationsRepository.markAsSeen(user.id, notificationId);
+        await this.notificationsRepository.markAsSeenById(user.id, notificationId);
     }
     
-    async triggerNotifications(resolution: Resolution): Promise<void>
+    async trigger(resolution: Resolution): Promise<void>
     {
         const newNotification = new UserNotification();
         newNotification.resolution = resolution;
-        newNotification.type = this.resolutionsRepository.getResolutionStatus(resolution);
+        newNotification.type = this.resolutionsRepository.getStatus(resolution);
         await this.notificationsRepository.save(newNotification);
-        await this.notificationsRepository.createNotificationRelations(newNotification);
+        await this.notificationsRepository.createRelations(newNotification);
     }
 }

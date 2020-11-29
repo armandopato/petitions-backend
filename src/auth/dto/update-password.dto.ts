@@ -3,7 +3,7 @@ import { IsString, Length } from 'class-validator';
 import { LengthConstants as LengthConstants } from '../../util/length.enum';
 
 
-export class ChangePasswordDto
+export class UpdatePasswordDto
 {
     @IsPasswordValid()
     @Length(LengthConstants.MIN_PASSWORD, LengthConstants.MAX_PASSWORD)

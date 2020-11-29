@@ -4,7 +4,7 @@ import { NotFoundException } from '@nestjs/common';
 import { PAGE_SIZE } from '../constants';
 
 
-export async function getPage<T>(query: SelectQueryBuilder<T>, page: number): Promise<Page<T>>
+export async function getPageUtil<T>(query: SelectQueryBuilder<T>, page: number): Promise<Page<T>>
 {
     let totalPages = await query.getCount();
     totalPages = Math.ceil(totalPages / PAGE_SIZE);

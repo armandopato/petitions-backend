@@ -11,7 +11,7 @@ export class PetitionCommentsService extends CommentsService<PetitionComment>
         super(petitionCommentRepository);
     }
     
-    async createCommentInstanceWithConditions(): Promise<PetitionComment>
+    async createNewInstanceWithConditions(): Promise<PetitionComment>
     {
         return new PetitionComment();
     }

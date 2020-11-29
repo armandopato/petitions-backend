@@ -10,7 +10,7 @@ import { SupportTeamUser, User } from 'src/users/entities/user.entity';
 import { NotificationsService } from 'src/notifications/notifications.service';
 import { PetitionsRepository } from 'src/posts/petitions/petitions.repository';
 import { SchedulingService } from 'src/scheduling/scheduling.service';
-import { PostTerminatedResolutionDto } from './dto/post-terminated-resolution.dto';
+import { CreateTerminatedResolutionDto } from './dto/create-terminated-resolution.dto';
 import { ResolutionQueryParams } from './dto/resolution-query.params.dto';
 import { ResolutionsRepository } from './resolutions.repository';
 import { PostsService } from '../posts.service';
@@ -39,7 +39,7 @@ export class ResolutionsService extends PostsService<Resolution, ResolutionInfo,
         return this.resolutionsRepository;
     }
     
-    async loadOne(id: number): Promise<Resolution>
+    async findOne(id: number): Promise<Resolution>
     {
         return await this.repository.findOne(id, { relations: ['petition'] });
     }
@@ -49,24 +49,24 @@ export class ResolutionsService extends PostsService<Resolution, ResolutionInfo,
         info.resolutionText = undefined;
     }
     
-    async getSavedResolutions(user: User, pageNumber: number): Promise<Page<ResolutionInfo>>
+    async getSavedInfoPage(user: User, pageNumber: number): Promise<Page<ResolutionInfo>>
     {
-        const page = await this.resolutionsRepository.getSavedResolutionsPage(user.id, pageNumber);
+        const page = await this.resolutionsRepository.getSavedPage(user.id, pageNumber);
         return await this.pageToInfoPage(page, user);
     }
     
-    async resolvePetition(postTerminatedResolutionDto: PostTerminatedResolutionDto,
-                          supportUser: SupportTeamUser): Promise<number>
+    async createTerminated(createTerminatedResolutionDto: CreateTerminatedResolutionDto,
+                           supportUser: SupportTeamUser): Promise<number>
     {
-        const { petitionId, resolutionText } = postTerminatedResolutionDto;
-        const newResolution = await this.createAssociatedResolution(petitionId, supportUser);
+        const { petitionId, resolutionText } = createTerminatedResolutionDto;
+        const newResolution = await this.createAssociatedByPetitionId(petitionId, supportUser);
         
-        await this.terminateResolution(newResolution, supportUser, resolutionText);
+        await this.terminateById(newResolution, supportUser, resolutionText);
         return newResolution.id;
     }
     
-    async terminateResolution(resolutionOrId: number | Resolution, supportUser: SupportTeamUser,
-                              resolutionText: string): Promise<void>
+    async terminateById(resolutionOrId: number | Resolution, supportUser: SupportTeamUser,
+                        resolutionText: string): Promise<void>
     {
         const resolution = typeof resolutionOrId === 'number' ?
             await this.resolutionsRepository.findOne(resolutionOrId, { relations: ['petition'] }) :
@@ -74,7 +74,7 @@ export class ResolutionsService extends PostsService<Resolution, ResolutionInfo,
         
         if (!resolution) throw new NotFoundException();
         if (resolution.petition.campus !== supportUser.school.campus) throw new UnauthorizedException();
-        if (this.resolutionsRepository.getResolutionStatus(resolution) ===
+        if (this.resolutionsRepository.getStatus(resolution) ===
             ResolutionStatus.TERMINATED) throw new ConflictException();
         
         resolution.by = supportUser;
@@ -83,14 +83,14 @@ export class ResolutionsService extends PostsService<Resolution, ResolutionInfo,
         
         await this.resolutionsRepository.save(resolution);
         this.schedulingService.cancelResolutionDeadline(resolution.id);
-        await this.notificationsService.triggerNotifications(resolution);
+        await this.notificationsService.trigger(resolution);
     }
     
-    async createAssociatedResolution(petitionId: number, supportUser?: SupportTeamUser): Promise<Resolution>
+    async createAssociatedByPetitionId(petitionId: number, supportUser?: SupportTeamUser): Promise<Resolution>
     {
         const associatedPetition = await this.petitionsRepository.findOne(petitionId);
         if (!associatedPetition) throw new NotFoundException();
-        if (await this.petitionsRepository.getPetitionStatus(petitionId) !==
+        if (await this.petitionsRepository.getStatus(petitionId) !==
             PetitionStatus.NO_RESOLUTION) throw new ConflictException();
         if (supportUser && associatedPetition.campus !== supportUser.school.campus) throw new UnauthorizedException();
         
@@ -103,7 +103,7 @@ export class ResolutionsService extends PostsService<Resolution, ResolutionInfo,
         
         if (!supportUser)
         {
-            await this.notificationsService.triggerNotifications(newResolution);
+            await this.notificationsService.trigger(newResolution);
         }
         this.schedulingService.scheduleResolutionDeadline(newResolution);
         
@@ -117,13 +117,13 @@ export class ResolutionsService extends PostsService<Resolution, ResolutionInfo,
     
     checkVoteConstraint(resolution: Resolution): void
     {
-        if (this.resolutionsRepository.getResolutionStatus(resolution) !==
+        if (this.resolutionsRepository.getStatus(resolution) !==
             ResolutionStatus.TERMINATED) throw new ForbiddenException();
     }
     
     async triggerVoteLimitAction(resolution: Resolution): Promise<void>
     {
-        if (await this.resolutionsRepository.countNumberOfRejectionVotes(resolution.id) >= MIN_RESOLUTION_VOTES)
+        if (await this.resolutionsRepository.countVotes(resolution.id) >= MIN_RESOLUTION_VOTES)
         {
             await this.returnToProgress(resolution);
         }
@@ -132,15 +132,15 @@ export class ResolutionsService extends PostsService<Resolution, ResolutionInfo,
     async returnToProgress(resolution: Resolution): Promise<void>
     {
         let resolutionCopy = { ...resolution };
-        await this.resolutionsRepository.deleteRejectionVotes(resolutionCopy.id);
+        await this.resolutionsRepository.deleteVotes(resolutionCopy.id);
         
         const deadline = new Date(Date.now() + RESOLUTION_WINDOW_MILLISECONDS);
         resolutionCopy.resolutionDate = null;
         resolutionCopy.deadline = deadline;
         resolutionCopy = await this.resolutionsRepository.save(resolutionCopy);
-        
+    
         this.schedulingService.scheduleResolutionDeadline(resolutionCopy);
-        await this.notificationsService.triggerNotifications(resolutionCopy);
+        await this.notificationsService.trigger(resolutionCopy);
     }
     
     async getInfo(resolution: Resolution): Promise<ResolutionInfo>
@@ -149,16 +149,16 @@ export class ResolutionsService extends PostsService<Resolution, ResolutionInfo,
             id: resolution.id,
             petitionId: resolution.petition.id,
             title: resolution.petition.title,
-            status: this.resolutionsRepository.getResolutionStatus(resolution),
+            status: this.resolutionsRepository.getStatus(resolution),
             resolutionText: resolution.resolutionText,
         };
         
         if (resolutionInfo.status === ResolutionStatus.TERMINATED)
         {
             resolutionInfo.numRejectionVotes =
-                await this.resolutionsRepository.countNumberOfRejectionVotes(resolution.id);
+                await this.resolutionsRepository.countVotes(resolution.id);
             resolutionInfo.resolutionDate = resolution.resolutionDate;
-            resolutionInfo.numComments = await this.commentsService.countNumberOfComments(resolution.id);
+            resolutionInfo.numComments = await this.commentsService.countPostComments(resolution.id);
         }
         else
         {

@@ -15,7 +15,8 @@ export class UsersRepository extends Repository<User>
 @EntityRepository(StudentUser)
 export class StudentUsersRepository extends Repository<StudentUser>
 {
-    async createUser(createUserDto: CreateUserDto): Promise<number>
+    // Refactor to use the built-in method
+    async createStudent(createUserDto: CreateUserDto): Promise<number>
     {
         const { email, password, school } = createUserDto;
         

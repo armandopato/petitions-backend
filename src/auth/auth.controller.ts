@@ -13,7 +13,7 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 import { AuthService } from './auth.service';
 import { AuthRequest } from 'src/auth/interfaces/auth-request.interface';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { ChangePasswordDto } from './dto/change-password.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 import { CookieOptions, Response as ExpressResponse } from 'express';
 import { User } from 'src/users/entities/user.entity';
 import { RefreshGuard } from './guards/refresh.guard';
@@ -74,9 +74,9 @@ export class AuthController
     
     @UseGuards(JwtAuthGuard)
     @Patch('password')
-    async changePassword(@Request() req: AuthRequest<User>, @Body() changePasswordDto: ChangePasswordDto): Promise<void>
+    async updatePassword(@Request() req: AuthRequest<User>, @Body() changePasswordDto: UpdatePasswordDto): Promise<void>
     {
-        await this.authService.changePassword(req.user, changePasswordDto);
+        await this.authService.updatePassword(req.user, changePasswordDto);
     }
     
     @UseGuards(LocalAuthGuard)

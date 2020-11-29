@@ -12,7 +12,7 @@ export class UserSettingsAndSchoolDto
     };
 }
 
-export class ChangeUserSettingsDto
+export class UpdateSettingsDto
 {
     @IsBoolean()
     newRes: boolean;
@@ -24,7 +24,7 @@ export class ChangeUserSettingsDto
     overdue: boolean;
 }
 
-export class ChangeSchoolDto
+export class UpdateSchoolDto
 {
     @IsEnum(SchoolName)
     newCampus: SchoolName;

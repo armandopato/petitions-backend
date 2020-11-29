@@ -21,13 +21,13 @@ export class SchedulingService
     {
         const resolutions = await this.resolutionsRepository.find();
         resolutions.filter(
-            resolution => this.resolutionsRepository.getResolutionStatus(resolution) === ResolutionStatus.IN_PROGRESS)
+            resolution => this.resolutionsRepository.getStatus(resolution) === ResolutionStatus.IN_PROGRESS)
             .forEach(resolution => this.scheduleResolutionDeadline(resolution));
     }
     
     scheduleResolutionDeadline(resolution: Resolution): void
     {
-        const handler = async () => await this.notificationsService.triggerNotifications(resolution);
+        const handler = async () => await this.notificationsService.trigger(resolution);
         const job = new CronJob(resolution.deadline, handler);
         
         this.scheduler.addCronJob(resolution.id.toString(), job);

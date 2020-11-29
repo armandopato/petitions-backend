@@ -16,40 +16,40 @@ export class NotificationsController
     
     @UseGuards(JwtAuthGuard)
     @Get()
-    async getNotifications(@Request() req: AuthRequest<User>,
-                           @Query('page', PositiveIntPipe) page: number): Promise<Page<UserNotificationInfo>>
+    async getPageInfo(@Request() req: AuthRequest<User>,
+                      @Query('page', PositiveIntPipe) page: number): Promise<Page<UserNotificationInfo>>
     {
-        return await this.notificationsService.getUserNotifications(req.user, page);
+        return await this.notificationsService.getInfoPage(req.user, page);
     }
     
     @UseGuards(JwtAuthGuard)
     @Get('unread')
-    async getNumberOfUnreadNotifications(@Request() req: AuthRequest<User>): Promise<{ unread: number }>
+    async getUnreadNumber(@Request() req: AuthRequest<User>): Promise<{ unread: number }>
     {
-        const unread = await this.notificationsService.getNumberOfUnreadNotifications(req.user);
+        const unread = await this.notificationsService.getUnreadNumber(req.user);
         return { unread };
     }
     
     @UseGuards(JwtAuthGuard)
     @Delete()
-    async deleteNotifications(@Request() req: AuthRequest<User>): Promise<void>
+    async deleteAll(@Request() req: AuthRequest<User>): Promise<void>
     {
-        await this.notificationsService.deleteUserNotifications(req.user);
+        await this.notificationsService.deleteAll(req.user);
     }
     
     @UseGuards(JwtAuthGuard)
     @Patch(':id')
-    async markNotificationAsSeenById(@Request() req: AuthRequest<User>,
-                                     @Param('id', PositiveIntPipe) notificationId: number): Promise<void>
+    async markAsSeenById(@Request() req: AuthRequest<User>,
+                         @Param('id', PositiveIntPipe) notificationId: number): Promise<void>
     {
-        await this.notificationsService.markAsSeen(req.user, notificationId);
+        await this.notificationsService.markAsSeenById(req.user, notificationId);
     }
     
     @UseGuards(JwtAuthGuard)
     @Delete(':id')
-    async deleteNotificationById(@Request() req: AuthRequest<User>,
-                                 @Param('id', PositiveIntPipe) notificationId: number): Promise<void>
+    async deleteById(@Request() req: AuthRequest<User>,
+                     @Param('id', PositiveIntPipe) notificationId: number): Promise<void>
     {
-        await this.notificationsService.deleteUserNotificationById(req.user, notificationId);
+        await this.notificationsService.deleteById(req.user, notificationId);
     }
 }
