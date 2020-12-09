@@ -6,7 +6,9 @@ import { PositiveIntPipe } from '../util/positive-int.pipe';
 import { Page } from '../util/page/page.interface';
 import { UserNotificationInfo } from './interfaces/notification-info.interface';
 import { NotificationsService } from './notifications.service';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Notifications')
 @Controller('notifications')
 export class NotificationsController
 {

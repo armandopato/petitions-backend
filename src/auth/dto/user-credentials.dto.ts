@@ -11,7 +11,7 @@ export class EmailDto
     email: string;
 }
 
-export class UserCredentials extends EmailDto
+export class UserCredentialsDto extends EmailDto
 {
     @IsPasswordValid()
     @Length(LengthConstants.MIN_PASSWORD, LengthConstants.MAX_PASSWORD)

@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { User } from 'src/users/entities/user.entity';
 import { compare, hash } from 'bcrypt';
-import { UserCredentials } from './dto/user-credentials.dto';
+import { UserCredentialsDto } from './dto/user-credentials.dto';
 import { validateOrReject } from 'class-validator';
 import { JwtService } from '@nestjs/jwt';
-import { AuthTokens } from 'src/auth/interfaces/auth-tokens.interface';
+import { AuthTokensDto } from 'src/auth/interfaces/auth-tokens.interface';
 import { Payload } from 'src/auth/interfaces/payload.interface';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { Token } from 'src/auth/enums/token.enum';
@@ -38,7 +38,7 @@ export class AuthService
     
     async validateUser(email: string, password: string): Promise<User>
     {
-        const userCredentials = new UserCredentials();
+        const userCredentials = new UserCredentialsDto();
         userCredentials.email = email;
         userCredentials.password = password;
     
@@ -60,7 +60,7 @@ export class AuthService
         return user;
     }
     
-    async generateAuthTokens(user: User): Promise<AuthTokens>
+    async generateAuthTokens(user: User): Promise<AuthTokensDto>
     {
         const accessPayload: Payload = {
             sub: user.id,

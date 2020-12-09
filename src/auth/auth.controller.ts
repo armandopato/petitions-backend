@@ -17,21 +17,44 @@ import { UpdatePasswordDto } from './dto/update-password.dto';
 import { CookieOptions, Response as ExpressResponse } from 'express';
 import { User } from 'src/users/entities/user.entity';
 import { RefreshGuard } from './guards/refresh.guard';
-import { EmailDto } from './dto/user-credentials.dto';
+import { EmailDto, UserCredentialsDto } from './dto/user-credentials.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ConfigService } from '@nestjs/config';
 import { getDaysMilliseconds } from '../util/jwt-time-to-ms';
-import { ApiTags } from '@nestjs/swagger';
+import { AccessTokenDto } from './interfaces/auth-tokens.interface';
+import { ApiCreatedResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 
-
+/**
+ * Routes with authentication-related functionality.
+ */
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController
 {
+    /**
+     * Secure cookie flag.
+     * @private
+     */
     private readonly SECURE: boolean;
+    /**
+     * Same site cookie flag.
+     * @private
+     */
     private readonly SAME_SITE: boolean | 'lax' | 'strict' | 'none';
+    /**
+     * Milliseconds lifespan of a refresh token.
+     * Once a refresh token is generated, it will be valid during this time interval.
+     * @private
+     */
     private readonly REFRESH_EXPIRATION_MILLISECONDS: number;
     
+    
+    /**
+     * Class constructor.
+     * Initializes service dependencies and configuration data.
+     * @param authService
+     * @param configService
+     */
     constructor(private readonly authService: AuthService,
                 private readonly configService: ConfigService)
     {
@@ -41,9 +64,25 @@ export class AuthController
             getDaysMilliseconds(this.configService.get<string>('REFRESH_EXPIRATION'));
     }
     
+    /**
+     * <h2>Login</h2>
+     * Authenticates a user through local auth <strong>(email and password).</strong>
+     * If credentials are valid, an <code>access_token</code> is returned as a response and a
+     * <code>refresh_token</code> is set as a cookie.
+     * @param req An Express request which also contains a <code>User</code>, given that their credentials are valid.
+     * @param res An Express response.
+     * @param userCredentials An object containing a user's <code>email</code> and <code>password</code>.
+     */
     @UseGuards(LocalAuthGuard)
     @Post()
-    async login(@Request() req: AuthRequest<User>, @Response() res: ExpressResponse): Promise<void>
+    @ApiCreatedResponse({
+        description: 'Successful login. Returns an <code>access_token</code> and sets a <code>refresh_token</code> cookie.',
+        type: AccessTokenDto,
+    })
+    @ApiUnauthorizedResponse({ description: 'Wrong credentials or user hasn\'t confirmed their email yet.' })
+    async login(@Request() req: AuthRequest<User>, @Response() res: ExpressResponse,
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                @Body() userCredentials: UserCredentialsDto): Promise<void>
     {
         const { user } = req;
         if (!user.active)
